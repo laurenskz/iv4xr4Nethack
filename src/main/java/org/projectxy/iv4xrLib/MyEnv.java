@@ -29,7 +29,7 @@ import nl.uu.cs.aplib.utils.Pair;
  * 
  */
 public class MyEnv extends W3DEnvironment {
-	
+
 	/**
 	 * In principle this is the primary method you need to implement. This method is the one
 	 * that will send a command to the SUT and reports back the state of the SUT.
@@ -72,26 +72,26 @@ public class MyEnv extends W3DEnvironment {
 	 *        
 	 */
 	protected Object sendCommand_(EnvOperation cmd) {
-		
+
 		// finish this implementation
-		
+
 		Object RawSUTstate ; // in the switch below, put the value sent back by the SUT in this variable
-		
+
 		switch(cmd.command) {
-		  case "Observe"   : /* send this command to the SUT, wait for its response and repackage it */ ; break ;
-		  case "Move"      : /* send this command to the SUT, wait for its response and repackage it */ ; break ; 
-		  case "Interact"  : /* send this command to the SUT, wait for its response and repackage it */ ; break ;
-		  case "LoadWorld" : /* send this command to the SUT, wait for its response and repackage it */ ; break ;	
+		case "Observe"   : /* send this command to the SUT, wait for its response and repackage it */ ; break ;
+		case "Move"      : /* send this command to the SUT, wait for its response and repackage it */ ; break ; 
+		case "Interact"  : /* send this command to the SUT, wait for its response and repackage it */ ; break ;
+		case "LoadWorld" : /* send this command to the SUT, wait for its response and repackage it */ ; break ;	
 		}
 		// at this point the variable RawSUTstate should contain a representation of the SUT-state, 
 		// as sent back by the SUT through the above command.
 		// Next, we need to either cast it, or somehow post-process it to an instance of WorldModel:
-		
+
 		WorldModel SUTstate = null ; // = postProcess(RawSUTstate)
-		
+
 		return SUTstate ;
 	}
-	
+
 	/**
 	 * Send a command to the SUT to to send back its state. You should have this method,
 	 * as the agent's framework automatically invoke it at every update cycle.
@@ -110,7 +110,7 @@ public class MyEnv extends W3DEnvironment {
 	public WorldModel observe(String agentId) {
 		return (WorldModel) sendCommand(agentId,null,"Observe",null,WorldModel.class) ;
 	}	
-	
+
 	/**
 	 * Command the in-SUT agentId to interact on another in-SURT entity identified by
 	 * targetId. This method pass the call to sendCommand(..) from an ancestor class, 
@@ -128,8 +128,8 @@ public class MyEnv extends W3DEnvironment {
 	public WorldModel interact(String agentId, String targetId) {
 		return (WorldModel) sendCommand(agentId, targetId, "Interact", null, WorldModel.class);
 	}
-	
-	
+
+
 	/**
 	 * A command to instruct the in-SUT agentId to move a small distance towards the given
 	 * target location. The method pass the call to sendCommand(..) from an ancestor class, 
@@ -155,7 +155,7 @@ public class MyEnv extends W3DEnvironment {
 				new Pair(agentLocation,targetLocation),
 				WorldModel.class) ;
 	}
-	
+
 	/**
 	 * Send a command to the real environment that should cause it to send over
 	 * the navigation-mesh of its 3D world (well, it has it).  This mesh is 
@@ -169,7 +169,7 @@ public class MyEnv extends W3DEnvironment {
 		if (worldNavigableMesh==null) 
 			throw new Iv4xrError("Fail to load the navgation-mesh of the world") ;
 	}
-	
+
 
 
 }

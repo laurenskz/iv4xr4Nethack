@@ -55,122 +55,122 @@ import nl.uu.cs.aplib.mainConcepts.GoalStructure;
  */
 
 public class GoalLib {
-	
+
 	/**
-     * This method will construct a goal (more precisely: a goal structure) that will drive
-     * your agent to get close to the given entity (up to some distance specified by
-     * epsilon).
-     * 
-     * The agent will fail the goal if it no longer believes the entity is reachable.
-     */
-    public static GoalStructure entityInCloseRange(String entityId, float epsilon) {
-    	
-    	//define the goal, namely that the agent position should be close enough to the target entity
-        
-    	Goal goal = // create a goal, give it some name:
-    			    
-    			    new Goal("This entity is closeby: " + entityId)
-    			    
-                    // the predicate to solve:
-    			    
-        		    . toSolve((W3DAgentState belief) -> {
-                        // get the entity:
-        		    	WorldEntity e = belief.wom.getElement(entityId) ;
-        		    	if (e == null) return false ;
-        		    	// calculate the distance of the agent towards e:
-        		    	float distance = Vec3.dist(belief.wom.position,e.position) ;
-        		    	// ok if the distance is close enough:
-                        return distance <= epsilon ; // distance is less than some epsilon
-                      })
-        		    
-        		    // specify the tactic to be used to solve the goal. Below we say: 
-        		    //   (1) navigate directly to the entity
-        		    //   (2) but if the entity is not known yet, then explore the world first
-        		    //   (3) if none of the above is applicable we run out of idea and abort the goal
-        		    
-        		    . withTactic(
-        	        	FIRSTof(
-        	              TacticLib.navigateToEntity(entityId),//move to the goal position
-        	              TacticLib.explore(), //explore if the goal position is unknown
-        	              ABORT())) ;
+	 * This method will construct a goal (more precisely: a goal structure) that will drive
+	 * your agent to get close to the given entity (up to some distance specified by
+	 * epsilon).
+	 * 
+	 * The agent will fail the goal if it no longer believes the entity is reachable.
+	 */
+	public static GoalStructure entityInCloseRange(String entityId, float epsilon) {
 
-        //the above is a "goal", we need to return a goal-structure. We can just lift it:
-        return goal. lift();
-    }
-    
-    
-    
-    /**
-     * Construct a goal structure that will make an agent to move towards the given entity,
-     * until it is in the interaction-distance with the entity; and then interacts with it.
-     */
-    public static GoalStructure entityInteracted(String entityId) {
+		//define the goal, namely that the agent position should be close enough to the target entity
 
-    	float interactionDistance = 0.5f ; // specify whatever the interaction distance is...
-        
-        // the goal for the interaction part:
-        Goal interacton = 
-        	  
-        	  // create a goal, give it a name etc:
-        	  
-              goal(String.format("This entity is interacted: [%s]", entityId))
-        	  
-        	  // specify the predicate to solve. In this case we don't want to solve anything.
-        	  // we will put the solving tactic instead.
-        	  . toSolve((W3DAgentState belief) -> true) 
-        	  
-        	  // Specify the solving tactic: we interact, if interaction is some how not possible,
-        	  // the goal as failed by invoking ABORT:
-        	  
-              . withTactic(
-        		   FIRSTof( 
-                      TacticLib.interact(entityId),// interact with the entity
-                      ABORT()))   // abort if we can't interact
-             ;
+		Goal goal = // create a goal, give it some name:
 
-        // the final goal structure is a composition of moving close to the entity, and then interacting with it:
-        
-        return SEQ(entityInCloseRange(entityId,interactionDistance), interacton.lift());
-    }
-    
-    /**
-     * Create a test-goal to check the state of an in-game entity, whether it satisfies the given predicate.
-     */
-    public static GoalStructure entityInvariantChecked(TestAgent agent, String entityId, Predicate<WorldEntity> predicate){
-        
-    	float epsilon = 1 ; // specify some distance here, that should be close enough for the agent to observe
-    	                    // the state of an in-SUT entity
-    	
-    	// we'll specify the checking here:
-    	Goal invariantchecking  = 
-    			
-    			// create a goal, give it a name etc:
-    			
-    			testgoal("Invariant check " + entityId, agent)
-    			
-    			// the goal predicate to solve. For this we don't want to solve anything. Instead, we want
-    			// to check the SUT current state. So, the goal is just "true":
-    			
-                . toSolve((W3DAgentState belief) -> true) // nothing to solve
-                
-                // implement the check:
-                . invariant(agent,                        // something to check :)
-                		(W3DAgentState belief) -> {
-                			// get the entity:
-            		    	WorldEntity e = belief.wom.getElement(entityId) ;
-            		    	if (e != null && predicate.test(e)) 
-            		    	   // if the check is passed, return a "pass" verdict:
-                			   return new VerdictEvent("Object-check " + entityId, "", true) ;
-                			else 
-                			   // else return a "fail" verdict:
-                			   return new VerdictEvent("Object-check " + entityId, "", false) ;
-                			
-                		})
-                .withTactic(TacticLib.observe())
-           ;
-        
-    	// the final goal is a composition of first getting close to the entity, and then checking its state:
-    	return SEQ(entityInCloseRange(entityId,epsilon), invariantchecking.lift()) ;
-    }
+				new Goal("This entity is closeby: " + entityId)
+
+				// the predicate to solve:
+
+				. toSolve((W3DAgentState belief) -> {
+					// get the entity:
+					WorldEntity e = belief.wom.getElement(entityId);
+					if (e == null) return false;
+					// calculate the distance of the agent towards e:
+					float distance = Vec3.dist(belief.wom.position,e.position);
+					// ok if the distance is close enough:
+					return distance <= epsilon; // distance is less than some epsilon
+				})
+
+				// specify the tactic to be used to solve the goal. Below we say: 
+				//   (1) navigate directly to the entity
+				//   (2) but if the entity is not known yet, then explore the world first
+				//   (3) if none of the above is applicable we run out of idea and abort the goal
+
+				. withTactic(
+						FIRSTof(
+								TacticLib.navigateToEntity(entityId),//move to the goal position
+								TacticLib.explore(), //explore if the goal position is unknown
+								ABORT()));
+
+		//the above is a "goal", we need to return a goal-structure. We can just lift it:
+		return goal. lift();
+	}
+
+
+
+	/**
+	 * Construct a goal structure that will make an agent to move towards the given entity,
+	 * until it is in the interaction-distance with the entity; and then interacts with it.
+	 */
+	public static GoalStructure entityInteracted(String entityId) {
+
+		float interactionDistance = 0.5f; // specify whatever the interaction distance is...
+
+		// the goal for the interaction part:
+		Goal interacton = 
+
+				// create a goal, give it a name etc:
+
+				goal(String.format("This entity is interacted: [%s]", entityId))
+
+				// specify the predicate to solve. In this case we don't want to solve anything.
+				// we will put the solving tactic instead.
+				. toSolve((W3DAgentState belief) -> true) 
+
+				// Specify the solving tactic: we interact, if interaction is some how not possible,
+				// the goal as failed by invoking ABORT:
+
+				. withTactic(
+						FIRSTof( 
+								TacticLib.interact(entityId),// interact with the entity
+								ABORT()))   // abort if we can't interact
+				;
+
+		// the final goal structure is a composition of moving close to the entity, and then interacting with it:
+
+		return SEQ(entityInCloseRange(entityId,interactionDistance), interacton.lift());
+	}
+
+	/**
+	 * Create a test-goal to check the state of an in-game entity, whether it satisfies the given predicate.
+	 */
+	public static GoalStructure entityInvariantChecked(TestAgent agent, String entityId, Predicate<WorldEntity> predicate){
+
+		float epsilon = 1; // specify some distance here, that should be close enough for the agent to observe
+		// the state of an in-SUT entity
+
+		// we'll specify the checking here:
+		Goal invariantchecking  = 
+
+				// create a goal, give it a name etc:
+
+				testgoal("Invariant check " + entityId, agent)
+
+				// the goal predicate to solve. For this we don't want to solve anything. Instead, we want
+				// to check the SUT current state. So, the goal is just "true":
+
+				. toSolve((W3DAgentState belief) -> true) // nothing to solve
+
+				// implement the check:
+				. invariant(agent,                        // something to check :)
+						(W3DAgentState belief) -> {
+							// get the entity:
+							WorldEntity e = belief.wom.getElement(entityId);
+							if (e != null && predicate.test(e)) 
+								// if the check is passed, return a "pass" verdict:
+								return new VerdictEvent("Object-check " + entityId, "", true);
+							else 
+								// else return a "fail" verdict:
+								return new VerdictEvent("Object-check " + entityId, "", false);
+
+						})
+				.withTactic(TacticLib.observe())
+				;
+
+		// the final goal is a composition of first getting close to the entity, and then checking its state:
+		return SEQ(entityInCloseRange(entityId,epsilon), invariantchecking.lift());
+	}
 
 }
