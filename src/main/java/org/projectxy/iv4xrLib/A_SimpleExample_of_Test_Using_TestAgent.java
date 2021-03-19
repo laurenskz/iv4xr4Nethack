@@ -70,6 +70,7 @@ public class A_SimpleExample_of_Test_Using_TestAgent {
 		// we can print the goal structure's status, if you are curious:
 		testingTask.printGoalStructureStatus();
 
+
 		// we have a single check in the above testing task; check if the verdict is a pass:
 		assertTrue(dataCollector.getNumberOfPassVerdictsSeen() == 1);
 

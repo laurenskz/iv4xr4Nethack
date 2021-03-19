@@ -7,6 +7,11 @@ import eu.iv4xr.framework.spatial.Vec3;
 import eu.iv4xr.framework.spatial.meshes.Mesh;
 import nl.uu.cs.aplib.mainConcepts.Environment.EnvOperation;
 import nl.uu.cs.aplib.utils.Pair;
+import A.B.*;
+
+
+
+
 
 /**
  * This class provides the interface between iv4XR test agents and your System Under Test
@@ -28,7 +33,24 @@ import nl.uu.cs.aplib.utils.Pair;
  * you should have this method.
  * 
  */
+
+
 public class MyEnv extends W3DEnvironment {
+
+	static class NethackEnv extends W3DEnvironment {
+
+		/**
+		 * The instance of GCDGame that is to be tested, wrapped inside this
+		 * Environment.
+		 */
+		Screen NethackUnderTest;
+		NethackEnv(Screen screen) {
+			NethackUnderTest = screen;
+		}
+
+
+	}
+
 
 	/**
 	 * In principle this is the primary method you need to implement. This method is the one

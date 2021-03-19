@@ -19,6 +19,6 @@
     <orderEntry type="library" name="Maven: it.unibo.alice.tuprolog:tuprolog:3.3.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.8.5" level="project" />
-    <orderEntry type="module" module-name="NetHackClone" />
+    <orderEntry type="module" module-name="nethackClone" />
   </component>
 </module>
