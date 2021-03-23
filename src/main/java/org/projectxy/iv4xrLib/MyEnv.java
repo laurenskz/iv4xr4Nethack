@@ -37,18 +37,12 @@ import A.B.*;
 
 public class MyEnv extends W3DEnvironment {
 
-	static class NethackEnv extends W3DEnvironment {
-
-		/**
-		 * The instance of GCDGame that is to be tested, wrapped inside this
-		 * Environment.
-		 */
-		Screen NethackUnderTest;
-		NethackEnv(Screen screen) {
-			NethackUnderTest = screen;
-		}
-
-
+	NethackWrapper nethackUnderTest ;
+	
+	public MyEnv(NethackWrapper nhwrapper) {
+	    super() ;
+	    nethackUnderTest = nhwrapper ;
+	    
 	}
 
 
@@ -99,17 +93,23 @@ public class MyEnv extends W3DEnvironment {
 
 		Object RawSUTstate ; // in the switch below, put the value sent back by the SUT in this variable
 
+		WorldModel SUTstate = null ;
+		
 		switch(cmd.command) {
-		case "Observe"   : /* send this command to the SUT, wait for its response and repackage it */ ; break ;
-		case "Move"      : /* send this command to the SUT, wait for its response and repackage it */ ; break ; 
+		case "Observe"   : 
+		    SUTstate = nethackUnderTest.observe() ; break ;
+		case "Move"      : 
+		    SUTstate = nethackUnderTest.move((NethackWrapper.Movement) cmd.arg) ;
+		    /* send this command to the SUT, wait for its response and repackage it */ ; 
+		    break ; 
 		case "Interact"  : /* send this command to the SUT, wait for its response and repackage it */ ; break ;
-		case "LoadWorld" : /* send this command to the SUT, wait for its response and repackage it */ ; break ;	
+		case "StartNewgame" : 
+		    nethackUnderTest.startNewGame();
+		    break ;	
 		}
 		// at this point the variable RawSUTstate should contain a representation of the SUT-state, 
 		// as sent back by the SUT through the above command.
 		// Next, we need to either cast it, or somehow post-process it to an instance of WorldModel:
-
-		WorldModel SUTstate = null ; // = postProcess(RawSUTstate)
 
 		return SUTstate ;
 	}
@@ -130,8 +130,14 @@ public class MyEnv extends W3DEnvironment {
 	 */
 	@Override
 	public WorldModel observe(String agentId) {
-		return (WorldModel) sendCommand(agentId,null,"Observe",null,WorldModel.class) ;
+	    throw new UnsupportedOperationException() ;
+		// return (WorldModel) sendCommand("player",null,"Observe",null,WorldModel.class) ;
 	}	
+	
+	
+	public WorldModel observe() {
+        return (WorldModel) sendCommand("player",null,"Observe",null,WorldModel.class) ;
+    }
 
 	/**
 	 * Command the in-SUT agentId to interact on another in-SURT entity identified by
@@ -172,11 +178,16 @@ public class MyEnv extends W3DEnvironment {
 	 */
 	@Override
 	public WorldModel moveToward(String agentId, Vec3 agentLocation, Vec3 targetLocation) {
-		return (WorldModel) sendCommand(agentId,null,
-				"Move",
-				new Pair(agentLocation,targetLocation),
-				WorldModel.class) ;
+		throw new UnsupportedOperationException() ;
 	}
+	
+	
+	public WorldModel move(NethackWrapper.Movement direction) {
+        return (WorldModel) sendCommand("player",null,
+                "Move",
+                direction,
+                WorldModel.class) ;
+    }
 
 	/**
 	 * Send a command to the real environment that should cause it to send over

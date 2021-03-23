@@ -11,14 +11,18 @@ import java.awt.event.KeyEvent;
 import java.awt.Robot;
 import java.awt.AWTException;
 import java.io.IOException;
+import java.util.Scanner;
+
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.event.KeyListener;
 
 
 
 
-public class NethackMoves {
+public class NethackWrapper {
 
+    JFrame nethackWindow ;
     Screen nethack ;
     
 
@@ -147,12 +151,31 @@ public class NethackMoves {
 
 /** */
 
+    public WorldModel observe() {
+        return getNetHackState() ;
+    }
 
-    // Up
-    public void up() throws IOException,
-            AWTException, InterruptedException {
+    public void startNewGame() {
+        System.out.println("### startNewGame()") ;
+        KeyEvent e = new KeyEvent(nethackWindow, KeyEvent.KEY_PRESSED, 1, 0, KeyEvent.VK_ENTER, KeyEvent.CHAR_UNDEFINED);
+        nethack.keyPressed(e);
+    }
+    
+    public enum Movement { UP, DOWN, LEFT, RIGHT }
+    
+    public WorldModel move(Movement mv) {
+        
+        int key ;
+        switch(mv) {
+          case UP : key = KeyEvent.VK_UP ; break ;
+          case DOWN : key = KeyEvent.VK_DOWN ; break ;
+          case LEFT : key = KeyEvent.VK_LEFT ; break ;
+          case RIGHT : key = KeyEvent.VK_RIGHT ; break ;
+          default : throw new IllegalArgumentException() ;
+        }
 
-        KeyEvent e = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.VK_LEFT);
+        System.out.println("### up()") ;
+        KeyEvent e = new KeyEvent(nethackWindow, KeyEvent.KEY_PRESSED, 1, 0, key, KeyEvent.CHAR_UNDEFINED);
 
         //KeyEvent e;
         // e = new KeyEvent(a, 1, 20, 1, 10, 'a');
@@ -164,12 +187,8 @@ public class NethackMoves {
         //robot.keyPress(KeyEvent.VK_LEFT);
 
        // public void keyPressed(robot.keyPress(KeyEvent.VK_LEFT)) {
-
-
-        }
-
-
-       //nethack.keyPressed( (KeyEvent) key);//return move;
+      nethack.keyPressed(e); //return move;
+      return observe() ;
     }
 
 
@@ -243,5 +262,44 @@ public class NethackMoves {
     }
 
      */
+    public static void main(String[] args) throws IOException, AWTException, InterruptedException {
+        
+        NethackWrapper driver = new NethackWrapper() ;
+        driver.nethack = new Screen() ;
+        
+        JFrame frame = new JFrame("NetHack Clone");
+        driver.nethackWindow = frame ;
+        
+        frame.add(driver.nethack);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
+        // driver.nethack.animate();
+        
+        
+        Thread t = new Thread( () -> driver.nethack.animate() ) ;
+        t.start() ;
+        
+        Thread.sleep(100);
+        driver.startNewGame();
+        
+        System.out.println("type anything... ") ;
+        Scanner in = new Scanner(System.in);
+        in.nextLine() ;
+        
+        
+        driver.move(Movement.UP) ;
+        
+        WorldModel wom = driver.observe() ;
+        
+        System.out.println("Player-position: " + wom.position) ;
+        
+        System.out.println("type anything... ") ;
+        in = new Scanner(System.in);
+        in.nextLine() ;
+        
+    }
+    
+    
 
-// }
+}
