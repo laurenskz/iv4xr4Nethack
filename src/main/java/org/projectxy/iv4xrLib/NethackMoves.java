@@ -1,15 +1,21 @@
 package org.projectxy.iv4xrLib;
 
-import A.B.Item;
-import A.B.ItemTile;
-import A.B.Mob;
-import A.B.Monster;
-import A.B.Screen;
-import A.B.Tile;
-import A.B.Weapon;
+import A.B.*;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.iv4xr.framework.mainConcepts.WorldModel;
 import eu.iv4xr.framework.spatial.Vec3;
+
+import java.awt.event.KeyEvent;
+
+
+import java.awt.Robot;
+import java.awt.AWTException;
+import java.io.IOException;
+import javax.swing.JPanel;
+import java.awt.event.KeyListener;
+
+
+
 
 public class NethackMoves {
 
@@ -22,14 +28,12 @@ public class NethackMoves {
      */
 
 
-
     /**
      * Basic moves for walking on the map while playing.
      * Need to implement more moves for gameplay.
      *
      * Additional moves are needed for the inventory screen and main menu.
      */
-
 
 
     /**
@@ -60,15 +64,31 @@ public class NethackMoves {
             e.position = new Vec3(monster.getX(), monster.getY(), 0) ;
             e.properties.put("health",monster.health) ;
             e.properties.put("attackDmg",monster.attackDmg) ;
+            e.properties.put("alive", monster.alive);               // ??
+            e.properties.put("seenPlayer", monster.seenPlayer);     // ??
+            e.properties.put("waitTurn", monster.waitTurn);         // ??
             wom.elements.put(e.id, e) ; 
         }
+
         for(ItemTile item : nethack.items) {
-          // do something similar
-        }        
+
+            WorldEntity itm = new WorldEntity(item.ID, item.image, true) ;
+            itm.position = new Vec3(item.getX(), item.getY(), 0) ;
+            // itm.properties.put("itemType", item.item);
+
+            wom.elements.put(itm.id, itm) ;
+
+            // do something similar
+
+
+        }
+
         WorldEntity inv = new WorldEntity("Inventory", "Inventory", true) ;
         for(Item item : nethack.ps.inventory) {
             WorldEntity item_ = convertItem(item) ;
             // add properties ...
+
+            inv.properties.put("amount", item.amount) ;  // ????
             inv.elements.put(item_.id,item_) ;
         }
         wom.elements.put(inv.id,inv) ;
@@ -78,41 +98,85 @@ public class NethackMoves {
     
     WorldEntity convertItem(Item item) {
         WorldEntity item_ = new WorldEntity(item.ID, item.getClass().getSimpleName(),true) ;
+
         if (item instanceof Weapon) {
             Weapon w = (Weapon) item ;
+            item_.properties.put("weaponName", w.name);
+            item_.properties.put("attackDmg", w.attackDmg);         // w.attackDmg or w.getAttack ???
+            item_.properties.put("amount", w.amount);
+
             // add weapon properties...
+        }
+
+        if (item instanceof Gold) {
+            Gold g = (Gold) item ;
+            item_.properties.put("amount", g.amount);
+
+            // add properties...
+        }
+
+        if (item instanceof HealthPotion) {
+            HealthPotion hp = (HealthPotion) item;
+            item_.properties.put("restoreAmount", hp.restoreAmt);
+            item_.properties.put("amount", hp.amount);
+
+            // add properties...
+        }
+
+        if (item instanceof Water) {
+            Water water = (Water) item;
+            item_.properties.put("restoreAmount", water.restoreAmt);
+            item_.properties.put("amount", water.amount);
+
+            // add properties...
+        }
+
+        if (item instanceof Food) {
+            Food f = (Food) item ;
+            item_.properties.put("restoreAmount", f.restoreAmt);
+            item_.properties.put("amount", f.amount);
+
+            // add properties...
         }
         
         return item_ ;
     }
     
-    
+
+///////////////////////////////////////////////////////////////////
+
+/** */
+
 
     // Up
-    public WorldModel up() {
-        if(ps.getAlive() && !inventoryScreen && !aimingBow && playerTurn)
-        {
-            if(tiles[x][y-1] instanceof FloorTile || tiles[x][y-1] instanceof ItemTile){
-                tiles[x][y] = new FloorTile(x, y);
-                p1.moveUp();
-            } else if(tiles[x][y-1] instanceof Monster) {
-                attackMonster(x, y - 1);
-            }
+    public void up() throws IOException,
+            AWTException, InterruptedException {
 
-            playerTurn = !playerTurn;
+        KeyEvent e = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.VK_LEFT);
 
-            if(tiles[x][y-1] instanceof Wall) {
-                playerTurn = true;
-            }
+        //KeyEvent e;
+        // e = new KeyEvent(a, 1, 20, 1, 10, 'a');
 
-           // break;
+        //Robot robot = new Robot();
+        //int key = e.getKeyCode();
+
+        //KeyEvent k = KeyEvent.getExtendedKeyCodeForChar(key);
+        //robot.keyPress(KeyEvent.VK_LEFT);
+
+       // public void keyPressed(robot.keyPress(KeyEvent.VK_LEFT)) {
+
+
         }
-        return getNetHackState() ;
+
+
+       //nethack.keyPressed( (KeyEvent) key);//return move;
     }
 
 
+ /*
+
     // Down
-    public void down() {
+    public WorldModel down() {
         if(ps.getAlive() && !inventoryScreen && !aimingBow && playerTurn)
         {
             if(tiles[x][y+1] instanceof FloorTile || tiles[x][y+1] instanceof ItemTile){
@@ -178,4 +242,6 @@ public class NethackMoves {
         }
     }
 
-}
+     */
+
+// }
