@@ -1,6 +1,7 @@
 package org.projectxy.iv4xrLib;
 
 import eu.iv4xr.framework.exception.Iv4xrError;
+import eu.iv4xr.framework.extensions.pathfinding.SimpleNavGraph;
 import eu.iv4xr.framework.mainConcepts.W3DEnvironment;
 import eu.iv4xr.framework.mainConcepts.WorldModel;
 import eu.iv4xr.framework.spatial.Vec3;
@@ -37,6 +38,11 @@ import A.B.*;
 
 public class MyEnv extends W3DEnvironment {
 
+    /**
+     * The navigation graph of the current level.
+     */
+    public SimpleNavGraph navgraph ;
+    
 	NethackWrapper nethackUnderTest ;
 	
 	public MyEnv(NethackWrapper nhwrapper) {
@@ -114,11 +120,13 @@ public class MyEnv extends W3DEnvironment {
 
 			case "StartNewGame":
 				nethackUnderTest.startNewGame();
-				break;
+				navgraph = nethackUnderTest.getNavigationGraph() ;
+				return null ;
 
 			case "RestartGame":
 				nethackUnderTest.restartGame();
-				break;
+                navgraph = nethackUnderTest.getNavigationGraph() ;
+				return null ;
 		}
 
 		// at this point the variable RawSUTstate should contain a representation of the SUT-state, 
@@ -212,11 +220,17 @@ public class MyEnv extends W3DEnvironment {
 	 * corresponding logic in sendCommand_().
 	 */
 	public void loadWorld() {
-		worldNavigableMesh = (Mesh) sendCommand(null,null,"LoadWorld",null,Mesh.class) ;
-		if (worldNavigableMesh==null) 
-			throw new Iv4xrError("Fail to load the navgation-mesh of the world") ;
+	    throw new UnsupportedOperationException() ;
 	}
+	
+	
+   public void startNewGame() {
+        sendCommand(null,null,"StartNewGame",null,Mesh.class) ;
+    }
 
+   public void restartGame() {
+       sendCommand(null,null,"RestartGame",null,Mesh.class) ;
+   }
 
 
 }

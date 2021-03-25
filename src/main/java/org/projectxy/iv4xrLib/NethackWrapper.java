@@ -5,6 +5,8 @@ import alice.tuprolog.Int;
 import eu.iv4xr.framework.extensions.pathfinding.SimpleNavGraph;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.iv4xr.framework.mainConcepts.WorldModel;
+import eu.iv4xr.framework.spatial.LineIntersectable;
+import eu.iv4xr.framework.spatial.Obstacle;
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.iv4xr.framework.spatial.meshes.Edge;
 
@@ -61,37 +63,38 @@ public class NethackWrapper {
     
     SimpleNavGraph getNavigationGraph() {
         SimpleNavGraph navgraph = new SimpleNavGraph() ;
-        List<Tile> walkableTiles = new LinkedList<>() ;
-        for (int x=0; x< nethack.tiles.length; x++) {
-            Tile[] column = nethack.tiles[x] ;
-            for (int y=0; y<column.length; y++) {
-                Tile tile = column[y] ;
+        
+        // find tiles which are walkable, and add them to the navgraph:
+        Map<Integer,Tile> walkableTiles = new HashMap<>() ;
+        int index = 0 ;
+        for(Tile[] column : nethack.tiles) {
+            for (Tile tile : column) {
                 if (! (tile instanceof Wall)) {
-                    walkableTiles.add(tile) ;
+                    Vec3 position = new Vec3(tile.x,tile.y,0f) ;
+                    navgraph.vertices.add(position) ;
+                    walkableTiles.put(index,tile) ;
+                    index++ ;
                 }
             }
-        }
-        
-        Map<Integer,Tile> map = new HashMap<>() ;
-        int k = 0 ;
-        for (Tile tile : walkableTiles) {
-            Vec3 position = new Vec3(tile.x,tile.y,0f) ;
-            navgraph.vertices.add(position) ;
-            map.put(k,tile) ;
-            k++ ;
         }
         
         int numOfNodes = walkableTiles.size() ;
         for(int v = 0 ; v<numOfNodes; v++) {
             for (int z = 0 ; z<numOfNodes; z++) {
                 // consider node v and node z
-                Tile vTile = map.get(v) ;
-                Tile zTile = map.get(z) ;
-                if(Math.abs(zTile.y - vTile.y) == 1  && vTile.x == zTile.x) {
+                Tile vTile = walkableTiles.get(v) ;
+                Tile zTile = walkableTiles.get(z) ;
+                if(Math.abs(zTile.y - vTile.y) == 1  && vTile.x == zTile.x) {  // complete this for N/S neighbours
+                    
                     Edge edge = new Edge(v,z) ;
                     navgraph.edges.put(edge);
                 }   
             }
+        }
+        
+        for(Monster m : nethack.mobs ) {
+            Obstacle<LineIntersectable> monster_ = new Obstacle(m) ;
+            navgraph.obstacles.add(monster_) ;
         }
         
         return navgraph ;
