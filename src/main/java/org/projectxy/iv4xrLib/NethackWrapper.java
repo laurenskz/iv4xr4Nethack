@@ -2,9 +2,11 @@ package org.projectxy.iv4xrLib;
 
 import A.B.*;
 import alice.tuprolog.Int;
+import eu.iv4xr.framework.extensions.pathfinding.SimpleNavGraph;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.iv4xr.framework.mainConcepts.WorldModel;
 import eu.iv4xr.framework.spatial.Vec3;
+import eu.iv4xr.framework.spatial.meshes.Edge;
 
 import java.awt.event.KeyEvent;
 
@@ -12,8 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.Robot;
 import java.awt.AWTException;
 import java.io.IOException;
-import java.util.Scanner;
-
+import java.util.*;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.event.KeyListener;
@@ -58,6 +59,46 @@ public class NethackWrapper {
      */
 
     
+    SimpleNavGraph getNavigationGraph() {
+        SimpleNavGraph navgraph = new SimpleNavGraph() ;
+        List<Tile> walkableTiles = new LinkedList<>() ;
+        for (int x=0; x< nethack.tiles.length; x++) {
+            Tile[] column = nethack.tiles[x] ;
+            for (int y=0; y<column.length; y++) {
+                Tile tile = column[y] ;
+                if (! (tile instanceof Wall)) {
+                    walkableTiles.add(tile) ;
+                }
+            }
+        }
+        
+        Map<Integer,Tile> map = new HashMap<>() ;
+        int k = 0 ;
+        for (Tile tile : walkableTiles) {
+            Vec3 position = new Vec3(tile.x,tile.y,0f) ;
+            navgraph.vertices.add(position) ;
+            map.put(k,tile) ;
+            k++ ;
+        }
+        
+        int numOfNodes = walkableTiles.size() ;
+        for(int v = 0 ; v<numOfNodes; v++) {
+            for (int z = 0 ; z<numOfNodes; z++) {
+                // consider node v and node z
+                Tile vTile = map.get(v) ;
+                Tile zTile = map.get(z) ;
+                if(Math.abs(zTile.y - vTile.y) == 1  && vTile.x == zTile.x) {
+                    Edge edge = new Edge(v,z) ;
+                    navgraph.edges.put(edge);
+                }   
+            }
+        }
+        
+        return navgraph ;
+        
+    }
+    
+    
     WorldModel getNetHackState() {
         
         WorldModel wom = new WorldModel() ;
@@ -87,7 +128,8 @@ public class NethackWrapper {
 
         }
 
-        WorldEntity stairs = new WorldEntity("stairs", "StairTile", false );
+        Tile stairTile = nethack.tiles[nethack.stairX][nethack.stairY] ;
+        WorldEntity stairs = new WorldEntity(stairTile.ID, "stair", false );
         stairs.position = new Vec3(nethack.stairX, nethack.stairY, 0);
         wom.elements.put(stairs.id, stairs);
 
@@ -207,9 +249,14 @@ public class NethackWrapper {
     }
 
 
-    public enum Interact { OpenInv, SelectItemFromInv, AimWithBow, PickupItem, NavigateInv }
+    public enum Interact { OpenInv, SelectItemFromInv, AimWithBow, PickupItem, NavigateInvUp, NavigateInvDown }
 
-    public WorldModel action (Interact act) {
+    public WorldModel useItem(int indexItemInInventory) {
+        nethack.useItemFromInventory(indexItemInInventory);
+        return observe() ;
+    }
+    
+    public WorldModel action(Interact act) {
 
         int key ;
         switch(act) {
@@ -218,8 +265,7 @@ public class NethackWrapper {
             case SelectItemFromInv : if(nethack.inventoryScreen) {
 
                 key = KeyEvent.VK_ENTER ;
-                nethack.useItemFromInventory();
-
+                // nethack.useItemFromInventory();
                 break ;
             }
 
@@ -230,8 +276,8 @@ public class NethackWrapper {
                 break ;
             }
 
-            case NavigateInv: if(nethack.inventoryScreen) {
-                key = KeyEvent.VK_W ;
+            case NavigateInvDown: if(nethack.inventoryScreen) {
+                key = KeyEvent.VK_DOWN ;
                 break ;
             }
 
@@ -302,18 +348,28 @@ public class NethackWrapper {
 
         driver.action(Interact.AimWithBow);
         Thread.sleep(500);
-
+        
+        
         driver.action(Interact.OpenInv);
         Thread.sleep(500);
 
-        driver.move(Movement.DOWN);
+        driver.action(Interact.NavigateInvDown) ;
         Thread.sleep(500);
 
-        driver.move(Movement.DOWN);
+        driver.action(Interact.NavigateInvDown) ;
         Thread.sleep(500);
 
-        driver.action(Interact.SelectItemFromInv);
+        //driver.action(Interact.SelectItemFromInv);
+        //Thread.sleep(500);
+        
+        driver.action(Interact.OpenInv);
         Thread.sleep(500);
+        
+        driver.useItem(1);
+        Thread.sleep(500);
+        
+        
+
 
 
 
@@ -321,13 +377,13 @@ public class NethackWrapper {
 
 
         WorldModel wom = driver.observe() ;
-
-
-
-
-
         System.out.println("Player-position: " + wom.position) ;
-
+        
+        Tile stairTile = driver.nethack.tiles[driver.nethack.stairX][driver.nethack.stairY] ;
+        
+        WorldEntity stair = wom.elements.get(stairTile.ID) ;
+        System.out.println("Stair-position: " + stair.position) ;
+        
 
 
         //System.out.println("type anything... ") ;
