@@ -61,6 +61,10 @@ public class NethackWrapper {
      */
 
     
+    /**
+     * Calculate the set of navigable tiles of the current level, then construct the
+     * corresponding Navigation-graph from it.
+     */
     SimpleNavGraph getNavigationGraph() {
         SimpleNavGraph navgraph = new SimpleNavGraph() ;
         
@@ -92,8 +96,13 @@ public class NethackWrapper {
             }
         }
         
+        // adding monsters as obstacles
         for(Monster m : nethack.mobs ) {
+            // for each monster, we create a line-intersectable wrapper for it,
+            // and then we wrap it once more as an obstacle, and add it to the
+            // nav-graph:
             Obstacle<LineIntersectable> monster_ = new Obstacle(m) ;
+            monster_.isBlocking = true ;
             navgraph.obstacles.add(monster_) ;
         }
         
@@ -102,6 +111,9 @@ public class NethackWrapper {
     }
     
     
+    /**
+     * Construct the World-model representation of the current Nethack's game-state.
+     */
     WorldModel getNetHackState() {
         
         WorldModel wom = new WorldModel() ;
@@ -109,6 +121,7 @@ public class NethackWrapper {
         wom.position = new Vec3(nethack.p1.getX(), nethack.p1.getY(), 0) ;
         wom.timestamp = nethack.moves ;
 
+        // monsters:
         for(Monster monster : nethack.mobs) {
             WorldEntity e = new WorldEntity(monster.ID, monster.image, true ) ;
             e.position = new Vec3(monster.getX(), monster.getY(), 0) ;
@@ -119,32 +132,30 @@ public class NethackWrapper {
             e.properties.put("waitTurn", monster.waitTurn);         // ??   ..
             wom.elements.put(e.id, e) ; 
         }
-
-        for(ItemTile item : nethack.items) {
-
-            WorldEntity itm = new WorldEntity(item.ID, item.image, true) ;
-            itm.position = new Vec3(item.getX(), item.getY(), 0) ;
-            // itm.properties.put("itemType", item.item);
-
+        
+        // items that are still on the floor:
+        for(ItemTile itemTile : nethack.items) {
+            WorldEntity itm = convertItem(itemTile.item) ;
+            itm.position = new Vec3(itemTile.getX(), itemTile.getY(), 0) ;
             wom.elements.put(itm.id, itm) ;
-
-
         }
-
+        
+        // stair:
         Tile stairTile = nethack.tiles[nethack.stairX][nethack.stairY] ;
         WorldEntity stairs = new WorldEntity(stairTile.ID, "stair", false );
         stairs.position = new Vec3(nethack.stairX, nethack.stairY, 0);
         wom.elements.put(stairs.id, stairs);
 
-        System.out.println("stairs position: " + stairs.position);
+        // System.out.println("stairs position: " + stairs.position);
 
-
-
+        // items in the inventory:
         WorldEntity inv = new WorldEntity("Inventory", "Inventory", true) ;
         for(Item item : nethack.ps.inventory) {
             WorldEntity item_ = convertItem(item) ;
 
-            inv.properties.put("amount", item.amount) ;  // ????
+            // WP: not needed. In fact, wrong. item.amount is already being tracked
+            // by convertItem above
+            //inv.properties.put("amount", item.amount) ;  // ????
             inv.elements.put(item_.id,item_) ;
         }
         wom.elements.put(inv.id,inv) ;
@@ -152,6 +163,9 @@ public class NethackWrapper {
     }
     
     
+    /**
+     * Construct the WorldEntity-representation of an item.
+     */
     WorldEntity convertItem(Item item) {
         WorldEntity item_ = new WorldEntity(item.ID, item.getClass().getSimpleName(),true) ;
 
@@ -251,14 +265,30 @@ public class NethackWrapper {
       return observe() ;
     }
 
-
-    public enum Interact { OpenInv, SelectItemFromInv, AimWithBow, PickupItem, NavigateInvUp, NavigateInvDown }
-
+    /**
+     * Use an item in the player's inventory.
+     */
     public WorldModel useItem(int indexItemInInventory) {
         nethack.useItemFromInventory(indexItemInInventory);
-        return observe() ;
+        return observe();
     }
     
+    
+    public WorldModel useItem(String itemId) {
+        int N = nethack.ps.inventory.size() ;
+        for(int index=0; index<N; index++) {
+            Item item = nethack.ps.inventory.get(index) ;
+            if (item.ID.equals(itemId)) {
+                return useItem(index) ;
+            }
+        }
+        throw new IllegalArgumentException("Item " + itemId + " is not in the inventory.") ;
+    }
+    
+    
+    public enum Interact { OpenInv, SelectItemFromInv, AimWithBow, PickupItem, NavigateInvUp, NavigateInvDown }
+
+   
     public WorldModel action(Interact act) {
 
         int key ;
@@ -370,14 +400,6 @@ public class NethackWrapper {
         
         driver.useItem(1);
         Thread.sleep(500);
-        
-        
-
-
-
-
-
-
 
         WorldModel wom = driver.observe() ;
         System.out.println("Player-position: " + wom.position) ;
@@ -386,6 +408,9 @@ public class NethackWrapper {
         
         WorldEntity stair = wom.elements.get(stairTile.ID) ;
         System.out.println("Stair-position: " + stair.position) ;
+        
+        // now we can also close the Nethack-window:
+        driver.nethack.stopAtNextUpdate();
         
 
 
