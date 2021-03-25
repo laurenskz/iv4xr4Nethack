@@ -96,17 +96,31 @@ public class MyEnv extends W3DEnvironment {
 		WorldModel SUTstate = null ;
 		
 		switch(cmd.command) {
-		case "Observe"   : 
-		    SUTstate = nethackUnderTest.observe() ; break ;
-		case "Move"      : 
-		    SUTstate = nethackUnderTest.move((NethackWrapper.Movement) cmd.arg) ;
-		    /* send this command to the SUT, wait for its response and repackage it */ ; 
-		    break ; 
-		case "Interact"  : /* send this command to the SUT, wait for its response and repackage it */ ; break ;
-		case "StartNewgame" : 
-		    nethackUnderTest.startNewGame();
-		    break ;	
+			case "Observe":
+				SUTstate = nethackUnderTest.observe();
+				break;
+
+			case "Move":
+				SUTstate = nethackUnderTest.move((NethackWrapper.Movement) cmd.arg);
+				/* send this command to the SUT, wait for its response and repackage it */
+				;
+				break;
+
+			case "Interact":
+				SUTstate = nethackUnderTest.action((NethackWrapper.Interact) cmd.arg);
+				/* send this command to the SUT, wait for its response and repackage it */
+				;
+				break;
+
+			case "StartNewGame":
+				nethackUnderTest.startNewGame();
+				break;
+
+			case "RestartGame":
+				nethackUnderTest.restartGame();
+				break;
 		}
+
 		// at this point the variable RawSUTstate should contain a representation of the SUT-state, 
 		// as sent back by the SUT through the above command.
 		// Next, we need to either cast it, or somehow post-process it to an instance of WorldModel:

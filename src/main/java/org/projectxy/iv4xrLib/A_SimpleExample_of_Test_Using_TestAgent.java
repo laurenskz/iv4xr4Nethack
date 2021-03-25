@@ -24,7 +24,11 @@ public class A_SimpleExample_of_Test_Using_TestAgent {
 
 		// Create an instance of interface to the SUT. You also need to somehow deploy the
 		// SUT, since this interface will now need to be able to talk to it:
-		MyEnv theEnv = new MyEnv();
+
+		///////////////////////////////////////////////////////////////////
+		// MyEnv theEnv = new MyEnv();									//
+		// ///////////////////////////////////////////////////////////////
+
 
 		// create a data collector where we will be logging test verdicts:
 		var dataCollector = new TestDataCollector();
@@ -37,7 +41,7 @@ public class A_SimpleExample_of_Test_Using_TestAgent {
 		var testAgent = new TestAgent("agent0","some role name, else nothing")
 
 				. attachState(myAgentState)
-				. attachEnvironment(theEnv)
+		//		. attachEnvironment(theEnv)
 				. setTestDataCollector(dataCollector);
 
 		// let's define a simple testing task:
