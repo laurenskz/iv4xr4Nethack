@@ -12,14 +12,11 @@ import eu.iv4xr.framework.spatial.meshes.Edge;
 
 import java.awt.event.KeyEvent;
 
-
-import java.awt.Robot;
 import java.awt.AWTException;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
-import java.awt.event.KeyListener;
+
 
 
 
@@ -30,41 +27,6 @@ public class NethackWrapper {
     Screen nethack ;
     
 
-    /**
-     * Environment needs to set up first, via mapSetup() method.
-     * Moves for the enemies also need to be implemented (?)
-     */
-
-
-    /**
-     * Basic moves for walking on the map while playing.
-     * Need to implement more moves for gameplay.
-     *
-     * Additional moves are needed for the inventory screen and main menu.
-     */
-
-
-    /**
-     * - In order for the player (avatar) to move:
-     *      Player has to be alive
-     *      Should be player's turn to move
-     *      Inventory screen has to be disabled
-     *      Player should NOT be aiming with the bow
-     *
-     *      These conditions should be checked before calling the methods --> need to change/move if statements probably
-     *
-     *
-     * - Player can walk on Floor Tiles and Item Tiles, CANNOT walk on Wall Tiles
-     *
-     * - If there is a monster on the tile the player is moving towards, player attacks the monster instead of moving
-     *
-     */
-
-    
-    /**
-     * Calculate the set of navigable tiles of the current level, then construct the
-     * corresponding Navigation-graph from it.
-     */
     SimpleNavGraph getNavigationGraph() {
         SimpleNavGraph navgraph = new SimpleNavGraph() ;
         
@@ -92,7 +54,13 @@ public class NethackWrapper {
                     
                     Edge edge = new Edge(v,z) ;
                     navgraph.edges.put(edge);
-                }   
+                }
+
+                if(Math.abs(zTile.x - vTile.x) == 1  && vTile.y == zTile.y) {
+                    Edge edge = new Edge(v,z) ;
+                    navgraph.edges.put(edge);
+                }
+
             }
         }
         
@@ -120,6 +88,8 @@ public class NethackWrapper {
         wom.agentId = "player" ;
         wom.position = new Vec3(nethack.p1.getX(), nethack.p1.getY(), 0) ;
         wom.timestamp = nethack.moves ;
+
+        //System.out.println("Player pos: " + wom.position);
 
         // monsters:
         for(Monster monster : nethack.mobs) {
@@ -210,7 +180,6 @@ public class NethackWrapper {
 
 ///////////////////////////////////////////////////////////////////
 
-/** */
 
     public WorldModel observe() {
         return getNetHackState() ;
@@ -265,6 +234,7 @@ public class NethackWrapper {
       return observe() ;
     }
 
+
     /**
      * Use an item in the player's inventory.
      */
@@ -272,7 +242,7 @@ public class NethackWrapper {
         nethack.useItemFromInventory(indexItemInInventory);
         return observe();
     }
-    
+
     
     public WorldModel useItem(String itemId) {
         int N = nethack.ps.inventory.size() ;
@@ -311,6 +281,11 @@ public class NethackWrapper {
 
             case NavigateInvDown: if(nethack.inventoryScreen) {
                 key = KeyEvent.VK_DOWN ;
+                break ;
+            }
+
+            case NavigateInvUp: if(nethack.inventoryScreen) {
+                key = KeyEvent.VK_UP ;
                 break ;
             }
 
@@ -394,15 +369,18 @@ public class NethackWrapper {
 
         //driver.action(Interact.SelectItemFromInv);
         //Thread.sleep(500);
-        
+
         driver.action(Interact.OpenInv);
         Thread.sleep(500);
-        
+
+        System.out.println(driver.nethack.ps.inventory);
         driver.useItem(1);
         Thread.sleep(500);
 
         WorldModel wom = driver.observe() ;
         System.out.println("Player-position: " + wom.position) ;
+
+        
         
         Tile stairTile = driver.nethack.tiles[driver.nethack.stairX][driver.nethack.stairY] ;
         
