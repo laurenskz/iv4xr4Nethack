@@ -1,20 +1,20 @@
 package org.projectxy.iv4xrLib;
 
-import static eu.iv4xr.framework.Iv4xrEDSL.testgoal;
-import static nl.uu.cs.aplib.AplibEDSL.ABORT;
-import static nl.uu.cs.aplib.AplibEDSL.FIRSTof;
-import static nl.uu.cs.aplib.AplibEDSL.SEQ;
-import static nl.uu.cs.aplib.AplibEDSL.goal;
+import static eu.iv4xr.framework.Iv4xrEDSL.*;
+import static nl.uu.cs.aplib.AplibEDSL.*;
 
 import java.util.function.Predicate;
 
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.iv4xr.framework.mainConcepts.W3DAgentState;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
+import eu.iv4xr.framework.mainConcepts.WorldModel;
 import eu.iv4xr.framework.mainConcepts.ObservationEvent.VerdictEvent;
 import eu.iv4xr.framework.spatial.Vec3;
+import nl.uu.cs.aplib.mainConcepts.Action;
 import nl.uu.cs.aplib.mainConcepts.Goal;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
+import nl.uu.cs.aplib.mainConcepts.Tactic;
 
 
 /**
@@ -99,6 +99,44 @@ public class GoalLib {
 	}
 
 
+	// the first food that you can find in the inv
+	public static GoalStructure useFoodFromInventory() {
+	    
+	    Goal g1 = goal("use food") ;
+	    
+	    g1.toSolve((MyAgentState S) -> {
+	        WorldModel old = S.previousWom ;
+	        WorldModel current = S.wom ;
+	        String agentId = S.wom.agentId ;
+	        WorldEntity agentOldState = old.elements.get(agentId) ;
+	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+	        int oldHealth = agentOldState.getIntProperty("health") ;
+	        int currentHealth = agentCurrentState.getIntProperty("health") ;
+	        return currentHealth > oldHealth ;
+	    }) ;
+	    
+	    Action useFood = action("use food") ;
+	    useFood.do1((MyAgentState S) -> { 
+	        MyEnv env_ = (MyEnv) S.env() ;
+	        // figure out how to use food ... preferably through env_, and use it
+	        if(foodFoundAndEaten) {
+	            S.updateState() ;
+	            return S ;
+	        }
+	        else {
+	            return null ;
+	        }
+	    }) ;
+	    
+	    Tactic useFoodTactic = useFood.lift() ;
+	    
+	    g1.withTactic(FIRSTof(useFoodTactic, ABORT())) ;
+	    
+	    GoalStructure g1_ = g1.lift() ;
+	    
+	    return g1_ ;
+	}
+	
 
 	/**
 	 * Construct a goal structure that will make an agent to move towards the given entity,

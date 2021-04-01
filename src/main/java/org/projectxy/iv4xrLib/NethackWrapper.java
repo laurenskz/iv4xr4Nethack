@@ -69,7 +69,7 @@ public class NethackWrapper {
             // for each monster, we create a line-intersectable wrapper for it,
             // and then we wrap it once more as an obstacle, and add it to the
             // nav-graph:
-            Obstacle<LineIntersectable> monster_ = new Obstacle(m) ;
+            Obstacle<LineIntersectable> monster_ = new Obstacle(new MonsterWrapper(m)) ;
             monster_.isBlocking = true ;
             navgraph.obstacles.add(monster_) ;
         }
@@ -387,15 +387,13 @@ public class NethackWrapper {
         WorldEntity stair = wom.elements.get(stairTile.ID) ;
         System.out.println("Stair-position: " + stair.position) ;
         
+        System.out.println("type anything... ") ;
+        Scanner in = new Scanner(System.in);
+        in.nextLine() ;
+
         // now we can also close the Nethack-window:
         driver.nethack.stopAtNextUpdate();
-        
 
-
-        //System.out.println("type anything... ") ;
-        //in = new Scanner(System.in);
-        //in.nextLine() ;
-        
     }
     
     
