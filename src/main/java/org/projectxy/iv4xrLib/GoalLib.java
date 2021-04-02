@@ -98,7 +98,8 @@ public class GoalLib {
 		return goal. lift();
 	}
 
-
+/**
+ 
 	// the first food that you can find in the inv
 	public static GoalStructure useFoodFromInventory() {
 	    
@@ -138,6 +139,8 @@ public class GoalLib {
 	}
 	
 
+ 
+ */
 	/**
 	 * Construct a goal structure that will make an agent to move towards the given entity,
 	 * until it is in the interaction-distance with the entity; and then interacts with it.
