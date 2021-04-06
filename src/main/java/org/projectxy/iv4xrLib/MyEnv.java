@@ -113,7 +113,8 @@ public class MyEnv extends W3DEnvironment {
 				break;
 
 			case "Interact":
-				SUTstate = nethackUnderTest.action((NethackWrapper.Interact) cmd.arg);
+				
+				SUTstate = nethackUnderTest.action((NethackWrapper.Interact) cmd.arg, cmd.targetId);
 				/* send this command to the SUT, wait for its response and repackage it */
 				;
 				break;
@@ -175,8 +176,8 @@ public class MyEnv extends W3DEnvironment {
 	 * In principle you don't need to redefine this method as long as you define the
 	 * corresponding logic in sendCommand_().
 	 */
-	public WorldModel interact(String agentId, String targetId) {
-		return (WorldModel) sendCommand(agentId, targetId, "Interact", null, WorldModel.class);
+	public WorldModel interact(String agentId, String targetId, NethackWrapper.Interact typeOfInteract ) {
+		return (WorldModel) sendCommand(agentId, targetId, "Interact", typeOfInteract, WorldModel.class);
 	}
 
 

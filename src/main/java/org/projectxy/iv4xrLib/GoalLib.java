@@ -5,6 +5,10 @@ import static nl.uu.cs.aplib.AplibEDSL.*;
 
 import java.util.function.Predicate;
 
+import A.B.Food;
+import A.B.HealthPotion;
+import A.B.Item;
+import A.B.Screen;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.iv4xr.framework.mainConcepts.W3DAgentState;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
@@ -15,6 +19,10 @@ import nl.uu.cs.aplib.mainConcepts.Action;
 import nl.uu.cs.aplib.mainConcepts.Goal;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import nl.uu.cs.aplib.mainConcepts.Tactic;
+import nl.uu.cs.aplib.mainConcepts.Environment.EnvOperation;
+
+//import A.B.*;
+
 
 
 /**
@@ -55,6 +63,7 @@ import nl.uu.cs.aplib.mainConcepts.Tactic;
  */
 
 public class GoalLib {
+	Screen nethack; 
 
 	/**
 	 * This method will construct a goal (more precisely: a goal structure) that will drive
@@ -98,10 +107,21 @@ public class GoalLib {
 		return goal. lift();
 	}
 
-/**
+
  
 	// the first food that you can find in the inv
 	public static GoalStructure useFoodFromInventory() {
+  		//System.out.println("AND HERE!");
+
+		
+		
+		
+		boolean foodFoundAndEaten = false;
+		
+		
+		
+		
+      
 	    
 	    Goal g1 = goal("use food") ;
 	    
@@ -117,9 +137,39 @@ public class GoalLib {
 	    }) ;
 	    
 	    Action useFood = action("use food") ;
+	    
+	    // figure out how to use food ... preferably through env_, and use it
+	    
+  		System.out.println("HERE in useFoodFromInventory!");
+
 	    useFood.do1((MyAgentState S) -> { 
 	        MyEnv env_ = (MyEnv) S.env() ;
-	        // figure out how to use food ... preferably through env_, and use it
+	        
+      		System.out.println("2. AND HERE!");
+
+	        GoalLib driver = new GoalLib();
+	        driver.nethack = new Screen() ;
+
+	
+	        
+	        
+	        for(Item item : driver.nethack.ps.inventory) {
+          		//System.out.println("AND HERE!");
+
+	          	if(item instanceof Food) {
+	          		//System.out.println("AND HERE!");
+	          		String foodId = item.ID;
+	          		env_.interact(S.wom.agentId, foodId, "SelectItemFromInv");
+	          		//foodFoundAndEaten = true;
+	          		// move the part of if(foodFoundAndEaten)... in this if statement, no boolean needed
+	          	}
+	         }
+	        
+	        
+	        //EnvOperation temp1 = new EnvOperation ( S.wom.agentId, null, "Interact", null, null);
+	        
+	        //env_.interact(S.wom.agentId, foodId, "SelectItemFromInv");
+	        
 	        if(foodFoundAndEaten) {
 	            S.updateState() ;
 	            return S ;
@@ -140,7 +190,7 @@ public class GoalLib {
 	
 
  
- */
+ 
 	/**
 	 * Construct a goal structure that will make an agent to move towards the given entity,
 	 * until it is in the interaction-distance with the entity; and then interacts with it.
