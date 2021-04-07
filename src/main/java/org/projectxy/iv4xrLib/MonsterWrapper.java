@@ -18,8 +18,9 @@ public class MonsterWrapper implements  LineIntersectable {
     
     public MonsterWrapper(Monster m) {
         monster = m ;
-        box.center = new Vec3(0,0,0) ;
-        box.width = new Vec3(1,1,1) ;
+        Vec3 center = new Vec3(0,0,0) ;
+        Vec3 width = new Vec3(1,1,1) ;
+        box = new Box(center,width) ;
     }
     
     public Vec3 getAvoidanceBox() {
