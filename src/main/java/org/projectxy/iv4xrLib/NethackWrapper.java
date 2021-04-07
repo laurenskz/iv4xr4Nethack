@@ -10,6 +10,7 @@ import eu.iv4xr.framework.spatial.Obstacle;
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.iv4xr.framework.spatial.meshes.Edge;
 
+
 import java.awt.event.KeyEvent;
 
 import java.awt.AWTException;
@@ -259,23 +260,54 @@ public class NethackWrapper {
     public enum Interact { OpenInv, SelectItemFromInv, AimWithBow, PickupItem, NavigateInvUp, NavigateInvDown }
 
    
-    public WorldModel action(Interact act) {
+    public WorldModel action(Interact act, String itemId) {
 
-        int key ;
+        int key = -1;
+        
         switch(act) {
             case OpenInv : key = KeyEvent.VK_I ; break ;
 
-            case SelectItemFromInv : if(nethack.inventoryScreen) {
+            case SelectItemFromInv :
 
-                key = KeyEvent.VK_ENTER ;
+            	//String foodId = item.ID;
+                useItem(itemId);
+                System.out.println("Item Id: "+ itemId);
+                System.out.println("int key: " + key);
+
+                break;
+                 		
+                 	
+                 
+            	 
+//            	 for(Item item : nethack.ps.inventory) {
+//                  	if(item instanceof HealthPotion) {
+//                  		
+//                  		String HPid = item.ID;
+//                  		useItem(HPid);
+//                  		System.out.println("HP Id: "+ HPid);
+//                  		//System.out.println("ssssssssssssssss");
+//                  		System.out.println("int key: " + key);
+//                  		
+//
+//                  		break;
+//                  		
+//                  	}
+//                  }
+//            	 
+            	
+            	
+            	
+
+                //key = KeyEvent.VK_ENTER ;
                 // nethack.useItemFromInventory();
-                break ;
-            }
+                //break ;
+            
 
             case AimWithBow : key = KeyEvent.VK_SHIFT ; break ;
 
             case PickupItem : if(!nethack.inventoryScreen) {
                 key = KeyEvent.VK_ENTER ;
+          
                 break ;
             }
 
@@ -286,19 +318,27 @@ public class NethackWrapper {
 
             case NavigateInvUp: if(nethack.inventoryScreen) {
                 key = KeyEvent.VK_UP ;
+                
+         		//System.out.println("Up!!");
+
                 break ;
             }
 
             default : throw new IllegalArgumentException() ;
         }
 
+        
+        
+        	
         KeyEvent e = new KeyEvent(nethackWindow, KeyEvent.KEY_PRESSED, 1, 0, key, KeyEvent.CHAR_UNDEFINED);
-
         nethack.keyPressed(e);
+       
+        
         return observe() ;
     }
 
 
+    
     public static void main(String[] args) throws IOException, AWTException, InterruptedException {
         
         NethackWrapper driver = new NethackWrapper() ;
@@ -350,32 +390,50 @@ public class NethackWrapper {
 
         driver.move(Movement.RIGHT) ;
         Thread.sleep(500);
+        
+        GoalLib.useFoodFromInventory();
+        Thread.sleep(500);
+        System.out.println("HERE after useFoodFromInventory!");
 
-        driver.action(Interact.PickupItem);
+        driver.action(Interact.PickupItem, "");
         Thread.sleep(500);
 
-        driver.action(Interact.AimWithBow);
+        driver.action(Interact.AimWithBow, "");
         Thread.sleep(500);
         
         
-        driver.action(Interact.OpenInv);
+        driver.action(Interact.OpenInv, "");
         Thread.sleep(500);
 
-        driver.action(Interact.NavigateInvDown) ;
+        driver.action(Interact.NavigateInvDown, "") ;
         Thread.sleep(500);
 
-        driver.action(Interact.NavigateInvDown) ;
+        driver.action(Interact.NavigateInvDown, "") ;
         Thread.sleep(500);
 
-        //driver.action(Interact.SelectItemFromInv);
-        //Thread.sleep(500);
+//        driver.action(Interact.SelectItemFromInv, "");
+//        Thread.sleep(500);
 
-        driver.action(Interact.OpenInv);
+        driver.action(Interact.OpenInv, "");
         Thread.sleep(500);
+        
+        
+//        for(Item item : driver.nethack.ps.inventory) {
+//        	if(item instanceof Food) {
+//        		
+//        		String foodId = item.ID;
+//        		driver.useItem(foodId);
+//        		System.out.println("Food Id: "+ foodId);
+//        		break;
+//        		
+//        	}
+//        }
+        
+        
 
-        System.out.println(driver.nethack.ps.inventory);
-        driver.useItem(1);
-        Thread.sleep(500);
+//        System.out.println(driver.nethack.ps.inventory);
+//        driver.useItem(1);
+//        Thread.sleep(500);
 
         WorldModel wom = driver.observe() ;
         System.out.println("Player-position: " + wom.position) ;
@@ -387,12 +445,12 @@ public class NethackWrapper {
         WorldEntity stair = wom.elements.get(stairTile.ID) ;
         System.out.println("Stair-position: " + stair.position) ;
         
-        System.out.println("type anything... ") ;
-        Scanner in = new Scanner(System.in);
-        in.nextLine() ;
+//        System.out.println("type anything... ") ;
+//        Scanner in = new Scanner(System.in);
+//        in.nextLine() ;
 
         // now we can also close the Nethack-window:
-        driver.nethack.stopAtNextUpdate();
+        //driver.nethack.stopAtNextUpdate();
 
     }
     
