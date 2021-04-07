@@ -28,11 +28,10 @@
         <scope>test</scope>
      </dependency>
      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-engine</artifactId>
-        <version>5.6.0</version>
-        <scope>test</scope>
-     </dependency>
+       <groupId>org.junit.jupiter</groupId>
+       <artifactId>junit-jupiter-engine</artifactId>
+       <version>5.6.0</version>
+    </dependency>
      <!-- dependency on iv4XR aka aplib.
           Adjust the version that you want to use... -->
      <dependency>
