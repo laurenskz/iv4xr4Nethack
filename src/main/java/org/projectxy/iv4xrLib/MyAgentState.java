@@ -2,10 +2,13 @@ package org.projectxy.iv4xrLib;
 
 import java.util.*;
 
+import eu.iv4xr.framework.extensions.pathfinding.AStar;
+import eu.iv4xr.framework.extensions.pathfinding.Pathfinder;
 import eu.iv4xr.framework.extensions.pathfinding.SimpleNavGraph;
 import eu.iv4xr.framework.mainConcepts.W3DAgentState;
 import eu.iv4xr.framework.mainConcepts.W3DEnvironment;
 import eu.iv4xr.framework.mainConcepts.WorldModel;
+import eu.iv4xr.framework.spatial.Vec3;
 import nl.uu.cs.aplib.agents.State;
 import nl.uu.cs.aplib.mainConcepts.Environment;
 import nl.uu.cs.aplib.mainConcepts.SimpleState;
@@ -22,12 +25,12 @@ public class MyAgentState extends State {
      * to that tile, it is removed from the list. (so, this assumes that that first
      * element is indeed a neiboring tile of the tile where the agent currently is).
      * 
-     * The tiles are encoded as integers, representing the indices of the tiles in
-     * the navigation graph kept in the field simpleWorldNavigation.
+     * The tiles in the paths are represented by Vec3 locations.
      */
-    public List<Integer> currentPathToFollow;
+    public List<Vec3> currentPathToFollow;
 
     public SimpleNavGraph simpleWorldNavigation;
+    Pathfinder pathfinder = new AStar() ;
 
     /**
      * Attaching MyEnv to this agent-state. Initializing the first World Model, and
@@ -57,5 +60,32 @@ public class MyAgentState extends State {
         MyEnv env_ = (MyEnv) this.env();
         this.wom = env_.nethackUnderTest.observe();
     };
+    
+    public void setAPathToFollow(List<Vec3> path ) {
+        currentPathToFollow = path ;
+    }
+    
+    /**
+     * Check the navigation graph if there exists a path from the given source-tile
+     * location to the destination-tile. If there is a path, one will be returned, and
+     * else null.
+     * 
+     * Tiles are represented by Vec3 structures.
+     */
+    public List<Vec3> getPath(Vec3 source, Vec3 destination) {
+        int src  = Utils.vec3ToNavgraphIndex(source, simpleWorldNavigation) ;
+        int dest = Utils.vec3ToNavgraphIndex(source, simpleWorldNavigation) ;
+        // find a path to the destination. If a path is found, the destination will 
+        // be the last in the path. The source is not included in the path. Instead,
+        // the first element of the path would be a neighbor of source.
+        // If no path can be found, then it is null.
+        List<Integer> path = pathfinder.findPath(simpleWorldNavigation, src, dest) ;
+        if (path == null) return null ;
+        List<Vec3> path_ = new LinkedList<>() ;
+        for(Integer nd : path) {
+            path_.add(simpleWorldNavigation.vertices.get(nd)) ;
+        }
+        return path_ ;
+    }
 
 }
