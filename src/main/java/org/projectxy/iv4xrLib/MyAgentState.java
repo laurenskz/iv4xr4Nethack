@@ -74,13 +74,15 @@ public class MyAgentState extends State {
      */
     public List<Vec3> getPath(Vec3 source, Vec3 destination) {
         int src  = Utils.vec3ToNavgraphIndex(source, simpleWorldNavigation) ;
-        int dest = Utils.vec3ToNavgraphIndex(source, simpleWorldNavigation) ;
+        int dest = Utils.vec3ToNavgraphIndex(destination, simpleWorldNavigation) ;
         // find a path to the destination. If a path is found, the destination will 
-        // be the last in the path. The source is not included in the path. Instead,
-        // the first element of the path would be a neighbor of source.
+        // be the last in the path. 
         // If no path can be found, then it is null.
         List<Integer> path = pathfinder.findPath(simpleWorldNavigation, src, dest) ;
         if (path == null) return null ;
+        // if a path is found, the first element is actually the same as the source. We
+        // will drop it:
+        path.remove(0) ;
         List<Vec3> path_ = new LinkedList<>() ;
         for(Integer nd : path) {
             path_.add(simpleWorldNavigation.vertices.get(nd)) ;
