@@ -3,12 +3,16 @@ package org.projectxy.iv4xrLib;
 import static eu.iv4xr.framework.Iv4xrEDSL.*;
 import static nl.uu.cs.aplib.AplibEDSL.*;
 
+import java.util.Scanner;
 import java.util.function.Predicate;
+
+import org.projectxy.iv4xrLib.NethackWrapper.Interact;
 
 import A.B.Food;
 import A.B.HealthPotion;
 import A.B.Item;
 import A.B.Screen;
+import A.B.Weapon;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.iv4xr.framework.mainConcepts.W3DAgentState;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
@@ -110,20 +114,11 @@ public class GoalLib {
 
  
 	// the first food that you can find in the inv
-	public static GoalStructure useFoodFromInventory() {
+	public static GoalStructure restoreHealthFromInventory() {
   		//System.out.println("AND HERE!");
 
-		
-		
-		
-		boolean foodFoundAndEaten = false;
-		
-		
-		
-		
-      
 	    
-	    Goal g1 = goal("use food") ;
+	    Goal g1 = goal("restore health") ;
 	    
 	    g1.toSolve((MyAgentState S) -> {
 	        WorldModel old = S.previousWom ;
@@ -133,44 +128,64 @@ public class GoalLib {
 	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
 	        int oldHealth = agentOldState.getIntProperty("health") ;
 	        int currentHealth = agentCurrentState.getIntProperty("health") ;
+	       
+	        
 	        return currentHealth > oldHealth ;
 	    }) ;
 	    
-	    Action useFood = action("use food") ;
+	    Action restoreHealth = action("restore health") ;
 	    
 	    // figure out how to use food ... preferably through env_, and use it
 	    
-  		System.out.println("HERE in useFoodFromInventory!");
+  		System.out.println("1. HERE in restoreHealthFromInventory!");
+  		
+  		///////////////////
+  		
+  		
+  		//////////////////
+  		
 
-	    useFood.do1((MyAgentState S) -> { 
+	    restoreHealth.do1((MyAgentState S) -> { 
 	        MyEnv env_ = (MyEnv) S.env() ;
+	        WorldModel current = S.wom ;
+	        
 	        
       		System.out.println("2. AND HERE!");
-
-	        GoalLib driver = new GoalLib();
-	        driver.nethack = new Screen() ;
-
-	
 	        
+	        WorldEntity inv = current.getElement("Inventory");
 	        
-	        for(Item item : driver.nethack.ps.inventory) {
-          		//System.out.println("AND HERE!");
+			boolean healthItemFoundAndUsed = false;
 
-	          	if(item instanceof Food) {
+	        
+	        for(WorldEntity item_ : inv.elements.values()) {
+          		System.out.println("3. Iterating the inventory elements and looking for the needed item!");
+
+	          	if( (item_.type.equals("Food") || item_.type.equals("Water") || item_.type.equals("HealthPotion")) ) {
 	          		//System.out.println("AND HERE!");
-	          		String foodId = item.ID;
-	          		env_.interact(S.wom.agentId, foodId, "SelectItemFromInv");
-	          		//foodFoundAndEaten = true;
+	          		String itemId = item_.id;
+	          	          		
+	          		System.out.println("Item ID: " + itemId );
+	          		System.out.println("Item Name: " + item_.type );
+	          		
+	          		env_.interact(current.agentId, itemId, Interact.SelectItemFromInv);
+	       
 	          		// move the part of if(foodFoundAndEaten)... in this if statement, no boolean needed
+	          		
+	          		healthItemFoundAndUsed = true;
+	          		
+	          		
+	          	
+	          		// Freeze the Nethack window until Enter key is pressed. 
+	          		// So we can see the progress of the goals in the actual game.
+	          		System.out.println("Hit RETURN to continue.") ;
+	                new Scanner(System.in) . nextLine() ;
+
+	          		break;
 	          	}
 	         }
 	        
-	        
-	        //EnvOperation temp1 = new EnvOperation ( S.wom.agentId, null, "Interact", null, null);
-	        
-	        //env_.interact(S.wom.agentId, foodId, "SelectItemFromInv");
-	        
-	        if(foodFoundAndEaten) {
+	       
+	        if(healthItemFoundAndUsed) {
 	            S.updateState() ;
 	            return S ;
 	        }
@@ -179,16 +194,185 @@ public class GoalLib {
 	        }
 	    }) ;
 	    
-	    Tactic useFoodTactic = useFood.lift() ;
+	    Tactic restoreHealthTactic = restoreHealth.lift() ;
 	    
-	    g1.withTactic(FIRSTof(useFoodTactic, ABORT())) ;
+	    g1.withTactic(FIRSTof(restoreHealthTactic, ABORT())) ;
 	    
 	    GoalStructure g1_ = g1.lift() ;
 	    
 	    return g1_ ;
+	    
 	}
 	
+	  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
 
+	public static GoalStructure equipSword() {
+  		//System.out.println("AND HERE!");
+
+	    Goal g2 = goal("equip sword") ;
+	    
+	    g2.toSolve((MyAgentState S) -> {
+	        WorldModel old = S.previousWom ;
+	        WorldModel current = S.wom ;
+	        String agentId = S.wom.agentId ;
+	        WorldEntity agentOldState = old.elements.get(agentId) ;
+	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+	        String oldWeapon = agentOldState.getStringProperty("equippedWeapon");
+	        String currentWeapon = agentCurrentState.getStringProperty("equippedWeapon") ;
+	        String weaponNeeded = "Sword";
+	        return (	(oldWeapon != currentWeapon) && (currentWeapon.toLowerCase().contains(weaponNeeded.toLowerCase() ) )		);
+	    }) ;
+	    
+	    
+	    
+	    Action equipSword = action("equip sword") ;
+	    
+	    
+  		System.out.println("1. HERE in equipSword()!");
+
+  		equipSword.do1((MyAgentState S) -> { 
+	        MyEnv env_ = (MyEnv) S.env() ;
+	        WorldModel current = S.wom ;
+	        String weaponNeeded = "Sword";
+	        
+      		System.out.println("2. AND HERE in equipSword() AGAIN!");
+	        
+	        WorldEntity inv = current.getElement("Inventory");
+	        
+			boolean SwordFoundAndUsed = false;
+
+	        
+	        for(WorldEntity item_ : inv.elements.values()) {
+          		System.out.println("3. Iterating the inventory and looking for the needed SWORD WEAPON!");
+
+	          	if( item_.type.toLowerCase().contains(weaponNeeded.toLowerCase()) ) {
+	          		//System.out.println("AND HERE!");
+	          		String itemId = item_.id;
+	          	          		
+	          		System.out.println("Item ID: " + itemId );
+	          		System.out.println("Item Name: " + item_.type );
+	          		
+	          		env_.interact(current.agentId, itemId, Interact.SelectItemFromInv);
+	       
+	          		// move the part of if(foodFoundAndEaten)... in this if statement, no boolean needed
+	          		
+	          		SwordFoundAndUsed = true;
+	          		
+	          		
+	          		// Freeze the Nethack window until Enter key is pressed. 
+	          		// So we can see the progress of the goals in the actual game.
+	          		System.out.println("Hit RETURN to continue.") ;
+	                new Scanner(System.in) . nextLine() ;
+
+	          		break;
+	          	}
+	         }
+	        
+	       
+	        if(SwordFoundAndUsed) {
+	            S.updateState() ;
+	            return S ;
+	        }
+	        else {
+	            return null ;
+	        }
+	    }) ;
+	    
+	    Tactic equipSwordTactic = equipSword.lift() ;
+	    
+	    g2.withTactic(FIRSTof(equipSwordTactic, ABORT())) ;
+	    
+	    GoalStructure g2_ = g2.lift() ;
+	    
+	    return g2_ ;
+	    
+	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	public static GoalStructure equipBow() {
+  		//System.out.println("AND HERE!");
+
+	    Goal g3 = goal("equip bow") ;
+	    
+	    g3.toSolve((MyAgentState S) -> {
+	        WorldModel old = S.previousWom ;
+	        WorldModel current = S.wom ;
+	        String agentId = S.wom.agentId ;
+	        WorldEntity agentOldState = old.elements.get(agentId) ;
+	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+	        String oldWeapon = agentOldState.getStringProperty("equippedWeapon");
+	        String currentWeapon = agentCurrentState.getStringProperty("equippedWeapon") ;
+	        String weaponNeeded = "Bow";
+	        return (	(oldWeapon != currentWeapon) && (currentWeapon.toLowerCase().contains(weaponNeeded.toLowerCase() ) )		);
+	    }) ;
+	    
+	    
+	    
+	    Action equipBow = action("equip bow") ;
+	    
+	    
+  		System.out.println("1. HERE in equipBow()!");
+
+  		equipBow.do1((MyAgentState S) -> { 
+	        MyEnv env_ = (MyEnv) S.env() ;
+	        WorldModel current = S.wom ;
+	        String weaponNeeded = "Bow";
+	        
+      		System.out.println("2. AND HERE in equipBow() AGAIN!");
+	        
+	        WorldEntity inv = current.getElement("Inventory");
+	        
+			boolean BowFoundAndUsed = false;
+
+	        
+	        for(WorldEntity item_ : inv.elements.values()) {
+          		System.out.println("3. Iterating the inventory and looking for the needed BOW WEAPON!");
+
+	          	if( item_.type.toLowerCase().contains(weaponNeeded.toLowerCase()) ) {
+
+	          		String itemId = item_.id;
+	          	          		
+	          		System.out.println("Item ID: " + itemId );
+	          		System.out.println("Item Name: " + item_.type );
+	          		
+	          		env_.interact(current.agentId, itemId, Interact.SelectItemFromInv);
+	       
+	          		// move the part of if(foodFoundAndEaten)... in this if statement, no boolean needed
+	          		
+	          		BowFoundAndUsed = true;
+	          		
+	          		
+	          		// Freeze the Nethack window until Enter key is pressed. 
+	          		// So we can see the progress of the goals in the actual game.
+	          		System.out.println("Hit RETURN to continue.") ;
+	                new Scanner(System.in) . nextLine() ;
+
+	          		break;
+	          	}
+	         }
+	        
+	       
+	        if(BowFoundAndUsed) {
+	            S.updateState() ;
+	            return S ;
+	        }
+	        else {
+	            return null ;
+	        }
+	    }) ;
+	    
+	    Tactic equipBowTactic = equipBow.lift() ;
+	    
+	    g3.withTactic(FIRSTof(equipBowTactic, ABORT())) ;
+	    
+	    GoalStructure g3_ = g3.lift() ;
+	    
+	    return g3_ ;
+	    
+	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
  
  
 	/**

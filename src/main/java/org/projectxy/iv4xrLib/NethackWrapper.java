@@ -115,6 +115,17 @@ public class NethackWrapper {
         wom.timestamp = nethack.moves;
 
         // System.out.println("Player pos: " + wom.position);
+        
+        
+        // Equipped Weapon
+        Weapon weaponOnHands = nethack.ps.weap;
+        WorldEntity equippedWeapon = new WorldEntity(weaponOnHands.ID, "equippedWeapon", true);
+        equippedWeapon.properties.put("weaponName", weaponOnHands.name);
+        equippedWeapon.properties.put("attackDmg", weaponOnHands.attackDmg);
+        wom.elements.put(equippedWeapon.id, equippedWeapon);
+        
+        
+        
 
         // monsters:
         for (Monster monster : nethack.mobs) {
@@ -283,7 +294,10 @@ public class NethackWrapper {
         for (int index = 0; index < N; index++) {
             Item item = nethack.ps.inventory.get(index);
             if (item.ID.equals(itemId)) {
+            	System.out.println("THIS was called by SelectItemFromInv");
                 return useItem(index);
+                
+               
             }
         }
         throw new IllegalArgumentException("Item " + itemId + " is not in the inventory.");
@@ -303,6 +317,7 @@ public class NethackWrapper {
             break;
 
         case SelectItemFromInv:
+        	System.out.println("THIS is in SelectItemFromInv!");
 
             // String foodId = item.ID;
             useItem(itemId);
@@ -414,6 +429,11 @@ public class NethackWrapper {
         driver.move(Movement.RIGHT);
         Thread.sleep(500);
 
+        
+        
+  		
+        
+        
         driver.move(Movement.RIGHT);
         Thread.sleep(500);
 
@@ -426,9 +446,9 @@ public class NethackWrapper {
         driver.move(Movement.RIGHT);
         Thread.sleep(500);
 
-        GoalLib.useFoodFromInventory();
-        Thread.sleep(500);
-        System.out.println("HERE after useFoodFromInventory!");
+//        GoalLib.useFoodFromInventory();
+//        Thread.sleep(500);
+//        System.out.println("HERE after useFoodFromInventory!");
 
         driver.action(Interact.PickupItem, "");
         Thread.sleep(500);
@@ -468,6 +488,8 @@ public class NethackWrapper {
 
         WorldModel wom = driver.observe();
         System.out.println("Player-position: " + wom.position);
+        
+        System.out.println("equip Weap: " + driver.nethack.ps.weap.name);
 
         Tile stairTile = driver.nethack.tiles[driver.nethack.stairX][driver.nethack.stairY];
 
