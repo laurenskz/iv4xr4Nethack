@@ -220,7 +220,7 @@ public class MyEnv extends W3DEnvironment {
 	 * In principle you don't need to redefine this method as long as you define the
 	 * corresponding logic in sendCommand_().
 	 */
-	public void loadWorld() {
+	public void dd() {
 	    throw new UnsupportedOperationException() ;
 	}
 	

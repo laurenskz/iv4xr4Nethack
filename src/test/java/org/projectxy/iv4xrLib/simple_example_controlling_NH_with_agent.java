@@ -23,8 +23,8 @@ public class simple_example_controlling_NH_with_agent {
         // let's define a solver for this goal:
         Action doNothing = action("do nothing").do1((MyAgentState S) -> S) ;
         Action moveEast  = action("moveEast").do1((MyAgentState S) -> {
-            Vec3 currentPosition = S.wom.position ;
-            Vec3 east = Vec3.add(currentPosition, new Vec3(1,0,0)) ;
+            //Vec3 currentPosition = S.wom.position ;
+            //Vec3 east = Vec3.add(currentPosition, new Vec3(1,0,0)) ;
             MyEnv env = (MyEnv) S.env() ;
             env.move(Movement.RIGHT) ;
             return S ;
