@@ -47,7 +47,8 @@ public class simple_example_controlling_NH_with_agent {
         
         // give the goal-structure to the agent:
         // we first lift g to a GoalStructure, because the agent wants a GoalStructure rather than a goal:
-        GoalStructure g_ = g.lift() ;
+        //GoalStructure g_ = g.lift() ;
+        GoalStructure g_ = GoalLib.restoreHealthFromInventory();
         agent.setGoal(g_) ;
         
         // run the agent to control the game:
