@@ -33,8 +33,12 @@ public class Example_using_pathfinding {
         agent.attachEnvironment(env) ;
         
         // give a goal-structure to the agent:
-        GoalStructure g = Utils.entityVisited("149") ;
+        GoalStructure g = Utils.entityVisited("107") ;
+        
+        
+        
         agent.setGoal(g) ;
+        
         
         // run the agent to control the game:
  
@@ -43,13 +47,29 @@ public class Example_using_pathfinding {
             agent.update();
             turn++ ;
             System.out.println("[" + turn + "] agent@" + state.wom.position ) ;
-            Thread.sleep(500);
+            Thread.sleep(350);
             if(turn > 100) {
                 // forcing break the agent seems to take forever...
                 break ;
             }
         }
-      
+        
+        //////
+        GoalStructure g_ = GoalLib.pickUpItem();
+        agent.setGoal(g_) ;
+        
+        int turn1 = 0 ;
+        while(!g_.getStatus().success()) {
+            agent.update();
+            turn1++ ;
+            
+            Thread.sleep(350);
+            if(turn > 100) {
+                
+                break ;
+            }
+        }
+      ///////
         for(WorldEntity e : state.wom.elements.values()) {
             System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position) ;
         }

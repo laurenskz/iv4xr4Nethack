@@ -130,7 +130,7 @@ public class GoalLib {
 	        int currentHealth = agentCurrentState.getIntProperty("health") ;
 	       
 	        
-	        return currentHealth > oldHealth ;
+	        return (	(currentHealth > oldHealth) || ( (oldHealth == 10) && (currentHealth == 10) )	) ;
 	    }) ;
 	    
 	    Action restoreHealth = action("restore health") ;
@@ -373,6 +373,96 @@ public class GoalLib {
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	
+	public static GoalStructure pickUpItem() {
+  		//System.out.println("AND HERE!");
+
+	    
+	    Goal g3 = goal("pick up item") ;
+	    
+	    g3.toSolve((MyAgentState S) -> {
+	        WorldModel old = S.previousWom ;
+	        WorldModel current = S.wom ;
+	        //String agentId = S.wom.agentId ;
+	        
+	        WorldEntity oldInv = old.getElement("Inventory");
+	        WorldEntity currentInv = current.getElement("Inventory");
+	        
+	        int oldInvSize = oldInv.elements.size();
+	        int currentInvSize = currentInv.elements.size();
+	        
+	        
+	        //WorldEntity agentOldState = old.elements.get(agentId) ;
+	        //WorldEntity agentCurrentState = current.elements.get(agentId) ;
+	        
+	        //int oldHealth = agentOldState.getIntProperty("health") ;
+	        //int currentHealth = agentCurrentState.getIntProperty("health") ;
+	       
+	        
+	        return (currentInvSize > oldInvSize)  ;
+	    }) ;
+	    
+	    
+	    Action pickUpItem = action("pick up item") ;
+	    
+  		System.out.println("1. HERE in pickUpItem!");
+  		
+  
+  		pickUpItem.do1((MyAgentState S) -> { 
+	        MyEnv env_ = (MyEnv) S.env() ;
+	        WorldModel current = S.wom ;
+	        
+	        
+      		System.out.println("2. AND HERE in pickUpItem again!");
+      		
+      		WorldEntity inv = current.getElement("Inventory");
+      		
+      		int size = inv.elements.size();
+	        
+	        //WorldEntity inv = current.getElement("Inventory");		for(WorldEntity item_ : inv.elements.values())
+	        
+			boolean itemFoundAndPicked = false;
+			
+			System.out.println("inventory size: " + size );
+
+	        
+	        env_.interact(current.agentId, null, Interact.PickupItem);
+	       
+	        itemFoundAndPicked = true;
+	          		
+	          		
+	          	
+	        // Freeze the Nethack window until Enter key is pressed. 
+	        // So we can see the progress of the goals in the actual game.
+	        System.out.println("Hit RETURN to continue.") ;
+	        new Scanner(System.in) . nextLine() ;
+
+	        ///break;
+	          	
+	         
+	        
+	       
+	        if(itemFoundAndPicked) {
+	            S.updateState() ;
+	            return S ;
+	        }
+	        else {
+	            return null ;
+	        }
+	    }) ;
+	    
+	    Tactic pickUpItemTactic = pickUpItem.lift() ;
+	    
+	    g3.withTactic(FIRSTof(pickUpItemTactic, ABORT())) ;
+	    
+	    GoalStructure g3_ = g3.lift() ;
+	    
+	    return g3_ ;
+	    
+	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
  
  
 	/**

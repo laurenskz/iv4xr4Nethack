@@ -139,21 +139,40 @@ public class NethackWrapper {
             wom.elements.put(e.id, e);
         }
 
+        
+        
         // items that are still on the floor:
         for (ItemTile itemTile : nethack.items) {
             WorldEntity itm = convertItem(itemTile.item);
             itm.position = new Vec3(itemTile.getX(), itemTile.getY(), 0);
             wom.elements.put(itm.id, itm);
         }
+        
+        
+        
+        
+        // Player Status - Health(???)
+        PlayerStatus ps = nethack.ps;
+        WorldEntity playerStatus = new WorldEntity(wom.agentId, "playerStatus", true);
+        playerStatus.properties.put("health", ps.health );
+        playerStatus.properties.put("maxhealth", ps.maxHealth );	// Maybe no need for this
+        playerStatus.properties.put("isAlive",  ps.alive);			// Boolean
+        wom.elements.put(playerStatus.id, playerStatus);
 
-        // stair:
+        
+        
+        // Stairs:
+        
         Tile stairTile = nethack.tiles[nethack.stairX][nethack.stairY];
-        WorldEntity stairs = new WorldEntity(stairTile.ID, "stair", false);
+        WorldEntity stairs = new WorldEntity("Stairs", "Stairs", false);	// Id maybe should derive from stairTile.ID, but it is null in our case 
         stairs.position = new Vec3(nethack.stairX, nethack.stairY, 0);
         wom.elements.put(stairs.id, stairs);
+        
+        System.out.println("Stairs ID: " + stairs.id); //??
 
-        // System.out.println("stairs position: " + stairs.position);
 
+        
+        
         // items in the inventory:
         WorldEntity inv = new WorldEntity("Inventory", "Inventory", true);
         for (Item item : nethack.ps.inventory) {
@@ -167,10 +186,13 @@ public class NethackWrapper {
         wom.elements.put(inv.id, inv);
         return wom;
     }
+    
 
     /**
      * Construct the WorldEntity-representation of an item.
      */
+    
+    
     WorldEntity convertItem(Item item) {
         WorldEntity item_ = new WorldEntity(item.ID, item.getClass().getSimpleName(), true);
 
