@@ -27,7 +27,7 @@ public class MonsterWrapper implements  LineIntersectable {
         return box.width ;
     }
     
-    public void setAvoidanceDistance(int adist) {
+    public void setAvoidanceDistance(float adist) {
         box.width.x = adist ;
         box.width.y = adist ;
         box.width.z = adist ;    

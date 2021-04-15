@@ -7,7 +7,10 @@ import eu.iv4xr.framework.extensions.pathfinding.Pathfinder;
 import eu.iv4xr.framework.extensions.pathfinding.SimpleNavGraph;
 import eu.iv4xr.framework.mainConcepts.W3DAgentState;
 import eu.iv4xr.framework.mainConcepts.W3DEnvironment;
+import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.iv4xr.framework.mainConcepts.WorldModel;
+import eu.iv4xr.framework.spatial.LineIntersectable;
+import eu.iv4xr.framework.spatial.Obstacle;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.uu.cs.aplib.agents.State;
 import nl.uu.cs.aplib.mainConcepts.Environment;
@@ -53,13 +56,29 @@ public class MyAgentState extends State {
         return this;
     }
 
+    /**
+     * TODO: you need to do something when we transition to the next level. The nav-graph must
+     * be loaded anew, for example.
+     */
     @Override
     public void updateState() {
         super.updateState();
         previousWom = wom;
         MyEnv env_ = (MyEnv) this.env();
         this.wom = env_.nethackUnderTest.observe();
+        // update the monsters in the nav-graph obstacles; we remove killed monsters:
+        simpleWorldNavigation.obstacles
+           .removeIf((Obstacle<LineIntersectable> o) -> { 
+               MonsterWrapper mw = (MonsterWrapper) o.obstacle ;
+               String mw_id = mw.monster.ID ;
+               if (! wom.elements.keySet().contains(mw_id)) {
+                   // if the monster-id is no longer in the world .. it is dead. Remove it from the nav-graph
+                   return true ;
+               }
+               return false ; 
+        }) ;
     };
+    
     
     public void setAPathToFollow(List<Vec3> path ) {
         currentPathToFollow = path ;
@@ -88,6 +107,11 @@ public class MyAgentState extends State {
             path_.add(simpleWorldNavigation.vertices.get(nd)) ;
         }
         return path_ ;
+    }
+    
+    public boolean isAlive() {
+        WorldEntity playerStatus = wom.getElement(wom.agentId) ;
+        return playerStatus.getBooleanProperty("isAlive") ;        
     }
 
 }

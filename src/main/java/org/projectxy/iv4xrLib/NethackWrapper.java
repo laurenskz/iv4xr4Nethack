@@ -54,7 +54,11 @@ public class NethackWrapper {
     }
 
     public SimpleNavGraph getNavigationGraph() {
-        SimpleNavGraph navgraph = new SimpleNavGraph();
+        
+        // Create a blank navigation-graph. We will use MyNavGraph, which was
+        // set to use Mahattan distance rather than geometric distance.
+        SimpleNavGraph navgraph = new MyNavGraph();
+        //SimpleNavGraph navgraph = new SimpleNavGraph();
 
         // find tiles which are walkable, and add them to the navgraph:
         Map<Integer, Tile> walkableTiles = new HashMap<>();
@@ -129,7 +133,7 @@ public class NethackWrapper {
 
         // monsters:
         for (Monster monster : nethack.mobs) {
-            WorldEntity e = new WorldEntity(monster.ID, monster.image, true);
+            WorldEntity e = new WorldEntity(monster.ID, Monster.class.getSimpleName(), true);
             e.position = new Vec3(monster.getX(), monster.getY(), 0);
             e.properties.put("health", monster.health);
             e.properties.put("attackDmg", monster.attackDmg);

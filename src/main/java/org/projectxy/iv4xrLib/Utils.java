@@ -11,6 +11,8 @@ import java.util.List;
 
 import org.projectxy.iv4xrLib.NethackWrapper.Movement;
 
+import A.B.Monster;
+
 public class Utils {
 
     /**
@@ -39,9 +41,9 @@ public class Utils {
     }
  
 
-    static Action travelTo(String entityId, Vec3 destination) {
+    static Action travelTo(String entityId, Vec3 destination, float monsterAvoidDistance) {
         
-        return action("plan a path").do2((MyAgentState S) -> (List<Vec3> path) -> {
+        return action("travel-to").do2((MyAgentState S) -> (List<Vec3> path) -> {
             
             S.setAPathToFollow(path) ;
             MyEnv env = (MyEnv) S.env() ;
@@ -76,6 +78,7 @@ public class Utils {
             return S ;
             })
             .on((MyAgentState S) -> { 
+                if (! S.isAlive()) return null ;
                 Vec3 agentCurrentPosition = S.wom.position ;
                 Vec3 destination_ = destination ;
                 if(entityId != null) {
@@ -91,7 +94,13 @@ public class Utils {
                 // but the destination is different, plan a new path:
                 if(path0 == null 
                         || ! Utils.sameTile(destination_,path0.get(path0.size()-1))) {
+                    float dw = Math.max(1, 2*monsterAvoidDistance) ;
+                    ((MyNavGraph) S.simpleWorldNavigation).setMonstersDangerArea(dw) ;
                     path0 = S.getPath(agentCurrentPosition,destination_) ;
+                    //System.out.print(">>> agent @" +  agentCurrentPosition) ;
+                    //System.out.print(">>> Planing path to " +  destination_) ;
+                    //System.out.println(", #" + path0.size()) ;
+                    ((MyNavGraph) S.simpleWorldNavigation).resetMonstersDangerArea() ;
                     if(path0 == null) {
                         return null ;
                     }
@@ -101,15 +110,67 @@ public class Utils {
                 ;
     }
     
+    /**
+     * Will attack a monster, if there is one in a neighboring tile. Will use melee attack.
+     */
+    static Action meleeAttack() {
+        return action("melee-attack").do2((MyAgentState S) -> (Vec3 monsterLocation) -> {
+            MyEnv env = (MyEnv) S.env() ;
+            Vec3 agentCurrentPosition = S.wom.position ;
+            int dx = (int) (monsterLocation.x - agentCurrentPosition.x) ;
+            int dy = (int) (monsterLocation.y - agentCurrentPosition.y) ;
+            if(dx>0) {
+                //System.out.println(">>> Attack R") ;
+                env.move(Movement.RIGHT) ;
+            }
+            else if (dx<0) {
+                //System.out.println(">>> Attack L") ;
+                env.move(Movement.LEFT) ;
+            }
+            else if (dy>0) {
+                //System.out.println(">>> Attack D") ;
+                env.move(Movement.DOWN) ;
+            }
+            else if (dy<0) {
+                //System.out.println(">>> Attack U") ;
+                env.move(Movement.UP) ;
+            }
+            else {
+                throw new IllegalArgumentException() ;
+            }
+            // let's also reset the planned path, if there is any:
+            S.currentPathToFollow = null ;
+            S.updateState() ;
+            return S ;
+          }) 
+          .on((MyAgentState S) -> { 
+             if (! S.isAlive()) return null ;
+             // check if one of the monsters is in a neighboring tile
+             for(WorldEntity e : S.wom.elements.values()) {
+                 if(e.type.equals(Monster.class.getSimpleName())) {
+                     // e is a monster
+                     int dx = (int) Math.abs(e.position.x - S.wom.position.x) ;
+                     int dy = (int) Math.abs(e.position.y - S.wom.position.y) ;
+                     if (dx + dy == 1) {
+                         // then the monster is in a neighboring tile:
+                         //System.out.println(">>> monster is near: " + e.position) ;
+                         return e.position ;
+                     }
+                 }
+             }
+             return null ;       
+          }) ;
+    }
+    
     public static GoalStructure entityVisited(String entityId) {
-        return  locationVisited(entityId,null) ;
+        return  locationVisited(entityId,null,0) ;
     }
     
     public static GoalStructure locationVisited(Vec3 destination) {
-        return  locationVisited(null,destination) ;
+        return  locationVisited(null,destination,0) ;
     }
     
-    public static GoalStructure locationVisited(String entityId, Vec3 destination) {
+    public static GoalStructure locationVisited(String entityId, Vec3 destination, float monsterAvoidDistance) {
         
         String destinationName = entityId == null ? destination.toString() : entityId ;
         Goal g = goal(destinationName + " is visited") 
@@ -124,7 +185,10 @@ public class Utils {
                     }
                     return Utils.sameTile(S.wom.position, destination_) ;
                 })
-                .withTactic(travelTo(entityId,destination).lift());
+                .withTactic(FIRSTof(
+                              meleeAttack().lift(),
+                              travelTo(entityId,destination,monsterAvoidDistance).lift(), 
+                              ABORT()));
         
         return g.lift() ;
     }
