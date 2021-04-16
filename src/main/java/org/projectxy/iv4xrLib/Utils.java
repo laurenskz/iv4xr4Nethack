@@ -8,6 +8,7 @@ import nl.uu.cs.aplib.utils.Pair;
 import static nl.uu.cs.aplib.AplibEDSL.* ;
 
 import java.util.List;
+import java.util.function.Function;
 
 import org.projectxy.iv4xrLib.NethackWrapper.Movement;
 
@@ -16,24 +17,27 @@ import A.B.Monster;
 public class Utils {
 
     /**
-     * Conver a 3D coordinate p to a discrete tile-world coordinate. Basically, p
+     * Convert a 3D coordinate p to a discrete tile-world coordinate. Basically, p
      * will be converted to a pair of integers (p.x,p.y).
      */
-    static Pair<Integer, Integer> toTileCoordinate(Vec3 p) {
+    public static Pair<Integer, Integer> toTileCoordinate(Vec3 p) {
         return new Pair((int) p.x, (int) p.y);
     }
     
-    static Vec3 toVec3(int x, int y) {
+    public static Vec3 toVec3(int x, int y) {
         return new Vec3(x,y,0) ;
     }
     
-    static boolean sameTile(Vec3 t1, Vec3 t2) {
+    /**
+     * Check if two Vec3 represents the same tile coordinate.
+     */
+    public static boolean sameTile(Vec3 t1, Vec3 t2) {
         Pair<Integer, Integer> p1 = toTileCoordinate(t1) ;
         Pair<Integer, Integer> p2 = toTileCoordinate(t2) ;
         return p1.fst.equals(p2.fst) && p1.snd.equals(p2.snd) ;
     }
     
-    static Integer vec3ToNavgraphIndex(Vec3 p, SimpleNavGraph nav) {
+    public static Integer vec3ToNavgraphIndex(Vec3 p, SimpleNavGraph nav) {
         for(int i=0; i<nav.vertices.size(); i++) {
             if(sameTile(p,nav.vertices.get(i))) return i ;
         }
@@ -41,7 +45,21 @@ public class Utils {
     }
  
 
-    static Action travelTo(String entityId, Vec3 destination, float monsterAvoidDistance) {
+    /**
+     * Construct an action to guide an agent to either a tile-location or to a
+     * non-monster entity, specified by its id. If the id null, a location must be
+     * provided. If the id is not null, location is ignored.
+     * 
+     * @param monsterAvoidDistance set this to any value larger than 1 to make the
+     *                             planned path to steer away as far as this
+     *                             distance from any monster. Note that the action
+     *                             calculates the path at the beginning. If during
+     *                             the travel a monster moves, it might actually
+     *                             come closer than this distance to the agent. This
+     *                             action does not solve this situation; another
+     *                             tactic should instead handle such a situation.
+     */
+    public static Action travelTo(String entityId, Vec3 destination, float monsterAvoidDistance) {
         
         return action("travel-to").do2((MyAgentState S) -> (List<Vec3> path) -> {
             
@@ -110,10 +128,61 @@ public class Utils {
                 ;
     }
     
+    public static Action travelToMonster(String monsterId, float monsterAvoidDistance) {
+        
+        // we will re-use the above defined travelTo-action, but will change its guard
+        Action travelTo = travelTo(monsterId,null,monsterAvoidDistance) ;
+        
+        return travelTo.on((MyAgentState S) -> {
+            if (! S.isAlive()) return null ;
+            Vec3 agentCurrentPosition = S.wom.position ;
+            WorldEntity e = S.wom.getElement(monsterId) ;
+            if(e == null) {
+               // the monster is not there, or has been killed; well then we can't move to it either
+               return null ;
+            }
+            List<Vec3> path0 = S.currentPathToFollow ;
+            // check if re-planing is not needed:
+            if(path0 != null) {
+                Vec3 last = path0.get(path0.size() - 1) ;
+                int dx = (int) Math.abs(last.x - agentCurrentPosition.x) ;
+                int dy = (int) Math.abs(last.y- agentCurrentPosition.y) ;
+                if(dx + dy == 1) {
+                    // the current path targets a tile next to the monster; no replanning is needed:
+                    return path0 ;
+                }
+            }
+            // else we need to re-plan.
+            path0 = null ;
+            float dw = Math.max(1, 2*monsterAvoidDistance) ;
+            ((MyNavGraph) S.simpleWorldNavigation).setMonstersDangerArea(dw,monsterId) ;
+            
+            // we can't literally move to the monster's tile; so we choose a tile next to it:
+            Vec3[] candidates = { 
+                      Vec3.add(e.position, new Vec3(1,0,0)), 
+                      Vec3.add(e.position, new Vec3(-1,0,0)), 
+                      Vec3.add(e.position, new Vec3(0,1,0)), 
+                      Vec3.add(e.position, new Vec3(0,-1,0)) 
+                   };
+            
+            for(Vec3 targetLocation : candidates) {
+                if (S.simpleWorldNavigation.vertices.contains(targetLocation)) {
+                    path0 = S.getPath(agentCurrentPosition,targetLocation) ;
+                    if (path0 != null) {
+                        // found a reachable neighbor-tile
+                        break ;
+                    }
+                }
+            }
+            return path0 ;
+        }) ;
+    }
+    
+    
     /**
      * Will attack a monster, if there is one in a neighboring tile. Will use melee attack.
      */
-    static Action meleeAttack() {
+    public static Action meleeAttack() {
         return action("melee-attack").do2((MyAgentState S) -> (Vec3 monsterLocation) -> {
             MyEnv env = (MyEnv) S.env() ;
             Vec3 agentCurrentPosition = S.wom.position ;
@@ -162,6 +231,9 @@ public class Utils {
           }) ;
     }
     
+    /**
+     * A goal to get an agent to the location of an non-monster entity.
+     */
     public static GoalStructure entityVisited(String entityId) {
         return  locationVisited(entityId,null,0) ;
     }
@@ -189,6 +261,23 @@ public class Utils {
                               meleeAttack().lift(),
                               travelTo(entityId,destination,monsterAvoidDistance).lift(), 
                               ABORT()));
+        
+        return g.lift() ;
+    }
+    
+    public static GoalStructure closeToAMonster(String monsterId, float monsterAvoidDistance) {
+   
+        Goal g = goal("Close to monster " + monsterId)
+                .toSolve((MyAgentState S) -> { 
+                    WorldEntity m = S.wom.getElement(monsterId) ;
+                    int dx = (int) Math.abs(m.position.x - S.wom.position.x) ;
+                    int dy = (int) Math.abs(m.position.y - S.wom.position.y) ;
+                    return (dx + dy == 1) ;
+                 })
+                .withTactic(FIRSTof(
+                        meleeAttack().lift(),
+                        travelToMonster(monsterId,monsterAvoidDistance).lift(), 
+                        ABORT()));
         
         return g.lift() ;
     }

@@ -42,8 +42,13 @@ public class MyNavGraph extends SimpleNavGraph {
     }
     
     public void setMonstersDangerArea(float areaWidth) {
+        setMonstersDangerArea(areaWidth,null) ;
+    }
+    
+    public void setMonstersDangerArea(float areaWidth, String exceptThisOne) {
         for(Obstacle<LineIntersectable> o : obstacles) {
             MonsterWrapper monster = (MonsterWrapper) o.obstacle ; 
+            if(exceptThisOne!=null && monster.monster.ID.equals(exceptThisOne)) continue ;
             monster.setAvoidanceDistance(areaWidth);
         }
     }
