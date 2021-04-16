@@ -41,7 +41,7 @@ public class Example_using_pathfinding {
         
         // a goal to guide agent to the given location; with monster-avoindance distance
         // set to 3:
-        GoalStructure g = Utils.locationVisited(null,destination,1) ;
+        GoalStructure g = Utils.locationVisited(null,destination,3) ;
         agent.setGoal(g) ;
 
         // run the agent to control the game:
