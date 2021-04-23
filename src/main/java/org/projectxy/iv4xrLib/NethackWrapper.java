@@ -122,13 +122,11 @@ public class NethackWrapper {
         
         
         // Equipped Weapon
-        Weapon weaponOnHands = nethack.ps.weap;
-        WorldEntity equippedWeapon = new WorldEntity(weaponOnHands.ID, "equippedWeapon", true);
-        equippedWeapon.properties.put("weaponName", weaponOnHands.name);
-        equippedWeapon.properties.put("attackDmg", weaponOnHands.attackDmg);
-        wom.elements.put(equippedWeapon.id, equippedWeapon);
-        
-        
+//        Weapon weaponOnHands = nethack.ps.weap;
+//        WorldEntity equippedWeapon = new WorldEntity(weaponOnHands.ID, "equippedWeapon", true);
+//        equippedWeapon.properties.put("weaponName", weaponOnHands.name);
+//        equippedWeapon.properties.put("attackDmg", weaponOnHands.attackDmg);
+//        wom.elements.put(equippedWeapon.id, equippedWeapon);
         
 
         // monsters:
@@ -153,14 +151,17 @@ public class NethackWrapper {
         }
         
         
-        
-        
         // Player Status - Health(???)
         PlayerStatus ps = nethack.ps;
         WorldEntity playerStatus = new WorldEntity(wom.agentId, "playerStatus", true);
+        
+        playerStatus.properties.put("equippedWeaponName", ps.weap.toString());
+        playerStatus.properties.put("equippedWeaponDmg", ps.weap.attackDmg);
+        
         playerStatus.properties.put("health", ps.health );
         playerStatus.properties.put("maxhealth", ps.maxHealth );	// Maybe no need for this
         playerStatus.properties.put("isAlive",  ps.alive);			// Boolean
+        playerStatus.properties.put("aimingBow", nethack.aimingBow);	// Boolean - maybe shouldn't be here (?)
         wom.elements.put(playerStatus.id, playerStatus);
 
         
@@ -172,7 +173,7 @@ public class NethackWrapper {
         stairs.position = new Vec3(nethack.stairX, nethack.stairY, 0);
         wom.elements.put(stairs.id, stairs);
         
-        System.out.println("Stairs ID: " + stairs.id); //??
+        // System.out.println("Stairs ID: " + stairs.id); //??
 
 
         
@@ -328,7 +329,7 @@ public class NethackWrapper {
         }
         throw new IllegalArgumentException("Item " + itemId + " is not in the inventory.");
     }
-
+ 
     public enum Interact {
         OpenInv, SelectItemFromInv, AimWithBow, PickupItem, NavigateInvUp, NavigateInvDown
     }

@@ -128,6 +128,9 @@ public class GoalLib {
 	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
 	        int oldHealth = agentOldState.getIntProperty("health") ;
 	        int currentHealth = agentCurrentState.getIntProperty("health") ;
+	        
+	        System.out.println("oldHealth:" + oldHealth);
+	        System.out.println("currentHealth:" + currentHealth);
 	       
 	        
 	        return (	(currentHealth > oldHealth) || ( (oldHealth == 10) && (currentHealth == 10) )	) ;
@@ -217,8 +220,15 @@ public class GoalLib {
 	        String agentId = S.wom.agentId ;
 	        WorldEntity agentOldState = old.elements.get(agentId) ;
 	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
-	        String oldWeapon = agentOldState.getStringProperty("equippedWeapon");
-	        String currentWeapon = agentCurrentState.getStringProperty("equippedWeapon") ;
+	        String oldWeapon = agentOldState.getStringProperty("equippedWeaponName");
+	        String currentWeapon = agentCurrentState.getStringProperty("equippedWeaponName") ;
+	        
+	        
+	        //System.out.println("curr weap:" + currentWeapon);
+	        //System.out.println("prev weap:" + oldWeapon);
+	        //System.out.println("weap DMG: " + dmg);
+
+	        
 	        String weaponNeeded = "Sword";
 	        return (	(oldWeapon != currentWeapon) && (currentWeapon.toLowerCase().contains(weaponNeeded.toLowerCase() ) )		);
 	    }) ;
@@ -301,9 +311,13 @@ public class GoalLib {
 	        String agentId = S.wom.agentId ;
 	        WorldEntity agentOldState = old.elements.get(agentId) ;
 	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
-	        String oldWeapon = agentOldState.getStringProperty("equippedWeapon");
-	        String currentWeapon = agentCurrentState.getStringProperty("equippedWeapon") ;
+	        String oldWeapon = agentOldState.getStringProperty("equippedWeaponName");
+	        String currentWeapon = agentCurrentState.getStringProperty("equippedWeaponName") ;
 	        String weaponNeeded = "Bow";
+	        
+	        System.out.println("curr weap:" + currentWeapon);
+	        System.out.println("prev weap:" + oldWeapon);
+	        
 	        return (	(oldWeapon != currentWeapon) && (currentWeapon.toLowerCase().contains(weaponNeeded.toLowerCase() ) )		);
 	    }) ;
 	    
@@ -342,11 +356,11 @@ public class GoalLib {
 	          		
 	          		BowFoundAndUsed = true;
 	          		
-	          		
+
 	          		// Freeze the Nethack window until Enter key is pressed. 
 	          		// So we can see the progress of the goals in the actual game.
-	          		System.out.println("Hit RETURN to continue.") ;
-	                new Scanner(System.in) . nextLine() ;
+	          		//System.out.println("Hit RETURN to continue.") ;
+	                //new Scanner(System.in) . nextLine() ;
 
 	          		break;
 	          	}
@@ -463,8 +477,95 @@ public class GoalLib {
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
  
- 
+	public static GoalStructure aimWithBow() {
+  		//System.out.println("AND HERE!");
+
+	    Goal g4 = goal("aim-with-bow") ;
+	    
+	    g4.toSolve((MyAgentState S) -> {
+	        //WorldModel old = S.previousWom ;
+	        WorldModel current = S.wom ;
+	        String agentId = S.wom.agentId ; 
+	        //WorldEntity agentOldState = old.elements.get(agentId) ;
+	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+	        //String oldWeapon = agentOldState.getStringProperty("equippedWeapon");
+	        String currentWeapon = agentCurrentState.getStringProperty("equippedWeaponName") ;
+	        Boolean isAiming = agentCurrentState.getBooleanProperty("aimingBow");
+	        //Boolean isSeen = agentCurrentState.getBooleanProperty("seenPlayer");
+	        String weaponNeeded = "Bow";
+	        
+	        
+	        System.out.println("curr weap: " + currentWeapon);
+	        System.out.println("Is aiming?: " + isAiming);
+	        //System.out.println("Is seen?: " + isSeen);
+
+	        
+	        return (	(currentWeapon.toLowerCase().contains(weaponNeeded.toLowerCase() ) )	&&	isAiming);
+	    }) ;
+	    
+	    
+	     
+	    Action aimWithBow = action("aim-with-bow") ;
+	    
+	    
+  		//System.out.println("1. HERE in equipBow()!");
+
+  		aimWithBow.do1((MyAgentState S) -> { 
+	        MyEnv env_ = (MyEnv) S.env() ;
+	        WorldModel current = S.wom ;
+	        //String weaponNeeded = "Bow";
+	        
+      		
+	        
+	        //WorldEntity inv = current.getElement("Inventory");
+	        
+			boolean aimedWithBow = false;
+
+	        
+	        
+          	//	System.out.println("3. Iterating the inventory and looking for the needed BOW WEAPON!");
+
+	          	
+      		env_.interact(current.agentId, null, Interact.AimWithBow);
+	       
+       		// move the part of if(foodFoundAndEaten)... in this if statement, no boolean needed
+	          		
+      		aimedWithBow = true;
+	          		
+
+	          		// Freeze the Nethack window until Enter key is pressed. 
+	          		// So we can see the progress of the goals in the actual game.
+	          		//System.out.println("Hit RETURN to continue.") ;
+	                //new Scanner(System.in) . nextLine() ;
+
+      		System.out.println("Hit RETURN to continue.") ;
+	        new Scanner(System.in) . nextLine() ;
+	          	
+	         
+	        
+	       
+	        if(aimedWithBow) {
+	            S.updateState() ;
+	            return S ;
+	        }
+	        else {
+	            return null ;
+	        }
+	    }) ;
+	    
+	    Tactic aimWithBowTactic = aimWithBow.lift() ;
+	    
+	    g4.withTactic(FIRSTof(aimWithBowTactic, ABORT())) ;
+	    
+	    GoalStructure g4_ = g4.lift() ;
+	    
+	    return g4_ ;
+	    
+	}
+	
+	
 	/**
 	 * Construct a goal structure that will make an agent to move towards the given entity,
 	 * until it is in the interaction-distance with the entity; and then interacts with it.

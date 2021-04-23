@@ -12,7 +12,7 @@ import eu.iv4xr.framework.spatial.*;
  */
 public class MonsterWrapper implements  LineIntersectable {
     
-   
+    
     Monster monster ;
     private Box box ;
     

@@ -34,7 +34,7 @@ public class MyAgentState extends State {
 
     public SimpleNavGraph simpleWorldNavigation;
     Pathfinder pathfinder = new AStar() ;
-
+ 
     /**
      * Attaching MyEnv to this agent-state. Initializing the first World Model, and
      * initializing the navigation-graph. Assumption: the game is already launched.
@@ -52,7 +52,7 @@ public class MyAgentState extends State {
 
         this.wom = env_.nethackUnderTest.observe();
         this.simpleWorldNavigation = env_.nethackUnderTest.getNavigationGraph();
-
+       
         return this;
     }
 

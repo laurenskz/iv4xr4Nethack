@@ -1,6 +1,9 @@
 package org.projectxy.iv4xrLib;
 
 import static nl.uu.cs.aplib.AplibEDSL.SEQ;
+import static nl.uu.cs.aplib.AplibEDSL.ANYof;
+import static nl.uu.cs.aplib.AplibEDSL.FIRSTof;
+
 import static nl.uu.cs.aplib.AplibEDSL.action;
 import static nl.uu.cs.aplib.AplibEDSL.goal;
 
@@ -60,7 +63,7 @@ public class Example_using_pathfinding {
             }
         }
         assertTrue(Utils.sameTile(state.wom.position,destination)) ;
-    }
+    } 
     
     // this test fails because a monster moves to block a tile along the path;
     // this needs to be handled. todo.
@@ -76,7 +79,7 @@ public class Example_using_pathfinding {
         agent.attachEnvironment(env) ;
         
         // give a goal-structure to the agent:
-        GoalStructure g = Utils.entityVisited("149") ;
+        GoalStructure g = SEQ(GoalLib.equipBow(),Utils.entityVisited("78")) ; 
         agent.setGoal(g) ;
         
         
@@ -95,9 +98,11 @@ public class Example_using_pathfinding {
             }
         }
         
+        
         for(WorldEntity e : state.wom.elements.values()) {
             System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position) ;
         }
+        System.out.println("Goal status: " + g.getStatus()) ;
     }
     
     @Test
@@ -112,15 +117,22 @@ public class Example_using_pathfinding {
         agent.attachEnvironment(env) ;
         
         // give a goal-structure to the agent:
-        GoalStructure g = Utils.closeToAMonster("157",3) ;
+        
+        GoalStructure g = SEQ(GoalLib.equipBow(), Utils.closeToAMonster("160",3)) ;
+        //GoalStructure g =  Utils.closeToAMonster("158",3) ;
         agent.setGoal(g) ;
+        
+        for(WorldEntity e : state.wom.elements.values()) {
+            System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position) ;
+        }
+        
         
         int turn = 0 ;
         while(g.getStatus().inProgress()) {
             agent.update();
             turn++ ;
             System.out.println("[" + turn + "] agent@" + state.wom.position ) ;
-            Thread.sleep(350);
+            Thread.sleep(300);
             if(turn > 100) { // forcing break the agent seems to take forever...
                 break ;
             }
@@ -129,11 +141,18 @@ public class Example_using_pathfinding {
         for(WorldEntity e : state.wom.elements.values()) {
             System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position) ;
         }
+        
+        
+        
+        
     }
     
     @Test
     public void test_navigate_to_an_entity_and_pickitup() throws InterruptedException {
         // launch the game:
+    	
+    	
+    	
         NethackWrapper driver = new NethackWrapper() ;
         driver.launchNethack(new NethackConfiguration()) ;
         
@@ -144,8 +163,13 @@ public class Example_using_pathfinding {
         MyEnv env = new MyEnv(driver) ;
         agent.attachEnvironment(env) ;
         
+        
+        for(WorldEntity e : state.wom.elements.values()) {
+            System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position) ;
+        }
+        
         // give a goal-structure to the agent:
-        GoalStructure g = SEQ(Utils.entityVisited("107"), GoalLib.pickUpItem()) ;
+        GoalStructure g = SEQ(Utils.entityVisited("72"), GoalLib.pickUpItem()) ;
         agent.setGoal(g) ;
         
         // run the agent to control the game:
@@ -155,7 +179,7 @@ public class Example_using_pathfinding {
             agent.update();
             turn++ ;
             System.out.println("[" + turn + "] agent@" + state.wom.position ) ;
-            Thread.sleep(350);
+            Thread.sleep(500);
             if(turn > 200) {
                 // forcing break the agent seems to take forever...
                 break ;

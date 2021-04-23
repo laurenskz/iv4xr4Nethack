@@ -7,12 +7,17 @@ import nl.uu.cs.aplib.mainConcepts.*;
 import nl.uu.cs.aplib.utils.Pair;
 import static nl.uu.cs.aplib.AplibEDSL.* ;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
+import org.projectxy.iv4xrLib.NethackWrapper.Interact;
 import org.projectxy.iv4xrLib.NethackWrapper.Movement;
 
 import A.B.Monster;
+import A.B.Tile;
+import A.B.Wall;
 
 public class Utils {
 
@@ -137,11 +142,30 @@ public class Utils {
             if (! S.isAlive()) return null ;
             Vec3 agentCurrentPosition = S.wom.position ;
             WorldEntity e = S.wom.getElement(monsterId) ;
+            //WorldEntity previouse = S.previousWom.getElement(monsterId) ;
+
             if(e == null) {
                // the monster is not there, or has been killed; well then we can't move to it either
                return null ;
             }
+            
+            
+            
             List<Vec3> path0 = S.currentPathToFollow ;
+            
+            
+//            if(e == null) {		 
+//            	if(e != previouse) { // the monster has been killed
+//            		return path0;
+//            	}
+//            	else {
+//                // the monster is not there
+//                return null ;
+//            	}
+//            	
+//             }
+            
+            
             // check if re-planing is not needed:
             if(path0 != null) {
                 Vec3 last = path0.get(path0.size() - 1) ;
@@ -231,6 +255,251 @@ public class Utils {
           }) ;
     }
     
+    
+    ///////////////////
+    
+    public static Action bowAttack() {
+        return action("bow-attack").do2((MyAgentState S) -> (Vec3 monsterLocation) -> {
+        	
+        	//S.setAPathToFollow(path) ;
+            
+            MyEnv env = (MyEnv) S.env() ;
+            Vec3 agentCurrentPosition = S.wom.position ;
+            int mx = (int) monsterLocation.x; 					// monster's x coordinate
+            int my = (int) monsterLocation.y;					// monster's y coordinate
+            int ax = (int) agentCurrentPosition.x;				// agent's x coordinate
+            int ay = (int) agentCurrentPosition.y;				// agent's y coordinate
+            
+            // int dx = (int) (monsterLocation.x - agentCurrentPosition.x) ;
+            // int dy = (int) (monsterLocation.y - agentCurrentPosition.y) ;
+            
+            
+            if(mx == ax) {
+            	
+            	if(my > ay) {
+            		
+            		int dy = my=ay;
+            		
+            		env.interact(S.wom.agentId, null, Interact.AimWithBow);
+            		env.move(Movement.DOWN) ;	
+            	}
+            	else {
+            		
+            		int dy = ay=my;
+            		env.interact(S.wom.agentId, null, Interact.AimWithBow);
+            		env.move(Movement.UP) ;	
+            		
+            	}
+            	
+            	
+                //System.out.println(">>> Attack R") ;
+                //env.move(Movement.RIGHT) ;
+            }
+            else if (my==ay) {
+            	
+            	
+            	if(mx > ax) { 
+            		
+            		int dx = mx-ax;
+            		
+            		env.interact(S.wom.agentId, null, Interact.AimWithBow);
+            		env.move(Movement.RIGHT) ;	
+            	}
+            	
+            	else {
+//            		int dx = ax-mx;
+//            		int isWall = dx;
+//            		
+//            		List<Vec3> walkableTiles = S.simpleWorldNavigation.vertices;
+//            		
+//            		
+//            		for (int i = mx+1; i<ax-1 ; i++) {
+//            			for (Vec3 v : walkableTiles) {
+//            				
+//            				if(Utils.sameTile(v, new Vec3(i, my, 0))) {
+//            					
+//            					isWall--;
+//            					System.out.println("isWall: "+ isWall);
+//            					//break;
+//            					
+//            				}		
+//            			}
+//            		}
+//            				
+//            		
+//            		if (isWall <= 2) {
+//            			
+//            			env.interact(S.wom.agentId, null, Interact.AimWithBow);
+//                		env.move(Movement.LEFT) ;	
+//            			
+//            		}
+//            			
+//            	}
+//            	
+            		env.interact(S.wom.agentId, null, Interact.AimWithBow);
+            		env.move(Movement.LEFT) ;	
+            }}
+           
+            else {
+                throw new IllegalArgumentException() ;
+            }
+            // let's also reset the planned path, if there is any:
+            S.currentPathToFollow = null ;
+            S.updateState() ;
+            return S ;
+          }) 
+        		
+        		
+          .on((MyAgentState S) -> { 
+             if (! S.isAlive()) return null ;
+             // check if one of the monsters is vertically or horizontally across the agent
+             for(WorldEntity e : S.wom.elements.values()) {
+                 if(e.type.equals(Monster.class.getSimpleName())) {
+                     // e is a monster
+                	 
+                	 int mx = (int) e.position.x; 					// monster's x coordinate
+                     int my = (int) e.position.y;					// monster's y coordinate
+                     int ax = (int) S.wom.position.x;				// agent's x coordinate
+                     int ay = (int) S.wom.position.y;				// agent's y coordinate
+                	 
+                     //int dx = (int) Math.abs(e.position.x - S.wom.position.x) ;
+                     //int dy = (int) Math.abs(e.position.y - S.wom.position.y) ;
+                     
+             		 List<Vec3> walkableTiles = S.simpleWorldNavigation.vertices;
+             		 int dx = Math.abs(ax-mx);
+             		 int dy = Math.abs(ay-my);
+             		 int isWall;
+
+                     
+                     
+                     if (	(mx == ax || my == ay) 	) {
+                    	 
+                    	 
+//                    	 int dx = Math.abs(ax-mx);
+//                    	 int dy = Math.abs(ay-my);
+//                    	 int isWall;
+                    	 
+                    	 if (mx<ax) {
+	                 		 isWall = dx;
+	                 		
+	                 		 //List<Vec3> walkableTiles = S.simpleWorldNavigation.vertices;
+	                 		
+	                 		
+	                 		 for (int i = mx; i<ax ; i++) {
+	                 			 for (Vec3 v : walkableTiles) {
+	                 				
+	                 				 if(Utils.sameTile(v, new Vec3(i, my, 0))) {
+	                 					
+	                 					 isWall--;
+	                 					 System.out.println("isWall: "+ isWall);
+	                 					 //break;
+	                 					
+	                 				 }		
+	                 			 }
+	                 		 }
+	                 		 
+                    	 }
+                    	 else if(mx>ax) {
+                    		 
+                    		 isWall = dx;
+ 	                 		
+	                 		 //List<Vec3> walkableTiles = S.simpleWorldNavigation.vertices;
+	                 		
+	                 		
+	                 		 for (int i = ax; i<mx ; i++) {
+	                 			 for (Vec3 v : walkableTiles) {
+	                 				
+	                 				 if(Utils.sameTile(v, new Vec3(i, my, 0))) {
+	                 					
+	                 					 isWall--;
+	                 					 System.out.println("isWall: "+ isWall);
+	                 					 //break;
+	                 					
+	                 				 }		
+	                 			 }
+	                 		 }
+                    		 
+                    		 
+                    	 }
+                    	 else {
+	                 		 isWall = dy;
+
+                    		 if (my<ay) {
+    	                 		 //isWall = dy;
+    	                 		
+    	                 		 //List<Vec3> walkableTiles = S.simpleWorldNavigation.vertices;
+    	                 		
+    	                 		
+    	                 		 for (int i = my; i<ay ; i++) {
+    	                 			 for (Vec3 v : walkableTiles) {
+    	                 				
+    	                 				 if(Utils.sameTile(v, new Vec3(mx, i, 0))) {
+    	                 					
+    	                 					 isWall--;
+    	                 					 System.out.println("isWall: "+ isWall);
+    	                 					 //break;
+    	                 					
+    	                 				 }		
+    	                 			 }
+    	                 		 }
+    	                 		 
+                        	 }
+                    		 else if (my>ay){
+                    			 
+                    			 //isWall = dy;
+     	                 		
+    	                 		 //List<Vec3> walkableTiles = S.simpleWorldNavigation.vertices;
+    	                 		
+    	                 		
+    	                 		 for (int i = ay; i<my ; i++) {
+    	                 			 for (Vec3 v : walkableTiles) {
+    	                 				
+    	                 				 if(Utils.sameTile(v, new Vec3(mx, i, 0))) {
+    	                 					
+    	                 					 isWall--;
+    	                 					 System.out.println("isWall: "+ isWall);
+    	                 					 System.out.println("Position: "+ i +","+ mx);
+    	                 					 //break;
+    	                 					
+    	                 				 }		
+    	                 			 }
+    	                 		 }
+                    			 
+                    			 
+                    		 }
+                    		 
+                    		 
+                    		 
+                    	 }
+                 				
+                 		
+                 		 if (isWall <= 2) {
+                 			
+                 			return e.position ;
+                 			
+                 		 }
+                    	 
+                    	 
+                    	 
+                    	 
+                    	 
+                    	 
+                    	 
+                    	 
+                         // then the monster is vertically or horizontally across our agent
+                         //System.out.println(">>> monster is near: " + e.position) ;
+                         
+                     }
+                 }
+             }
+             return null ;       
+          }) ;
+    }
+    
+    //////////////////
+    
+    
+    
     /**
      * A goal to get an agent to the location of an non-monster entity.
      */
@@ -258,7 +527,7 @@ public class Utils {
                     return Utils.sameTile(S.wom.position, destination_) ;
                 })
                 .withTactic(FIRSTof(
-                              meleeAttack().lift(),
+                              bowAttack().lift(),
                               travelTo(entityId,destination,monsterAvoidDistance).lift(), 
                               ABORT()));
         
@@ -272,10 +541,13 @@ public class Utils {
                     WorldEntity m = S.wom.getElement(monsterId) ;
                     int dx = (int) Math.abs(m.position.x - S.wom.position.x) ;
                     int dy = (int) Math.abs(m.position.y - S.wom.position.y) ;
-                    return (dx + dy == 1) ;
+                    boolean monsterIsAlive = m.getBooleanProperty("alive");
+                    
+                    
+                    return  (dx + dy == 1) || (!monsterIsAlive)   ;
                  })
                 .withTactic(FIRSTof(
-                        meleeAttack().lift(),
+                		bowAttack().lift(),
                         travelToMonster(monsterId,monsterAvoidDistance).lift(), 
                         ABORT()));
         

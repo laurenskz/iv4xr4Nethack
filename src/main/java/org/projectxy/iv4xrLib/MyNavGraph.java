@@ -29,7 +29,7 @@ public class MyNavGraph extends SimpleNavGraph {
             return dist0;
         }
     }
-
+ 
     /**
      * Heuristic distance between any two vertices. Here it is chosen to be the
      * Manhattan distance between them.

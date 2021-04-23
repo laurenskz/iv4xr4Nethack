@@ -92,7 +92,7 @@ public class MyEnv extends W3DEnvironment {
 	 *        new EnvOperation("agent0",null,"Observe",null,Dontcare.class)
 	 *        new EnvOperation("agent0","button1","Interact",null,Dontcare.class)
 	 *        
-	 */
+	 */ 
 	protected Object sendCommand_(EnvOperation cmd) {
 
 		// finish this implementation

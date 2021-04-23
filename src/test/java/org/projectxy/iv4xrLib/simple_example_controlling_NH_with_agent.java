@@ -26,7 +26,7 @@ public class simple_example_controlling_NH_with_agent {
             //Vec3 currentPosition = S.wom.position ;
             //Vec3 east = Vec3.add(currentPosition, new Vec3(1,0,0)) ;
             MyEnv env = (MyEnv) S.env() ;
-            env.move(Movement.RIGHT) ;
+            env.move(Movement.RIGHT) ; 
             return S ;
         }) ;
         Tactic solver = SEQ(moveEast.lift(), doNothing.lift()) ;
@@ -48,7 +48,9 @@ public class simple_example_controlling_NH_with_agent {
         // give the goal-structure to the agent:
         // we first lift g to a GoalStructure, because the agent wants a GoalStructure rather than a goal:
         //GoalStructure g_ = g.lift() ;
-        GoalStructure g_ = GoalLib.pickUpItem();
+        
+        GoalStructure g_ = SEQ(GoalLib.equipBow(), GoalLib.aimWithBow());
+        //GoalStructure g_ = GoalLib.equipBow();
         
         agent.setGoal(g_) ;
         
