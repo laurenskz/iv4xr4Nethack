@@ -129,7 +129,6 @@ public class Utils {
                     }
                 }    
                 return path0 ;} )
-                
                 ;
     }
     
@@ -169,8 +168,8 @@ public class Utils {
             // check if re-planing is not needed:
             if(path0 != null) {
                 Vec3 last = path0.get(path0.size() - 1) ;
-                int dx = (int) Math.abs(last.x - agentCurrentPosition.x) ;
-                int dy = (int) Math.abs(last.y- agentCurrentPosition.y) ;
+                int dx = (int) Math.abs(last.x - e.position.x) ;
+                int dy = (int) Math.abs(last.y- e.position.y) ;
                 if(dx + dy == 1) {
                     // the current path targets a tile next to the monster; no replanning is needed:
                     return path0 ;
@@ -528,6 +527,7 @@ public class Utils {
                 })
                 .withTactic(FIRSTof(
                               bowAttack().lift(),
+                              //meleeAttack().lift(),
                               travelTo(entityId,destination,monsterAvoidDistance).lift(), 
                               ABORT()));
         
@@ -548,11 +548,41 @@ public class Utils {
                  })
                 .withTactic(FIRSTof(
                 		bowAttack().lift(),
+                		//meleeAttack().lift(),
                         travelToMonster(monsterId,monsterAvoidDistance).lift(), 
                         ABORT()));
         
         return g.lift() ;
     }
 
+    
+    // for debugging
+    public static void debugPrintPath(Vec3 agentCurrentPosition, List<Vec3> path) {
+        if(path == null) {
+            System.out.println(">>> Path to follow is null.") ;
+            return ;
+        }
+        if(path.isEmpty()) {
+            System.out.println(">>> Path to follow is empty.") ;
+            return ;
+        }
+        System.out.println(">>> Path to follow, size:" + path.size()) ;
+        System.out.println("       agent @" + agentCurrentPosition) ;
+        System.out.println("       path[0]: " + path.get(0)) ;
+        System.out.println("       last: " + path.get(path.size() - 1)) ;
+        int duplicates = 0 ;
+        for(int k = 0 ; k<path.size()-1; k++) {
+            for (int m = k+1; m<path.size(); m++) {
+                var u1 = path.get(k) ;
+                var u2 = path.get(m) ;
+                if(Utils.sameTile(u1,u2)) {
+                    duplicates++ ;
+                    System.out.println("         Duplicated: " + u1) ;
+                }
+            }
+        }
+        System.out.println("       duplicates: " + duplicates) ;
+        if (duplicates>0) throw new Error("The Pathdfinder produces a path containing duplicate nodes!!") ;
+    }
 
 }

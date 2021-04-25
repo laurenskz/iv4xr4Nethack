@@ -46,7 +46,7 @@ public class TacticLib {
 	 * 
 	 * The tactic is only enabled when interaction is possible. You have to implement a proper guard that
 	 * can decide/predict if interaction would be possible or otherwise.
-	 */
+	 
 	public static Tactic interact(String entityId) { 
 
 		Tactic interact = 
@@ -60,7 +60,8 @@ public class TacticLib {
 
 					// invoke the method inteact() in MyEnv, and stored the resulting observed
 					// SUT-state in some variable:
-					var obs = ((MyEnv) belief.env()).interact(belief.wom.agentId,entityId);
+				    throw new UnsupportedOperationException() ;
+					//var obs = ((MyEnv) belief.env()).interact(belief.wom.agentId,entityId);
 
 					// We can alternatively do this through wom.interact(), which will eventually forward
 					// the call to env.interact():
@@ -69,9 +70,9 @@ public class TacticLib {
 
 					// we will merge the obtained observation into belief.wom. This wom acts as
 					// aggregate of all observations collected so far:
-					belief.wom.mergeNewObservation(obs);
+					//belief.wom.mergeNewObservation(obs);
 
-					return belief;
+					//return belief;
 				})
 
 				// Next we need to set a guard, when "interact" would be possible. E.g. the SUT might not
@@ -98,6 +99,7 @@ public class TacticLib {
 		return interact;
 
 	}
+	*/
 
 	/**
 	 * A tactic that would drive the agent to trave to the given entity. The implementation of

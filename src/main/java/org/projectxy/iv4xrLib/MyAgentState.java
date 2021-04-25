@@ -106,6 +106,7 @@ public class MyAgentState extends State {
         for(Integer nd : path) {
             path_.add(simpleWorldNavigation.vertices.get(nd)) ;
         }
+        Utils.debugPrintPath(wom.position,path_) ;
         return path_ ;
     }
     

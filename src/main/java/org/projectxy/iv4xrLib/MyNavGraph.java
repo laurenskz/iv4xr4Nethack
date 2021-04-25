@@ -33,13 +33,14 @@ public class MyNavGraph extends SimpleNavGraph {
     /**
      * Heuristic distance between any two vertices. Here it is chosen to be the
      * Manhattan distance between them.
-     */
+     * Hmm... ok let's not do this. Keep using straight-line distance as heuristic.
     @Override
     public float heuristic(int from, int to) {
         Vec3 p1 = vertices.get(from);
         Vec3 p2 = vertices.get(to);
         return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y) + Math.abs(p1.z - p2.z);
     }
+    */
     
     public void setMonstersDangerArea(float areaWidth) {
         setMonstersDangerArea(areaWidth,null) ;

@@ -569,7 +569,7 @@ public class GoalLib {
 	/**
 	 * Construct a goal structure that will make an agent to move towards the given entity,
 	 * until it is in the interaction-distance with the entity; and then interacts with it.
-	 */
+	 
 	public static GoalStructure entityInteracted(String entityId) {
 
 		float interactionDistance = 0.5f; // specify whatever the interaction distance is...
@@ -598,6 +598,7 @@ public class GoalLib {
 
 		return SEQ(entityInCloseRange(entityId,interactionDistance), interacton.lift());
 	}
+	*/
 
 	/**
 	 * Create a test-goal to check the state of an in-game entity, whether it satisfies the given predicate.

@@ -51,7 +51,7 @@ public class A_SimpleExample_of_Test_Using_TestAgent {
 
 		GoalStructure testingTask = SEQ(
 
-				GoalLib.entityInteracted("button0"),
+				//GoalLib.entityInteracted("button0"),
 
 				GoalLib.entityInvariantChecked(testAgent,
 						"door1", 
@@ -81,6 +81,5 @@ public class A_SimpleExample_of_Test_Using_TestAgent {
 		assertTrue(dataCollector.getNumberOfPassVerdictsSeen() == 1);
 
 	}
-
 }
 
