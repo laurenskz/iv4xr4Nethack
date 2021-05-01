@@ -141,7 +141,7 @@ public class NethackWrapper {
             wom.elements.put(e.id, e);
         }
 
-        
+         
         
         // items that are still on the floor:
         for (ItemTile itemTile : nethack.items) {
@@ -321,7 +321,7 @@ public class NethackWrapper {
         for (int index = 0; index < N; index++) {
             Item item = nethack.ps.inventory.get(index);
             if (item.ID.equals(itemId)) {
-            	System.out.println("THIS was called by SelectItemFromInv");
+            	// System.out.println("THIS was called by SelectItemFromInv");
                 return useItem(index);
                 
                
@@ -344,12 +344,12 @@ public class NethackWrapper {
             break;
 
         case SelectItemFromInv:
-        	System.out.println("THIS is in SelectItemFromInv!");
+        	// System.out.println("THIS is in SelectItemFromInv!");
 
             // String foodId = item.ID;
             useItem(itemId);
-            System.out.println("Item Id: " + itemId);
-            System.out.println("int key: " + key);
+            // System.out.println("Item Id: " + itemId);
+            // System.out.println("int key: " + key);
 
             break;
 

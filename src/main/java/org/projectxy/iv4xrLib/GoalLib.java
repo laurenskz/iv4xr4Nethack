@@ -5,6 +5,7 @@ import static nl.uu.cs.aplib.AplibEDSL.*;
 
 import java.util.Scanner;
 import java.util.function.Predicate;
+import java.util.*;
 
 import org.projectxy.iv4xrLib.NethackWrapper.Interact;
 
@@ -422,6 +423,9 @@ public class GoalLib {
 	    
   		System.out.println("1. HERE in pickUpItem!");
   		
+
+
+  		
   
   		pickUpItem.do1((MyAgentState S) -> { 
 	        MyEnv env_ = (MyEnv) S.env() ;
@@ -439,13 +443,16 @@ public class GoalLib {
 			boolean itemFoundAndPicked = false;
 			
 			System.out.println("inventory size: " + size );
+			//System.out.println("itemFoundAndPicked1: " + itemFoundAndPicked );
+
 
 	        
 	        env_.interact(current.agentId, null, Interact.PickupItem);
+			//System.out.println("itemFoundAndPicked2: " + itemFoundAndPicked );
+
 	       
 	        itemFoundAndPicked = true;
-	          		
-	          		
+			//System.out.println("itemFoundAndPicked3: " + itemFoundAndPicked );
 	          	
 	        // Freeze the Nethack window until Enter key is pressed. 
 	        // So we can see the progress of the goals in the actual game.
@@ -459,7 +466,11 @@ public class GoalLib {
 	       
 	        if(itemFoundAndPicked) {
 	            S.updateState() ;
+	            int size1 = inv.elements.size();
+				System.out.println("inventory size1: " + size1 );
+
 	            return S ;
+	            
 	        }
 	        else {
 	            return null ;
@@ -564,6 +575,121 @@ public class GoalLib {
 	    return g4_ ;
 	    
 	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	
+	// Equip the best available weapon from inventory (the one with the highest damage)
+	public static GoalStructure equipBestAvailableWeapon() {
+  		//System.out.println("AND HERE!");
+
+	    
+	    Goal g1 = goal("Equip Best Available Weapon") ;
+	    
+	    g1.toSolve((MyAgentState S) -> {
+	        WorldModel old = S.previousWom ;
+	        WorldModel current = S.wom ;
+	        String agentId = S.wom.agentId ;
+	        WorldEntity agentOldState = old.elements.get(agentId) ;
+	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+	        String oldWeapon = agentOldState.getStringProperty("equippedWeaponName");
+	        String currentWeapon = agentCurrentState.getStringProperty("equippedWeaponName") ;
+
+
+	        WorldEntity inventory = current.getElement("Inventory"); 
+
+	        int oldWeaponDamage = agentOldState.getIntProperty("equippedWeaponDmg");
+	        int currentWeaponDamage = agentCurrentState.getIntProperty("equippedWeaponDmg");
+	        
+	        return (	(oldWeapon != currentWeapon) || (oldWeaponDamage <= currentWeaponDamage) 	) ;
+	    }) ;
+	    
+	    Action equipBestAvailableWeapon = action("Equip Best Available Weapon") ;
+	    
+	    
+  		
+
+	    equipBestAvailableWeapon.do1((MyAgentState S) -> { 
+	        MyEnv env_ = (MyEnv) S.env() ;
+	        WorldModel current = S.wom ;
+	        
+	        String bowWeapon = "Bow";
+	        String swordWeapon = "Sword";
+
+
+	        WorldEntity inv = current.getElement("Inventory"); 
+	        
+			boolean bestWeaponEquipped = false;
+			int bestWeaponDmg = 0;
+	        
+	        for(WorldEntity item_ : inv.elements.values()) {
+          		System.out.println("Iterating the inventory elements and looking for the weapon with the higher damage..");
+          		//System.out.println(item_);
+          		if ((item_.type.toLowerCase().contains(bowWeapon.toLowerCase())) || (item_.type.toLowerCase().contains(swordWeapon.toLowerCase()))){
+          			
+     			
+	          		int dmg = item_.getIntProperty("attackDmg");
+	          		//String itemId = "";
+	          		
+	
+	          		
+	          		
+	
+		          	if( dmg > bestWeaponDmg   ) {
+		          		//System.out.println("AND HERE!");
+		          		
+		          		bestWeaponDmg = dmg;
+		          		String itemId = item_.id;
+		          	          		
+		          		//System.out.println("Item ID: " + itemId );
+		          		//System.out.println("Item Name: " + item_.type );
+		          		
+		          		env_.interact(current.agentId, itemId, Interact.SelectItemFromInv);
+		          		
+		          		System.out.println("Equipped item type: " + item_.type);
+		          		System.out.println("Equipped item damage: " + dmg);
+		          		
+		          		bestWeaponEquipped = true;
+		       
+		          		// move the part of if(foodFoundAndEaten)... in this if statement, no boolean needed
+		          		
+		          		
+		          		
+		          	
+		          		// Freeze the Nethack window until Enter key is pressed. 
+		          		// So we can see the progress of the goals in the actual game.
+		          		//System.out.println("Hit RETURN to continue.") ;
+		                //new Scanner(System.in) . nextLine() ;
+	
+		          		//break;
+		          	}
+          		}
+	         }
+	        System.out.println("Hit RETURN to continue.") ;
+	        new Scanner(System.in) . nextLine() ;
+	       
+	        if(bestWeaponEquipped) {
+	            S.updateState() ;
+	            return S ;
+	        }
+	        else {
+	            return null ;
+	        }
+	    }) ;
+	    
+	    
+	    Tactic equipBestAvailableWeaponTactic = equipBestAvailableWeapon.lift() ;
+	    
+	    g1.withTactic(FIRSTof(equipBestAvailableWeaponTactic, ABORT())) ;
+	    
+	    GoalStructure g1_ = g1.lift() ;
+	    
+	    return g1_ ;
+	    
+	}
+	
+	  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+
 	
 	
 	/**

@@ -10,6 +10,7 @@ import static nl.uu.cs.aplib.AplibEDSL.* ;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.function.Function;
 
 import org.projectxy.iv4xrLib.NethackWrapper.Interact;
@@ -115,8 +116,14 @@ public class Utils {
                 List<Vec3> path0 = S.currentPathToFollow ;
                 // if there is no path being planned, or if there is one planned,
                 // but the destination is different, plan a new path:
-                if(path0 == null 
-                        || ! Utils.sameTile(destination_,path0.get(path0.size()-1))) {
+                if(path0 == null
+                	     ||   path0.size()==0
+
+                	            ||      
+
+                	             ! Utils.sameTile(destination_,path0.get(path0.size()-1)))
+
+                	  {
                     float dw = Math.max(1, 2*monsterAvoidDistance) ;
                     ((MyNavGraph) S.simpleWorldNavigation).setMonstersDangerArea(dw) ;
                     path0 = S.getPath(agentCurrentPosition,destination_) ;
@@ -166,7 +173,7 @@ public class Utils {
             
             
             // check if re-planing is not needed:
-            if(path0 != null) {
+            if(path0 != null  &&   path0.size()>0) {
                 Vec3 last = path0.get(path0.size() - 1) ;
                 int dx = (int) Math.abs(last.x - e.position.x) ;
                 int dy = (int) Math.abs(last.y- e.position.y) ;
@@ -255,7 +262,9 @@ public class Utils {
     }
     
     
-    ///////////////////
+    /////////////////// 
+    
+    
     
     public static Action bowAttack() {
         return action("bow-attack").do2((MyAgentState S) -> (Vec3 monsterLocation) -> {
@@ -306,35 +315,7 @@ public class Utils {
             	}
             	
             	else {
-//            		int dx = ax-mx;
-//            		int isWall = dx;
 //            		
-//            		List<Vec3> walkableTiles = S.simpleWorldNavigation.vertices;
-//            		
-//            		
-//            		for (int i = mx+1; i<ax-1 ; i++) {
-//            			for (Vec3 v : walkableTiles) {
-//            				
-//            				if(Utils.sameTile(v, new Vec3(i, my, 0))) {
-//            					
-//            					isWall--;
-//            					System.out.println("isWall: "+ isWall);
-//            					//break;
-//            					
-//            				}		
-//            			}
-//            		}
-//            				
-//            		
-//            		if (isWall <= 2) {
-//            			
-//            			env.interact(S.wom.agentId, null, Interact.AimWithBow);
-//                		env.move(Movement.LEFT) ;	
-//            			
-//            		}
-//            			
-//            	}
-//            	
             		env.interact(S.wom.agentId, null, Interact.AimWithBow);
             		env.move(Movement.LEFT) ;	
             }}
@@ -444,12 +425,7 @@ public class Utils {
     	                 		 
                         	 }
                     		 else if (my>ay){
-                    			 
-                    			 //isWall = dy;
-     	                 		
-    	                 		 //List<Vec3> walkableTiles = S.simpleWorldNavigation.vertices;
-    	                 		
-    	                 		
+                    			
     	                 		 for (int i = ay; i<my ; i++) {
     	                 			 for (Vec3 v : walkableTiles) {
     	                 				
@@ -478,15 +454,6 @@ public class Utils {
                  			
                  		 }
                     	 
-                    	 
-                    	 
-                    	 
-                    	 
-                    	 
-                    	 
-                    	 
-                         // then the monster is vertically or horizontally across our agent
-                         //System.out.println(">>> monster is near: " + e.position) ;
                          
                      }
                  }
@@ -496,6 +463,97 @@ public class Utils {
     }
     
     //////////////////
+    public static Action equipBestAvailableWeapon() {
+        return action("equip Best Available Weapon").do2((MyAgentState S) -> (String itemId) -> { 
+	        MyEnv env_ = (MyEnv) S.env() ;
+	        WorldModel current = S.wom ;
+	        //WorldModel old = S.previousWom ;
+
+	        //WorldEntity currentInv = current.getElement("Inventory"); 
+	        //WorldEntity oldInv = old.getElement("Inventory"); 
+
+			boolean bestWeaponEquipped = false;
+			
+	        //String agentId = S.wom.agentId ;
+	        //WorldEntity agentCurrentState = current.elements.get(agentId) ;
+	        //int bestWeaponDmg = agentCurrentState.getIntProperty("equippedWeaponDmg");
+
+			
+			//int oldInvSize = oldInv.elements.size();
+			//System.out.println("old inv size: "+ oldInvSize);
+			
+
+      		env_.interact(current.agentId, itemId, Interact.SelectItemFromInv);
+      		
+      		
+      		bestWeaponEquipped = true;
+   
+		    
+	        if(bestWeaponEquipped) {
+	        	
+	            S.updateState() ;
+	            return S ;
+	        }
+	        else {
+	            return null ;
+	        }
+	        
+	    })
+		.on((MyAgentState S) -> { 
+			WorldModel current = S.wom ;
+	        WorldModel old = S.previousWom ;
+
+	        String bowWeapon = "Bow";
+	        String swordWeapon = "Sword";
+
+	        WorldEntity currentInv = current.getElement("Inventory"); 
+	        WorldEntity oldInv = old.getElement("Inventory"); 
+
+	        String agentId = S.wom.agentId ;
+	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+	        int bestWeaponDmg = agentCurrentState.getIntProperty("equippedWeaponDmg");
+
+			int oldInvSize = oldInv.elements.size();
+			System.out.println("old inv size: "+ oldInvSize);
+			
+	        for(WorldEntity item_ : currentInv.elements.values()) {
+          		System.out.println("Iterating the inventory elements and looking for the weapon with the higher damage..");
+          		//System.out.println(item_);
+          		if ((item_.type.toLowerCase().contains(bowWeapon.toLowerCase())) || (item_.type.toLowerCase().contains(swordWeapon.toLowerCase()))){
+          			
+	          		int dmg = item_.getIntProperty("attackDmg");
+	
+		          	if( dmg > bestWeaponDmg   ) {
+		          		//System.out.println("AND HERE!");
+		          		
+		          		bestWeaponDmg = dmg;
+		          		String itemId = item_.id;
+		          	          		
+		          		
+		          		
+		          		System.out.println("Equipped item type: " + item_.type);
+		          		System.out.println("Equipped item damage: " + dmg);
+		          		
+		          		return itemId;
+		          		
+		          		
+		          		// Freeze the Nethack window until Enter key is pressed. 
+		          		// So we can see the progress of the goals in the actual game.
+		          		//System.out.println("Hit RETURN to continue.") ;
+		                //new Scanner(System.in) . nextLine() ;
+	
+		          		//break;
+		          	}
+		          	
+          		}
+	         }
+	        return null;
+			
+         }) ;
+        
+    }
+    
+    ////////////////////// /////////////////////////////////////////////////////////////////////////////////////////
     
     
     
@@ -515,6 +573,12 @@ public class Utils {
         String destinationName = entityId == null ? destination.toString() : entityId ;
         Goal g = goal(destinationName + " is visited") 
                 .toSolve((MyAgentState S) -> {
+                
+              		//WorldEntity inv = S.wom.getElement("Inventory");
+                	//int size = inv.elements.size();
+        			//System.out.println("IInventory size: " + size );
+                	
+                	
                     Vec3 destination_ = destination ;
                     if(entityId != null) {
                         WorldEntity e = S.wom.getElement(entityId) ;
@@ -526,8 +590,9 @@ public class Utils {
                     return Utils.sameTile(S.wom.position, destination_) ;
                 })
                 .withTactic(FIRSTof(
+                			  equipBestAvailableWeapon().lift(),
                               bowAttack().lift(),
-                              //meleeAttack().lift(),
+                              meleeAttack().lift(),
                               travelTo(entityId,destination,monsterAvoidDistance).lift(), 
                               ABORT()));
         
@@ -547,8 +612,9 @@ public class Utils {
                     return  (dx + dy == 1) || (!monsterIsAlive)   ;
                  })
                 .withTactic(FIRSTof(
+                		equipBestAvailableWeapon().lift(),
                 		bowAttack().lift(),
-                		//meleeAttack().lift(),
+                		meleeAttack().lift(),
                         travelToMonster(monsterId,monsterAvoidDistance).lift(), 
                         ABORT()));
         

@@ -1,4 +1,4 @@
-package org.projectxy.iv4xrLib;
+package org.projectxy.iv4xrLib; 
 
 import nl.uu.cs.aplib.mainConcepts.*;
 import static nl.uu.cs.aplib.AplibEDSL.* ;
@@ -49,7 +49,10 @@ public class simple_example_controlling_NH_with_agent {
         // we first lift g to a GoalStructure, because the agent wants a GoalStructure rather than a goal:
         //GoalStructure g_ = g.lift() ;
         
-        GoalStructure g_ = SEQ(GoalLib.equipBow(), GoalLib.aimWithBow());
+        
+        GoalStructure g_ = GoalLib.equipBestAvailableWeapon();
+        //GoalStructure g_ = GoalLib.restoreHealthFromInventory();
+        //GoalStructure g_ = SEQ(GoalLib.equipBow(), GoalLib.aimWithBow());
         //GoalStructure g_ = GoalLib.equipBow();
         
         agent.setGoal(g_) ;
