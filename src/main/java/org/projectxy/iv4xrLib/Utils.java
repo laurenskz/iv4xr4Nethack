@@ -286,15 +286,15 @@ public class Utils {
             	
             	if(my > ay) {
             		
-            		int dy = my=ay;
+            		//int dy = my=ay;
             		
-            		env.interact(S.wom.agentId, null, Interact.AimWithBow);
+            		//env.interact(S.wom.agentId, null, Interact.AimWithBow);
             		env.move(Movement.DOWN) ;	
             	}
             	else {
             		
-            		int dy = ay=my;
-            		env.interact(S.wom.agentId, null, Interact.AimWithBow);
+            		// dy = ay=my;
+            		//env.interact(S.wom.agentId, null, Interact.AimWithBow);
             		env.move(Movement.UP) ;	
             		
             	}
@@ -308,15 +308,15 @@ public class Utils {
             	
             	if(mx > ax) { 
             		
-            		int dx = mx-ax;
+            		//int dx = mx-ax;
             		
-            		env.interact(S.wom.agentId, null, Interact.AimWithBow);
+            		//env.interact(S.wom.agentId, null, Interact.AimWithBow);
             		env.move(Movement.RIGHT) ;	
             	}
             	
             	else {
-//            		
-            		env.interact(S.wom.agentId, null, Interact.AimWithBow);
+            		
+            		//env.interact(S.wom.agentId, null, Interact.AimWithBow);
             		env.move(Movement.LEFT) ;	
             }}
            
@@ -332,6 +332,18 @@ public class Utils {
         		
           .on((MyAgentState S) -> { 
              if (! S.isAlive()) return null ;
+             
+             MyEnv env = (MyEnv) S.env() ;
+
+             
+             WorldModel current = S.wom ;
+ 	         String agentId = S.wom.agentId ;
+ 	         WorldEntity agentCurrentState = current.elements.get(agentId) ;
+ 	         String currentWeapon = agentCurrentState.getStringProperty("equippedWeaponName") ;
+ 	         String weaponNeeded = "Bow";
+ 	         
+ 	         //if (!(currentWeapon.toLowerCase().contains(weaponNeeded.toLowerCase() ) )) return null;
+             
              // check if one of the monsters is vertically or horizontally across the agent
              for(WorldEntity e : S.wom.elements.values()) {
                  if(e.type.equals(Monster.class.getSimpleName())) {
@@ -433,7 +445,7 @@ public class Utils {
     	                 					
     	                 					 isWall--;
     	                 					 System.out.println("isWall: "+ isWall);
-    	                 					 System.out.println("Position: "+ i +","+ mx);
+    	                 					 //System.out.println("Position: "+ i +","+ mx);
     	                 					 //break;
     	                 					
     	                 				 }		
@@ -449,7 +461,9 @@ public class Utils {
                  				
                  		
                  		 if (isWall <= 2) {
-                 			
+                 			 
+                     		env.interact(S.wom.agentId, null, Interact.AimWithBow);
+
                  			return e.position ;
                  			
                  		 }
@@ -514,39 +528,50 @@ public class Utils {
 	        int bestWeaponDmg = agentCurrentState.getIntProperty("equippedWeaponDmg");
 
 			int oldInvSize = oldInv.elements.size();
+			int currentInvSize = currentInv.elements.size();
+
 			System.out.println("old inv size: "+ oldInvSize);
+			System.out.println("current inv size: "+ currentInvSize);
 			
-	        for(WorldEntity item_ : currentInv.elements.values()) {
-          		System.out.println("Iterating the inventory elements and looking for the weapon with the higher damage..");
-          		//System.out.println(item_);
-          		if ((item_.type.toLowerCase().contains(bowWeapon.toLowerCase())) || (item_.type.toLowerCase().contains(swordWeapon.toLowerCase()))){
-          			
-	          		int dmg = item_.getIntProperty("attackDmg");
-	
-		          	if( dmg > bestWeaponDmg   ) {
-		          		//System.out.println("AND HERE!");
-		          		
-		          		bestWeaponDmg = dmg;
-		          		String itemId = item_.id;
-		          	          		
-		          		
-		          		
-		          		System.out.println("Equipped item type: " + item_.type);
-		          		System.out.println("Equipped item damage: " + dmg);
-		          		
-		          		return itemId;
-		          		
-		          		
-		          		// Freeze the Nethack window until Enter key is pressed. 
-		          		// So we can see the progress of the goals in the actual game.
-		          		//System.out.println("Hit RETURN to continue.") ;
-		                //new Scanner(System.in) . nextLine() ;
-	
-		          		//break;
-		          	}
-		          	
-          		}
-	         }
+//			if (S.previousWom.getElement("Inventory").elements.size() <= S.wom.getElement("Inventory").elements.size()) {
+//				System.out.print("YO");
+//				return null;
+//			}
+//			else {
+//			System.out.print("YO-YO");
+
+		        for(WorldEntity item_ : currentInv.elements.values()) {
+	          		System.out.println("Iterating the inventory elements and looking for the weapon with the higher damage..");
+	          		//System.out.println(item_);
+	          		if ((item_.type.toLowerCase().contains(bowWeapon.toLowerCase())) || (item_.type.toLowerCase().contains(swordWeapon.toLowerCase()))){
+	          			
+		          		int dmg = item_.getIntProperty("attackDmg");
+		
+			          	if( dmg > bestWeaponDmg   ) {
+			          		//System.out.println("AND HERE!");
+			          		
+			          		bestWeaponDmg = dmg;
+			          		String itemId = item_.id;
+			          	          		
+			          		
+			          		
+			          		System.out.println("Equipped item type: " + item_.type);
+			          		System.out.println("Equipped item damage: " + dmg);
+			          		
+			          		return itemId;
+			          		
+			          		
+			          		// Freeze the Nethack window until Enter key is pressed. 
+			          		// So we can see the progress of the goals in the actual game.
+			          		//System.out.println("Hit RETURN to continue.") ;
+			                //new Scanner(System.in) . nextLine() ;
+		
+			          		//break;
+			          	}
+			          	
+	          		}
+		         }
+			
 	        return null;
 			
          }) ;
@@ -554,6 +579,99 @@ public class Utils {
     }
     
     ////////////////////// /////////////////////////////////////////////////////////////////////////////////////////
+    
+    
+    public static Action useHealthToSurvive() {
+        return action("use health item to stay alive").do2((MyAgentState S) -> (String itemId) -> { 
+	        MyEnv env_ = (MyEnv) S.env() ;
+	        WorldModel current = S.wom ;
+	        
+
+			boolean healthItemUsed = false;
+			
+
+      		env_.interact(current.agentId, itemId, Interact.SelectItemFromInv);
+      		
+      		
+      		healthItemUsed = true;
+   
+		    
+	        if(healthItemUsed) {
+	        	
+	            S.updateState() ;
+	            return S ;
+	        }
+	        else {
+	            return null ;
+	        }
+	        
+	    })
+		.on((MyAgentState S) -> { 
+			WorldModel current = S.wom ;
+	        //WorldModel old = S.previousWom ;
+
+	        //String bowWeapon = "Bow";
+	        //String swordWeapon = "Sword";
+
+	        WorldEntity currentInv = current.getElement("Inventory"); 
+	        //WorldEntity oldInv = old.getElement("Inventory"); 
+
+	        String agentId = S.wom.agentId ;
+	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+	        //int bestWeaponDmg = agentCurrentState.getIntProperty("equippedWeaponDmg");
+	        
+	        int currentHealth = agentCurrentState.getIntProperty("health") ;
+	        
+	        
+	        if(currentHealth < 3) {
+	        	System.out.println("Health::::---------------------------- "+ currentHealth);
+	        	
+	        	for(WorldEntity item_ : currentInv.elements.values()) {
+	          		System.out.println("3. Iterating the inventory elements and looking for the needed item!");
+
+		          	if( (item_.type.equals("Food") || item_.type.equals("Water") || item_.type.equals("HealthPotion")) ) {
+		          		//System.out.println("AND HERE!");
+		          		String itemId = item_.id;
+		          	          		
+		          		System.out.println("Item ID: " + itemId );
+		          		System.out.println("Item Name: " + item_.type );
+		          		
+		          		//env_.interact(current.agentId, itemId, Interact.SelectItemFromInv);
+		          		
+		          		return itemId;
+		          		
+		       
+		          		// move the part of if(foodFoundAndEaten)... in this if statement, no boolean needed
+		          		
+		          		//healthItemFoundAndUsed = true;
+		          		
+		          		
+		          	
+		          		// Freeze the Nethack window until Enter key is pressed. 
+		          		// So we can see the progress of the goals in the actual game.
+		          		//System.out.println("Hit RETURN to continue.") ;
+		                //new Scanner(System.in) . nextLine() ;
+
+		          		
+		          	}
+		          	
+		          	
+		         }
+	        	
+	        	
+	        }
+	        return null;
+
+
+			
+			
+         }) ;
+        
+    }
+    
+    ////////////////////// /////////////////////////////////////////////////////////////////////////////////////////
+    
+    
     
     
     
@@ -590,9 +708,10 @@ public class Utils {
                     return Utils.sameTile(S.wom.position, destination_) ;
                 })
                 .withTactic(FIRSTof(
+                		      useHealthToSurvive().lift(),
                 			  equipBestAvailableWeapon().lift(),
-                              bowAttack().lift(),
-                              meleeAttack().lift(),
+                              //bowAttack().lift(),
+                              //meleeAttack().lift(),
                               travelTo(entityId,destination,monsterAvoidDistance).lift(), 
                               ABORT()));
         
@@ -603,15 +722,23 @@ public class Utils {
    
         Goal g = goal("Close to monster " + monsterId)
                 .toSolve((MyAgentState S) -> { 
+                	
+                	
                     WorldEntity m = S.wom.getElement(monsterId) ;
-                    int dx = (int) Math.abs(m.position.x - S.wom.position.x) ;
-                    int dy = (int) Math.abs(m.position.y - S.wom.position.y) ;
-                    boolean monsterIsAlive = m.getBooleanProperty("alive");
                     
-                    
-                    return  (dx + dy == 1) || (!monsterIsAlive)   ;
+                    if (m!=null) {
+	                    
+	                    int dx = (int) Math.abs(m.position.x - S.wom.position.x) ;
+	                    int dy = (int) Math.abs(m.position.y - S.wom.position.y) ;
+	                    boolean monsterIsAlive = m.getBooleanProperty("alive");
+	                    
+	                    
+	                    return  (dx + dy == 1) || (!monsterIsAlive) ;
+                    }
+                    else return m==null;
                  })
                 .withTactic(FIRSTof(
+                		useHealthToSurvive().lift(),
                 		equipBestAvailableWeapon().lift(),
                 		bowAttack().lift(),
                 		meleeAttack().lift(),

@@ -9,7 +9,7 @@ import org.projectxy.iv4xrLib.NethackWrapper.Movement;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.iv4xr.framework.spatial.Vec3;
 
-public class simple_example_controlling_NH_with_agent {
+public class simple_example_controlling_NH_with_agent { 
     
     @Test
     public void test1() throws InterruptedException {

@@ -99,7 +99,7 @@ public class NethackWrapper {
             // for each monster, we create a line-intersectable wrapper for it,
             // and then we wrap it once more as an obstacle, and add it to the
             // nav-graph:
-            Obstacle<LineIntersectable> monster_ = new Obstacle(new MonsterWrapper(m));
+            Obstacle<LineIntersectable> monster_ = new Obstacle(new MonsterWrapper(m)); 
             monster_.isBlocking = true;
             navgraph.obstacles.add(monster_);
         }

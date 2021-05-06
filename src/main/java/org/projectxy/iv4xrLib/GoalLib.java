@@ -389,7 +389,7 @@ public class GoalLib {
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	
+	 
 	public static GoalStructure pickUpItem() {
   		//System.out.println("AND HERE!");
 
@@ -466,7 +466,7 @@ public class GoalLib {
 	       
 	        if(itemFoundAndPicked) {
 	            S.updateState() ;
-	            int size1 = inv.elements.size();
+	            int size1 = S.wom.getElement("Inventory").elements.size();
 				System.out.println("inventory size1: " + size1 );
 
 	            return S ;

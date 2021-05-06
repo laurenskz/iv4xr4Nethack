@@ -145,7 +145,7 @@ public class Example_using_pathfinding {
 	@Test
 	public void test_navigate_to_an_entity_and_pickitup() throws InterruptedException {
 		// launch the game:
- 
+  
 		NethackWrapper driver = new NethackWrapper();
 		driver.launchNethack(new NethackConfiguration());
 
@@ -162,7 +162,7 @@ public class Example_using_pathfinding {
 
 		// give a goal-structure to the agent:
 		//GoalStructure g = SEQ(Utils.entityVisited("78"), GoalLib.pickUpItem(), Utils.entityVisited("144"));
-		GoalStructure g = SEQ(Utils.entityVisited("149"), GoalLib.pickUpItem(), Utils.closeToAMonster("154", 3));
+		GoalStructure g = SEQ(Utils.entityVisited("80"), GoalLib.pickUpItem(), Utils.closeToAMonster("160", 3),Utils.closeToAMonster("162", 3),Utils.closeToAMonster("159", 3));
 
 		
 		//GoalStructure g = SEQ( Utils.closeToAMonster("161", 3),Utils.entityVisited("78"));
@@ -176,8 +176,8 @@ public class Example_using_pathfinding {
 			agent.update();
 			turn++;
 			System.out.println("[" + turn + "] agent@" + state.wom.position);
-			Thread.sleep(500);
-			if (turn > 200) {
+			Thread.sleep(350);
+			if (turn > 500) {
 				// forcing break the agent seems to take forever...
 				break;
 			}
