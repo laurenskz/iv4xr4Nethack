@@ -17,6 +17,9 @@ import org.projectxy.iv4xrLib.NethackWrapper.Interact;
 import org.projectxy.iv4xrLib.NethackWrapper.Movement;
 
 import A.B.Monster;
+import A.B.HealthPotion;
+import A.B.Food;
+import A.B.Water;
 import A.B.Tile;
 import A.B.Wall;
 
@@ -288,13 +291,13 @@ public class Utils {
             		
             		//int dy = my=ay;
             		
-            		//env.interact(S.wom.agentId, null, Interact.AimWithBow);
+            		env.interact(S.wom.agentId, null, Interact.AimWithBow);
             		env.move(Movement.DOWN) ;	
             	}
             	else {
             		
             		// dy = ay=my;
-            		//env.interact(S.wom.agentId, null, Interact.AimWithBow);
+            		env.interact(S.wom.agentId, null, Interact.AimWithBow);
             		env.move(Movement.UP) ;	
             		
             	}
@@ -310,13 +313,13 @@ public class Utils {
             		
             		//int dx = mx-ax;
             		
-            		//env.interact(S.wom.agentId, null, Interact.AimWithBow);
+            		env.interact(S.wom.agentId, null, Interact.AimWithBow);
             		env.move(Movement.RIGHT) ;	
             	}
             	
             	else {
             		
-            		//env.interact(S.wom.agentId, null, Interact.AimWithBow);
+            		env.interact(S.wom.agentId, null, Interact.AimWithBow);
             		env.move(Movement.LEFT) ;	
             }}
            
@@ -462,7 +465,7 @@ public class Utils {
                  		
                  		 if (isWall <= 2) {
                  			 
-                     		env.interact(S.wom.agentId, null, Interact.AimWithBow);
+                     		//env.interact(S.wom.agentId, null, Interact.AimWithBow);
 
                  			return e.position ;
                  			
@@ -672,7 +675,115 @@ public class Utils {
     ////////////////////// /////////////////////////////////////////////////////////////////////////////////////////
     
     
+    ////////////////////// /////////////////////////////////////////////////////////////////////////////////////////
     
+    
+    public static Action collectHealthItemsIfNeeded() {
+        return action("collect health items if not enough").do2((MyAgentState S) -> (String itemId) -> { 
+        	
+	        MyEnv env_ = (MyEnv) S.env() ; 
+	        //WorldModel current = S.wom ;
+	        
+
+			boolean healthItemCollected = false;
+			System.out.println("YO: "+ itemId);
+			
+			
+			
+		    
+		        
+			
+
+			
+			
+			//GoalStructure g2 = SEQ( entityVisited1(itemId),GoalLib.pickUpItem());
+
+
+			
+      		
+      		
+      		
+      		healthItemCollected = true;
+   
+		    
+	        if(healthItemCollected) {
+	        	
+	            S.updateState() ;
+	            return S ;
+	        }
+	        else {
+	            return null ;
+	        }
+	        
+	        Tactic collectHealthItemsIfNeededTactic = collectHealthItemsIfNeeded().lift() ;
+		    
+		   
+	        
+	        
+	        
+	    })
+		.on((MyAgentState S) -> { 
+			
+			
+			WorldModel current = S.wom ;
+	        WorldEntity inv = current.getElement("Inventory");
+			
+	        int healthItemsCounter = 0;
+	        
+	        for(WorldEntity item_ : inv.elements.values()) {
+
+	          	if( (item_.type.equals("Food") || item_.type.equals("Water") || item_.type.equals("HealthPotion")) ) {
+	          		
+	          		healthItemsCounter ++;
+	          		
+	          	}
+	         }
+	        
+	        if (healthItemsCounter < 3) {
+	        	System.out.println("Number of health items in inventory: "+ healthItemsCounter);
+	        	
+	        	
+	        	int minDistance = 70; //the maximum distance possible in our tile grid (90x50) /2
+	        	
+	        	for(WorldEntity i : S.wom.elements.values()) {
+	                 if(	(i.type.equals(HealthPotion.class.getSimpleName()) ) ||
+	                		 (i.type.equals(Water.class.getSimpleName()) ) ||
+	                		 (i.type.equals(Food.class.getSimpleName()) )
+	                		 )
+	                		  {	// looking for health items 
+	                	 
+	                	 System.out.println("TYPE: "+ i.type);
+	                     // i is an item
+	                	 
+	                	 int ix = (int) i.position.x; 					// item's x coordinate
+	                     int iy = (int) i.position.y;					// item's y coordinate
+	                     int ax = (int) current.position.x;				// agent's x coordinate
+	                     int ay = (int) current.position.y;				// agent's y coordinate
+	                     
+	                     int dx = (int) Math.abs(ax-ix) ; // agent-item distance in x axis
+	                     int dy = (int) Math.abs(ay-iy) ; // agent-item distance in y axis
+	                     
+	                     
+	                     if (dx + dy < minDistance) {
+	                    	 
+	                    	 minDistance = dx + dy;
+	                    	 
+	                    	 System.out.println("Health Item's position: "+i.position);
+	                    	 
+	                         
+	                         return i.id ;
+	                     }
+	                 }
+	             }
+	        	
+	        }
+	        return null;
+	        
+         }) ;
+        
+    }
+    
+    ////////////////////// /////////////////////////////////////////////////////////////////////////////////////////
     
     
     /**
@@ -680,6 +791,10 @@ public class Utils {
      */
     public static GoalStructure entityVisited(String entityId) {
         return  locationVisited(entityId,null,0) ;
+    }
+    
+    public static GoalStructure entityVisited1(String entityId) {
+        return  locationVisited1(entityId,null,0) ;
     }
     
     public static GoalStructure locationVisited(Vec3 destination) {
@@ -708,15 +823,50 @@ public class Utils {
                     return Utils.sameTile(S.wom.position, destination_) ;
                 })
                 .withTactic(FIRSTof(
+                			  collectHealthItemsIfNeeded().lift(),
                 		      useHealthToSurvive().lift(),
                 			  equipBestAvailableWeapon().lift(),
-                              //bowAttack().lift(),
-                              //meleeAttack().lift(),
+                              bowAttack().lift(),
+                              meleeAttack().lift(),
                               travelTo(entityId,destination,monsterAvoidDistance).lift(), 
                               ABORT()));
         
         return g.lift() ;
     }
+    
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+	public static GoalStructure locationVisited1(String entityId, Vec3 destination, float monsterAvoidDistance) {
+	        
+	        String destinationName = entityId == null ? destination.toString() : entityId ;
+	        Goal g = goal(destinationName + " is visited") 
+	                .toSolve((MyAgentState S) -> {
+	                
+	              		//WorldEntity inv = S.wom.getElement("Inventory");
+	                	//int size = inv.elements.size();
+	        			//System.out.println("IInventory size: " + size );
+	                	
+	                	
+	                    Vec3 destination_ = destination ;
+	                    if(entityId != null) {
+	                        WorldEntity e = S.wom.getElement(entityId) ;
+	                        if(e == null) {
+	                            throw new IllegalArgumentException("Entity " + entityId + " does not exists!") ;
+	                        }
+	                        destination_ = e.position ;
+	                    }
+	                    return Utils.sameTile(S.wom.position, destination_) ;
+	                })
+	                .withTactic(FIRSTof(
+	                		      useHealthToSurvive().lift(),
+	                              travelTo(entityId,destination,monsterAvoidDistance).lift(), 
+	                              ABORT()));
+	        
+	        return g.lift() ;
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
     
     public static GoalStructure closeToAMonster(String monsterId, float monsterAvoidDistance) {
    
@@ -735,9 +885,10 @@ public class Utils {
 	                    
 	                    return  (dx + dy == 1) || (!monsterIsAlive) ;
                     }
-                    else return m==null;
+                    else return true;
                  })
                 .withTactic(FIRSTof(
+                		collectHealthItemsIfNeeded().lift(),
                 		useHealthToSurvive().lift(),
                 		equipBestAvailableWeapon().lift(),
                 		bowAttack().lift(),

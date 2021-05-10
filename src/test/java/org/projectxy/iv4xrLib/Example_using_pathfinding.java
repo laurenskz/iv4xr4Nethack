@@ -117,7 +117,7 @@ public class Example_using_pathfinding {
 		// give a goal-structure to the agent:
 		//GoalStructure g =  Utils.entityVisited("162");
 		//GoalStructure g = SEQ(GoalLib.equipBestAvailableWeapon(), Utils.closeToAMonster("161", 3));
-		 GoalStructure g = Utils.closeToAMonster("154",3) ;
+		 GoalStructure g = Utils.closeToAMonster("157",3) ;
 		
 		agent.setGoal(g);
 
@@ -162,7 +162,7 @@ public class Example_using_pathfinding {
 
 		// give a goal-structure to the agent:
 		//GoalStructure g = SEQ(Utils.entityVisited("78"), GoalLib.pickUpItem(), Utils.entityVisited("144"));
-		GoalStructure g = SEQ(Utils.entityVisited("80"), GoalLib.pickUpItem(), Utils.closeToAMonster("160", 3),Utils.closeToAMonster("162", 3),Utils.closeToAMonster("159", 3));
+		GoalStructure g = SEQ(Utils.entityVisited("77"), GoalLib.pickUpItem(), Utils.closeToAMonster("160", 3),Utils.closeToAMonster("154", 3),Utils.closeToAMonster("159", 3));
 
 		
 		//GoalStructure g = SEQ( Utils.closeToAMonster("161", 3),Utils.entityVisited("78"));
