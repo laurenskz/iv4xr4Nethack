@@ -678,8 +678,8 @@ public class Utils {
     ////////////////////// /////////////////////////////////////////////////////////////////////////////////////////
     
     
-    public static Action collectHealthItemsIfNeeded() {
-        return action("collect health items if not enough").do2((MyAgentState S) -> (String itemId) -> { 
+    public static Tactic collectHealthItemsIfNeeded(TestAgent agent) {
+        Action deployNewGoal =  action("collect health items if not enough").do2((MyAgentState S) -> (String itemId) -> { 
         	
 	        MyEnv env_ = (MyEnv) S.env() ; 
 	        //WorldModel current = S.wom ;
@@ -687,40 +687,10 @@ public class Utils {
 
 			boolean healthItemCollected = false;
 			System.out.println("YO: "+ itemId);
-			
-			
-			
-		    
-		        
-			
-
-			
-			
-			//GoalStructure g2 = SEQ( entityVisited1(itemId),GoalLib.pickUpItem());
-
-
-			
-      		
-      		
-      		
-      		healthItemCollected = true;
-   
-		    
-	        if(healthItemCollected) {
-	        	
-	            S.updateState() ;
-	            return S ;
-	        }
-	        else {
-	            return null ;
-	        }
-	        
-	        Tactic collectHealthItemsIfNeededTactic = collectHealthItemsIfNeeded().lift() ;
-		    
-		   
-	        
-	        
-	        
+			// deploy a new goal:
+			GoalStructure g2 = SEQ(entityVisited1(itemId),GoalLib.pickUpItem());
+			agent.addBefore(g2) ;
+			return S ;
 	    })
 		.on((MyAgentState S) -> { 
 			
@@ -781,6 +751,8 @@ public class Utils {
 	        
          }) ;
         
+        return SEQ(deployNewGoal.lift(), ABORT()) ;
+        
     }
     
     ////////////////////// /////////////////////////////////////////////////////////////////////////////////////////
@@ -802,6 +774,10 @@ public class Utils {
     }
     
     public static GoalStructure locationVisited(String entityId, Vec3 destination, float monsterAvoidDistance) {
+        return locationVisited_1(entityId,destination,monsterAvoidDistance).lift() ;
+    }
+    
+    public static Goal locationVisited_1(String entityId, Vec3 destination, float monsterAvoidDistance) {
         
         String destinationName = entityId == null ? destination.toString() : entityId ;
         Goal g = goal(destinationName + " is visited") 
@@ -823,15 +799,21 @@ public class Utils {
                     return Utils.sameTile(S.wom.position, destination_) ;
                 })
                 .withTactic(FIRSTof(
-                			  collectHealthItemsIfNeeded().lift(),
-                		      useHealthToSurvive().lift(),
+                			  useHealthToSurvive().lift(),
                 			  equipBestAvailableWeapon().lift(),
                               bowAttack().lift(),
                               meleeAttack().lift(),
                               travelTo(entityId,destination,monsterAvoidDistance).lift(), 
                               ABORT()));
         
-        return g.lift() ;
+        return g ;
+    }
+    
+    public static Goal locationVisited_2(TestAgent agent, String entityId, Vec3 destination, float monsterAvoidDistance) {
+        Goal g = locationVisited_1(entityId,destination,monsterAvoidDistance) ;
+        Tactic baseTactic = g.getTactic() ;
+        Tactic extendedTactic = FIRSTof(collectHealthItemsIfNeeded(agent),baseTactic) ;                       
+        return g.withTactic(extendedTactic) ; 
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -868,7 +850,7 @@ public class Utils {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     
-    public static GoalStructure closeToAMonster(String monsterId, float monsterAvoidDistance) {
+    public static GoalStructure closeToAMonster(TestAgent agent, String monsterId, float monsterAvoidDistance) {
    
         Goal g = goal("Close to monster " + monsterId)
                 .toSolve((MyAgentState S) -> { 
@@ -888,7 +870,7 @@ public class Utils {
                     else return true;
                  })
                 .withTactic(FIRSTof(
-                		collectHealthItemsIfNeeded().lift(),
+                		collectHealthItemsIfNeeded(agent),
                 		useHealthToSurvive().lift(),
                 		equipBestAvailableWeapon().lift(),
                 		bowAttack().lift(),
