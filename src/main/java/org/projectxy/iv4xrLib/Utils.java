@@ -626,7 +626,7 @@ public class Utils {
 	        int currentHealth = agentCurrentState.getIntProperty("health") ;
 	        
 	        
-	        if(currentHealth < 3) {
+	        if(currentHealth < 3 && currentHealth > 0) {
 	        	System.out.println("Health::::---------------------------- "+ currentHealth);
 	        	
 	        	for(WorldEntity item_ : currentInv.elements.values()) {
@@ -681,15 +681,22 @@ public class Utils {
     public static Tactic collectHealthItemsIfNeeded(TestAgent agent) {
         Action deployNewGoal =  action("collect health items if not enough").do2((MyAgentState S) -> (String itemId) -> { 
         	
-	        MyEnv env_ = (MyEnv) S.env() ; 
-	        //WorldModel current = S.wom ;
+	        //MyEnv env_ = (MyEnv) S.env() ; 
+	        WorldModel current = S.wom ;
+        	String agentId = S.wom.agentId ; 
+ 	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+ 	        Boolean isAlive = agentCurrentState.getBooleanProperty("isAlive"); //Indicating whether the avatar is alive or not
 	        
 
-			boolean healthItemCollected = false;
-			System.out.println("YO: "+ itemId);
+			//boolean healthItemCollected = false;
+			System.out.println("Health Item ID: "+ itemId);
+			
 			// deploy a new goal:
-			GoalStructure g2 = SEQ(entityVisited1(itemId),GoalLib.pickUpItem());
-			agent.addBefore(g2) ;
+			if (isAlive) {
+				GoalStructure g2 = SEQ(entityVisited(itemId),GoalLib.pickUpItem());
+				agent.addBefore(g2) ;
+			}
+			
 			return S ;
 	    })
 		.on((MyAgentState S) -> { 
@@ -697,8 +704,15 @@ public class Utils {
 			
 			WorldModel current = S.wom ;
 	        WorldEntity inv = current.getElement("Inventory");
-			
+//	        String agentId = S.wom.agentId ; 
+//	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+//	        Boolean isAlive = agentCurrentState.getBooleanProperty("isAlive"); //Indicating whether the avatar is alive or not
+
+	        
+	        
+	        
 	        int healthItemsCounter = 0;
+	        String closestItemId = "";
 	        
 	        for(WorldEntity item_ : inv.elements.values()) {
 
@@ -738,13 +752,17 @@ public class Utils {
 	                    	 
 	                    	 minDistance = dx + dy;
 	                    	 
+	                    	 closestItemId = i.id;
+	                    	 
 	                    	 System.out.println("Health Item's position: "+i.position);
 	                    	 
 	                         
 	                         return i.id ;
 	                     }
 	                 }
+	                 
 	             }
+	        	//return closestItemId;
 	        	
 	        }
 	        return null;
@@ -757,6 +775,39 @@ public class Utils {
     
     ////////////////////// /////////////////////////////////////////////////////////////////////////////////////////
     
+    public static Tactic abortIfDead() {
+        Action abortIfDead =  action("Abort If Dead").do1((MyAgentState S) -> { 
+        	
+	        //MyEnv env_ = (MyEnv) S.env() ; 
+	        WorldModel current = S.wom ;
+        	String agentId = S.wom.agentId ; 
+ 	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+ 	        Boolean isAlive = agentCurrentState.getBooleanProperty("isAlive"); //Indicating whether the avatar is alive or not
+	        
+
+			//boolean healthItemCollected = false;
+			
+			
+			// deploy a new goal:
+			if (!isAlive) {
+								return ABORT();
+			}
+			
+			//S.updateState() ;
+			return S ;
+	    });
+		return abortIfDead.lift();
+		
+        
+        
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    
+    
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     /**
      * A goal to get an agent to the location of an non-monster entity.
@@ -765,9 +816,9 @@ public class Utils {
         return  locationVisited(entityId,null,0) ;
     }
     
-    public static GoalStructure entityVisited1(String entityId) {
-        return  locationVisited1(entityId,null,0) ;
-    }
+//    public static GoalStructure entityVisited1(String entityId) {
+//        return  locationVisited1(entityId,null,0) ;
+//    }
     
     public static GoalStructure locationVisited(Vec3 destination) {
         return  locationVisited(null,destination,0) ;
@@ -799,15 +850,22 @@ public class Utils {
                     return Utils.sameTile(S.wom.position, destination_) ;
                 })
                 .withTactic(FIRSTof(
+                		
+                		
+                		      //abortIfDead(),
                 			  useHealthToSurvive().lift(),
                 			  equipBestAvailableWeapon().lift(),
-                              bowAttack().lift(),
-                              meleeAttack().lift(),
+                              //bowAttack().lift(),
+                              //meleeAttack().lift(),
                               travelTo(entityId,destination,monsterAvoidDistance).lift(), 
                               ABORT()));
         
         return g ;
     }
+    
+    
+    
+    
     
     public static Goal locationVisited_2(TestAgent agent, String entityId, Vec3 destination, float monsterAvoidDistance) {
         Goal g = locationVisited_1(entityId,destination,monsterAvoidDistance) ;
@@ -818,34 +876,9 @@ public class Utils {
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-	public static GoalStructure locationVisited1(String entityId, Vec3 destination, float monsterAvoidDistance) {
-	        
-	        String destinationName = entityId == null ? destination.toString() : entityId ;
-	        Goal g = goal(destinationName + " is visited") 
-	                .toSolve((MyAgentState S) -> {
-	                
-	              		//WorldEntity inv = S.wom.getElement("Inventory");
-	                	//int size = inv.elements.size();
-	        			//System.out.println("IInventory size: " + size );
-	                	
-	                	
-	                    Vec3 destination_ = destination ;
-	                    if(entityId != null) {
-	                        WorldEntity e = S.wom.getElement(entityId) ;
-	                        if(e == null) {
-	                            throw new IllegalArgumentException("Entity " + entityId + " does not exists!") ;
-	                        }
-	                        destination_ = e.position ;
-	                    }
-	                    return Utils.sameTile(S.wom.position, destination_) ;
-	                })
-	                .withTactic(FIRSTof(
-	                		      useHealthToSurvive().lift(),
-	                              travelTo(entityId,destination,monsterAvoidDistance).lift(), 
-	                              ABORT()));
-	        
-	        return g.lift() ;
-    }
+    
+    
+    
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
@@ -870,6 +903,8 @@ public class Utils {
                     else return true;
                  })
                 .withTactic(FIRSTof(
+                		
+                		//abortIfDead(),
                 		collectHealthItemsIfNeeded(agent),
                 		useHealthToSurvive().lift(),
                 		equipBestAvailableWeapon().lift(),

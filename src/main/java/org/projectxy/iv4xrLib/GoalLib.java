@@ -456,8 +456,8 @@ public class GoalLib {
 	          	
 	        // Freeze the Nethack window until Enter key is pressed. 
 	        // So we can see the progress of the goals in the actual game.
-	        System.out.println("Hit RETURN to continue.") ;
-	        new Scanner(System.in) . nextLine() ;
+//	        System.out.println("Hit RETURN to continue.") ;
+//	        new Scanner(System.in) . nextLine() ;
 
 	        ///break;
 	          	

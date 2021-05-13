@@ -162,7 +162,7 @@ public class Example_using_pathfinding {
 
 		// give a goal-structure to the agent:
 		//GoalStructure g = SEQ(Utils.entityVisited("78"), GoalLib.pickUpItem(), Utils.entityVisited("144"));
-		GoalStructure g = SEQ(Utils.entityVisited("77"), GoalLib.pickUpItem(), Utils.closeToAMonster("160", 3),Utils.closeToAMonster("154", 3),Utils.closeToAMonster("159", 3));
+		GoalStructure g = SEQ(Utils.entityVisited("77"), GoalLib.pickUpItem(), Utils.closeToAMonster(agent, "160", 3),Utils.closeToAMonster(agent, "154", 3),Utils.closeToAMonster(agent, "159", 3));
 
 		
 		//GoalStructure g = SEQ( Utils.closeToAMonster("161", 3),Utils.entityVisited("78"));
@@ -176,7 +176,7 @@ public class Example_using_pathfinding {
 			agent.update();
 			turn++;
 			System.out.println("[" + turn + "] agent@" + state.wom.position);
-			Thread.sleep(350);
+			Thread.sleep(250);
 			if (turn > 500) {
 				// forcing break the agent seems to take forever...
 				break;
