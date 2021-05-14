@@ -43,8 +43,8 @@ public class Example_using_pathfinding {
 
 		// a goal to guide agent to the given location; with monster-avoindance distance
 		// set to 3:
-		GoalStructure g = Utils.locationVisited(null, destination, 3);
-		agent.setGoal(g);
+		GoalStructure g = Utils.locationVisited(agent,null, destination, 3);
+		agent.setGoal(SEQ(g)); // have to pack it inside a SEQ for dynamic goal to work
 
 		// run the agent to control the game:
 		// System.out.println("type anything... ") ;
@@ -78,21 +78,21 @@ public class Example_using_pathfinding {
 		agent.attachEnvironment(env);
 
 		// give a goal-structure to the agent:
-		GoalStructure g =  Utils.entityVisited("72");
+		GoalStructure g =  Utils.entityVisited(agent,"17",3);
 		//GoalStructure g = SEQ(GoalLib.equipBow(), Utils.entityVisited("85"));
-		agent.setGoal(g);
+		agent.setGoal(SEQ(g));
 
 		// run the agent to control the game:
-		// for(WorldEntity e : state.wom.elements.values()) {
-		// System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position) ;
-		// }
+		for(WorldEntity e : state.wom.elements.values()) {
+		 System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position) ;
+		 }
 		int turn = 0;
 		while (g.getStatus().inProgress()) {
 			agent.update();
 			turn++;
 			System.out.println("[" + turn + "] agent@" + state.wom.position);
-			Thread.sleep(350);
-			if (turn > 100) { // forcing break the agent seems to take forever...
+			Thread.sleep(100);
+			if (turn > 200) { // forcing break the agent seems to take forever...
 				break;
 			}
 		}
@@ -117,9 +117,9 @@ public class Example_using_pathfinding {
 		// give a goal-structure to the agent:
 		//GoalStructure g =  Utils.entityVisited("162");
 		//GoalStructure g = SEQ(GoalLib.equipBestAvailableWeapon(), Utils.closeToAMonster("161", 3));
-		 GoalStructure g = Utils.closeToAMonster("157",3) ;
+		 GoalStructure g = Utils.closeToAMonster(agent,"157",3) ;
 		
-		agent.setGoal(g);
+		agent.setGoal(SEQ(g)); // have to pack it inside a SEQ for dynamic goal to work...
 
 		for (WorldEntity e : state.wom.elements.values()) {
 			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
@@ -162,7 +162,11 @@ public class Example_using_pathfinding {
 
 		// give a goal-structure to the agent:
 		//GoalStructure g = SEQ(Utils.entityVisited("78"), GoalLib.pickUpItem(), Utils.entityVisited("144"));
-		GoalStructure g = SEQ(Utils.entityVisited("77"), GoalLib.pickUpItem(), Utils.closeToAMonster(agent, "160", 3),Utils.closeToAMonster(agent, "154", 3),Utils.closeToAMonster(agent, "159", 3));
+		GoalStructure g = SEQ(Utils.entityVisited(agent,"77",3), 
+		                      GoalLib.pickUpItem(), 
+		                      Utils.closeToAMonster(agent, "160", 3),
+		                      Utils.closeToAMonster(agent, "154", 3),
+		                      Utils.closeToAMonster(agent, "159", 3));
 
 		
 		//GoalStructure g = SEQ( Utils.closeToAMonster("161", 3),Utils.entityVisited("78"));

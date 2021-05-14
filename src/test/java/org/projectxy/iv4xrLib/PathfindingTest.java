@@ -22,21 +22,25 @@ public class PathfindingTest {
         agent.attachEnvironment(env) ;
         
         // give a goal-structure to the agent:
-        GoalStructure g = SEQ(GoalLib.equipBow(),Utils.entityVisited("150")) ; 
+        //GoalStructure g = SEQ(GoalLib.equipBow(),Utils.entityVisited(agent,"150",0)) ; 
+        GoalStructure g = SEQ(
+                Utils.entityVisited(agent,"47",0),
+                GoalLib.pickUpItem(),
+                Utils.entityVisited(agent,"149",0)) ;  // bow 
         agent.setGoal(g) ;
         
         
         // run the agent to control the game:
-        //for(WorldEntity e : state.wom.elements.values()) {
-        //    System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position) ;
-        //}
+        for(WorldEntity e : state.wom.elements.values()) {
+            System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position) ;
+        }
         int turn = 0 ;
         while(g.getStatus().inProgress()) {
             agent.update();
             turn++ ;
             System.out.println("[" + turn + "] agent@" + state.wom.position ) ;
             Thread.sleep(500);
-            if(turn > 200) { // forcing break the agent seems to take forever...
+            if(turn > 800) { // forcing break the agent seems to take forever...
                 break ;
             }
         }

@@ -284,7 +284,7 @@ public class Utils {
             // int dx = (int) (monsterLocation.x - agentCurrentPosition.x) ;
             // int dy = (int) (monsterLocation.y - agentCurrentPosition.y) ;
             
-            
+            System.out.println(">>> FIRING BOW") ;
             if(mx == ax) {
             	
             	if(my > ay) {
@@ -345,7 +345,9 @@ public class Utils {
  	         String currentWeapon = agentCurrentState.getStringProperty("equippedWeaponName") ;
  	         String weaponNeeded = "Bow";
  	         
- 	         //if (!(currentWeapon.toLowerCase().contains(weaponNeeded.toLowerCase() ) )) return null;
+ 	         if (!(currentWeapon.toLowerCase().contains(weaponNeeded.toLowerCase() ) )) return null;
+ 	         
+ 	         List<Vec3> walkableTiles = S.simpleWorldNavigation.vertices;
              
              // check if one of the monsters is vertically or horizontally across the agent
              for(WorldEntity e : S.wom.elements.values()) {
@@ -360,12 +362,9 @@ public class Utils {
                      //int dx = (int) Math.abs(e.position.x - S.wom.position.x) ;
                      //int dy = (int) Math.abs(e.position.y - S.wom.position.y) ;
                      
-             		 List<Vec3> walkableTiles = S.simpleWorldNavigation.vertices;
              		 int dx = Math.abs(ax-mx);
              		 int dy = Math.abs(ay-my);
-             		 int isWall;
-
-                     
+             		 int isWall;    
                      
                      if (	(mx == ax || my == ay) 	) {
                     	 
@@ -376,20 +375,14 @@ public class Utils {
                     	 
                     	 if (mx<ax) {
 	                 		 isWall = dx;
-	                 		
-	                 		 //List<Vec3> walkableTiles = S.simpleWorldNavigation.vertices;
-	                 		
-	                 		
 	                 		 for (int i = mx; i<ax ; i++) {
 	                 			 for (Vec3 v : walkableTiles) {
 	                 				
 	                 				 if(Utils.sameTile(v, new Vec3(i, my, 0))) {
-	                 					
 	                 					 isWall--;
-	                 					 System.out.println("isWall: "+ isWall);
 	                 					 //break;
-	                 					
-	                 				 }		
+	                 				 }	
+	                 				System.out.println("isWall: "+ isWall);
 	                 			 }
 	                 		 }
 	                 		 
@@ -398,23 +391,16 @@ public class Utils {
                     		 
                     		 isWall = dx;
  	                 		
-	                 		 //List<Vec3> walkableTiles = S.simpleWorldNavigation.vertices;
-	                 		
-	                 		
 	                 		 for (int i = ax; i<mx ; i++) {
 	                 			 for (Vec3 v : walkableTiles) {
 	                 				
 	                 				 if(Utils.sameTile(v, new Vec3(i, my, 0))) {
-	                 					
 	                 					 isWall--;
-	                 					 System.out.println("isWall: "+ isWall);
 	                 					 //break;
-	                 					
-	                 				 }		
+	                 				 }	
+	                 				
 	                 			 }
 	                 		 }
-                    		 
-                    		 
                     	 }
                     	 else {
 	                 		 isWall = dy;
@@ -422,18 +408,11 @@ public class Utils {
                     		 if (my<ay) {
     	                 		 //isWall = dy;
     	                 		
-    	                 		 //List<Vec3> walkableTiles = S.simpleWorldNavigation.vertices;
-    	                 		
-    	                 		
     	                 		 for (int i = my; i<ay ; i++) {
     	                 			 for (Vec3 v : walkableTiles) {
-    	                 				
     	                 				 if(Utils.sameTile(v, new Vec3(mx, i, 0))) {
-    	                 					
     	                 					 isWall--;
-    	                 					 System.out.println("isWall: "+ isWall);
     	                 					 //break;
-    	                 					
     	                 				 }		
     	                 			 }
     	                 		 }
@@ -443,28 +422,21 @@ public class Utils {
                     			
     	                 		 for (int i = ay; i<my ; i++) {
     	                 			 for (Vec3 v : walkableTiles) {
-    	                 				
     	                 				 if(Utils.sameTile(v, new Vec3(mx, i, 0))) {
-    	                 					
     	                 					 isWall--;
-    	                 					 System.out.println("isWall: "+ isWall);
     	                 					 //System.out.println("Position: "+ i +","+ mx);
     	                 					 //break;
     	                 					
     	                 				 }		
     	                 			 }
     	                 		 }
-                    			 
-                    			 
                     		 }
-                    		 
-                    		 
-                    		 
                     	 }
                  				
-                 		
-                 		 if (isWall <= 2) {
-                 			 
+                    	 System.out.println("isWall: "+ isWall);
+                 		 //if (isWall <= 2) {
+                 		 if (isWall <= 1) {
+                                	 
                      		//env.interact(S.wom.agentId, null, Interact.AimWithBow);
 
                  			return e.position ;
@@ -542,12 +514,12 @@ public class Utils {
 //			}
 //			else {
 //			System.out.print("YO-YO");
+			
+			System.out.println("Iterating the inventory elements and looking for the weapon with the higher damage..");
 
 		        for(WorldEntity item_ : currentInv.elements.values()) {
-	          		System.out.println("Iterating the inventory elements and looking for the weapon with the higher damage..");
-	          		//System.out.println(item_);
-	          		if ((item_.type.toLowerCase().contains(bowWeapon.toLowerCase())) || (item_.type.toLowerCase().contains(swordWeapon.toLowerCase()))){
-	          			
+	          		System.out.println(item_.type);
+	          		if ((item_.type.toLowerCase().contains(bowWeapon.toLowerCase())) || (item_.type.toLowerCase().contains(swordWeapon.toLowerCase()))){      	
 		          		int dmg = item_.getIntProperty("attackDmg");
 		
 			          	if( dmg > bestWeaponDmg   ) {
@@ -678,7 +650,7 @@ public class Utils {
     ////////////////////// /////////////////////////////////////////////////////////////////////////////////////////
     
     
-    public static Tactic collectHealthItemsIfNeeded(TestAgent agent) {
+    public static Tactic collectHealthItemsIfNeeded(TestAgent agent, float monsterAvoidDistance) {
         Action deployNewGoal =  action("collect health items if not enough").do2((MyAgentState S) -> (String itemId) -> { 
         	
 	        //MyEnv env_ = (MyEnv) S.env() ; 
@@ -692,15 +664,17 @@ public class Utils {
 			System.out.println("Health Item ID: "+ itemId);
 			
 			// deploy a new goal:
-			if (isAlive) {
-				GoalStructure g2 = SEQ(entityVisited(itemId),GoalLib.pickUpItem());
-				agent.addBefore(g2) ;
-			}
-			
+			//GoalStructure g2 = SEQ(entityVisited(itemId),GoalLib.pickUpItem());
+			System.out.println(">>> deploying a new goal to get a health-item " + itemId) ;
+			GoalStructure g2 = SEQ(
+			    locationVisited_1(itemId,null,monsterAvoidDistance).lift(),
+			    GoalLib.pickUpItem());
+			agent.addBefore(g2) ;
 			return S ;
 	    })
 		.on((MyAgentState S) -> { 
 			
+		    if (!S.isAlive()) return null ;
 			
 			WorldModel current = S.wom ;
 	        WorldEntity inv = current.getElement("Inventory");
@@ -727,8 +701,9 @@ public class Utils {
 	        	System.out.println("Number of health items in inventory: "+ healthItemsCounter);
 	        	
 	        	
-	        	int minDistance = 70; //the maximum distance possible in our tile grid (90x50) /2
-	        	
+	        	// int minDistance = 70; //the maximum distance possible in our tile grid (90x50) /2
+	        	int minDistance = 30; //the maximum distance possible in our tile grid (90x50) /2
+                
 	        	for(WorldEntity i : S.wom.elements.values()) {
 	                 if(	(i.type.equals(HealthPotion.class.getSimpleName()) ) ||
 	                		 (i.type.equals(Water.class.getSimpleName()) ) ||
@@ -776,25 +751,29 @@ public class Utils {
     ////////////////////// /////////////////////////////////////////////////////////////////////////////////////////
     
     public static Tactic abortIfDead() {
-        Action abortIfDead =  action("Abort If Dead").do1((MyAgentState S) -> { 
-        	
+        Action abort = new Action.Abort() ;
+        //Action abortIfDead =  action("Abort If Dead").do1((MyAgentState S) -> { 
+        Action abortIfDead =  abort.on((MyAgentState S) -> { 
+                	
 	        //MyEnv env_ = (MyEnv) S.env() ; 
-	        WorldModel current = S.wom ;
-        	String agentId = S.wom.agentId ; 
- 	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
- 	        Boolean isAlive = agentCurrentState.getBooleanProperty("isAlive"); //Indicating whether the avatar is alive or not
+	        //WorldModel current = S.wom ;
+        	//String agentId = S.wom.agentId ; 
+ 	        //WorldEntity agentCurrentState = current.elements.get(agentId) ;
+ 	        //Boolean isAlive = agentCurrentState.getBooleanProperty("isAlive"); //Indicating whether the avatar is alive or not
 	        
 
 			//boolean healthItemCollected = false;
 			
 			
 			// deploy a new goal:
-			if (!isAlive) {
-								return ABORT();
+ 	        // make the guard enabled when the character is dead:
+			if (!S.isAlive()) {
+				//return ABORT();
+			    return S ;
 			}
-			
 			//S.updateState() ;
-			return S ;
+			//return S ;
+			return null ;
 	    });
 		return abortIfDead.lift();
 		
@@ -812,20 +791,20 @@ public class Utils {
     /**
      * A goal to get an agent to the location of an non-monster entity.
      */
-    public static GoalStructure entityVisited(String entityId) {
-        return  locationVisited(entityId,null,0) ;
+    public static GoalStructure entityVisited(TestAgent agent, String entityId, float monsterAvoidDistance) {
+        return  locationVisited_2(agent,entityId,null,monsterAvoidDistance).lift() ;
     }
     
 //    public static GoalStructure entityVisited1(String entityId) {
 //        return  locationVisited1(entityId,null,0) ;
 //    }
     
-    public static GoalStructure locationVisited(Vec3 destination) {
-        return  locationVisited(null,destination,0) ;
-    }
+   // public static GoalStructure ok(Vec3 destination) {
+    //    return  locationVisited(null,destination,0) ;
+    //}
     
-    public static GoalStructure locationVisited(String entityId, Vec3 destination, float monsterAvoidDistance) {
-        return locationVisited_1(entityId,destination,monsterAvoidDistance).lift() ;
+    public static GoalStructure locationVisited(TestAgent agent, String entityId, Vec3 destination, float monsterAvoidDistance) {
+        return locationVisited_2(agent,entityId,destination,monsterAvoidDistance).lift() ;
     }
     
     public static Goal locationVisited_1(String entityId, Vec3 destination, float monsterAvoidDistance) {
@@ -850,13 +829,11 @@ public class Utils {
                     return Utils.sameTile(S.wom.position, destination_) ;
                 })
                 .withTactic(FIRSTof(
-                		
-                		
-                		      //abortIfDead(),
+                		      abortIfDead(),
                 			  useHealthToSurvive().lift(),
                 			  equipBestAvailableWeapon().lift(),
-                              //bowAttack().lift(),
-                              //meleeAttack().lift(),
+                              bowAttack().lift(),
+                              meleeAttack().lift(),
                               travelTo(entityId,destination,monsterAvoidDistance).lift(), 
                               ABORT()));
         
@@ -870,7 +847,10 @@ public class Utils {
     public static Goal locationVisited_2(TestAgent agent, String entityId, Vec3 destination, float monsterAvoidDistance) {
         Goal g = locationVisited_1(entityId,destination,monsterAvoidDistance) ;
         Tactic baseTactic = g.getTactic() ;
-        Tactic extendedTactic = FIRSTof(collectHealthItemsIfNeeded(agent),baseTactic) ;                       
+        Tactic extendedTactic = FIRSTof(
+                collectHealthItemsIfNeeded(agent,monsterAvoidDistance), // won't be enabled if dead
+                baseTactic // will abort if dead
+                ) ;                       
         return g.withTactic(extendedTactic) ; 
     }
     
@@ -903,12 +883,11 @@ public class Utils {
                     else return true;
                  })
                 .withTactic(FIRSTof(
-                		
-                		//abortIfDead(),
-                		collectHealthItemsIfNeeded(agent),
+                		abortIfDead(),
+                		collectHealthItemsIfNeeded(agent,monsterAvoidDistance),
                 		useHealthToSurvive().lift(),
-                		equipBestAvailableWeapon().lift(),
-                		bowAttack().lift(),
+                		//equipBestAvailableWeapon().lift(),
+                		//bowAttack().lift(),
                 		meleeAttack().lift(),
                         travelToMonster(monsterId,monsterAvoidDistance).lift(), 
                         ABORT()));
