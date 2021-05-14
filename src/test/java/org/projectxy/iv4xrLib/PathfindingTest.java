@@ -39,7 +39,7 @@ public class PathfindingTest {
             agent.update();
             turn++ ;
             System.out.println("[" + turn + "] agent@" + state.wom.position ) ;
-            Thread.sleep(500);
+            Thread.sleep(100);
             if(turn > 800) { // forcing break the agent seems to take forever...
                 break ;
             }

@@ -435,7 +435,7 @@ public class Utils {
                  				
                     	 System.out.println("isWall: "+ isWall);
                  		 //if (isWall <= 2) {
-                 		 if (isWall <= 1) {
+                 		 if (isWall <= 0) {
                                 	 
                      		//env.interact(S.wom.agentId, null, Interact.AimWithBow);
 
@@ -752,6 +752,7 @@ public class Utils {
     
     public static Tactic abortIfDead() {
         Action abort = new Action.Abort() ;
+        
         //Action abortIfDead =  action("Abort If Dead").do1((MyAgentState S) -> { 
         Action abortIfDead =  abort.on((MyAgentState S) -> { 
                 	
@@ -886,8 +887,8 @@ public class Utils {
                 		abortIfDead(),
                 		collectHealthItemsIfNeeded(agent,monsterAvoidDistance),
                 		useHealthToSurvive().lift(),
-                		//equipBestAvailableWeapon().lift(),
-                		//bowAttack().lift(),
+                		equipBestAvailableWeapon().lift(),
+                		bowAttack().lift(),
                 		meleeAttack().lift(),
                         travelToMonster(monsterId,monsterAvoidDistance).lift(), 
                         ABORT()));
