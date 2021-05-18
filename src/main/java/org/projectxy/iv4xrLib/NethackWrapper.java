@@ -158,6 +158,8 @@ public class NethackWrapper {
         playerStatus.properties.put("equippedWeaponName", ps.weap.toString());
         playerStatus.properties.put("equippedWeaponDmg", ps.weap.attackDmg);
         
+        playerStatus.properties.put("currentLevel", nethack.level);
+        
         playerStatus.properties.put("health", ps.health );
         playerStatus.properties.put("maxhealth", ps.maxHealth );	// Maybe no need for this
         playerStatus.properties.put("isAlive",  ps.alive);			// Boolean

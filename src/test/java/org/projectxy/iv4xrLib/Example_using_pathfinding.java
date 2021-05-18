@@ -177,7 +177,13 @@ public class Example_using_pathfinding {
 
 		int turn = 0;
 		while (g.getStatus().inProgress()) {
-			agent.update();
+			try {agent.update();} catch (Exception e) {
+				for (WorldEntity we : state.wom.elements.values()) {
+					System.out.println(">>> " + we.type + ", id=" + we.id + ", @" + we.position);
+				}
+				g.printGoalStructureStatus();
+				throw e;
+			} 
 			turn++;
 			System.out.println("[" + turn + "] agent@" + state.wom.position);
 			Thread.sleep(250);
@@ -204,4 +210,72 @@ public class Example_using_pathfinding {
 		System.out.println(">>> Goal status:" + g.getStatus());
 	}
 
+	
+	@Test
+	public void reach_the_stairs_until_fifth_level() throws InterruptedException {
+		// This goal lets the agent going through levels by reaching the stairs, until it reaches the 5th level (first Boss)
+		
+		// launch the game:
+		NethackWrapper driver = new NethackWrapper();
+		driver.launchNethack(new NethackConfiguration());
+
+		// Create an agent, and attaching to it a clean state and environment:
+		TestAgent agent = new TestAgent();
+		MyAgentState state = new MyAgentState();
+		agent.attachState(state);
+		MyEnv env = new MyEnv(driver);
+		agent.attachEnvironment(env);
+
+		for (WorldEntity e : state.wom.elements.values()) {
+			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
+		}
+
+		// give a goal-structure to the agent:
+		//GoalStructure g = SEQ(Utils.entityVisited("78"), GoalLib.pickUpItem(), Utils.entityVisited("144"));
+		GoalStructure g = SEQ(Utils.entityVisited(agent,"77",3), 
+		                      GoalLib.pickUpItem(), 
+		                      Utils.entityVisited_5_level(agent,"Stairs",3)
+		                      
+		                      //Utils.closeToAMonster(agent, "160", 3),
+		                      //Utils.closeToAMonster(agent, "154", 3),
+		                      //Utils.closeToAMonster(agent, "159", 3)
+		                      );
+
+		
+		//GoalStructure g = SEQ( Utils.closeToAMonster("161", 3),Utils.entityVisited("78"));
+
+		agent.setGoal(g);
+
+		// run the agent to control the game:
+
+		int turn = 0;
+		while (g.getStatus().inProgress()) {
+			agent.update();
+			turn++;
+			System.out.println("[" + turn + "] agent@" + state.wom.position);
+			Thread.sleep(250);
+			if (turn > 500) {
+				// forcing break the agent seems to take forever...
+				break;
+			}
+		}
+
+		//////
+		/*
+		 * GoalStructure g_ = GoalLib.pickUpItem(); agent.setGoal(g_) ;
+		 * 
+		 * int turn1 = 0 ; while(!g_.getStatus().success()) { agent.update(); turn1++ ;
+		 * 
+		 * Thread.sleep(350); if(turn > 100) {
+		 * 
+		 * break ; } }
+		 */
+		///////
+		for (WorldEntity e : state.wom.elements.values()) {
+			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
+		}
+		System.out.println(">>> Goal status:" + g.getStatus());
+	}
+	
+	
 }

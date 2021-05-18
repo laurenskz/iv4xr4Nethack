@@ -490,23 +490,23 @@ public class Utils {
 	    })
 		.on((MyAgentState S) -> { 
 			WorldModel current = S.wom ;
-	        WorldModel old = S.previousWom ;
+	        //WorldModel old = S.previousWom ;
 
 	        String bowWeapon = "Bow";
 	        String swordWeapon = "Sword";
 
 	        WorldEntity currentInv = current.getElement("Inventory"); 
-	        WorldEntity oldInv = old.getElement("Inventory"); 
+	        //WorldEntity oldInv = old.getElement("Inventory"); 
 
 	        String agentId = S.wom.agentId ;
 	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
 	        int bestWeaponDmg = agentCurrentState.getIntProperty("equippedWeaponDmg");
 
-			int oldInvSize = oldInv.elements.size();
-			int currentInvSize = currentInv.elements.size();
+//			int oldInvSize = oldInv.elements.size();
+//			int currentInvSize = currentInv.elements.size();
 
-			System.out.println("old inv size: "+ oldInvSize);
-			System.out.println("current inv size: "+ currentInvSize);
+//			System.out.println("old inv size: "+ oldInvSize);
+//			System.out.println("current inv size: "+ currentInvSize);
 			
 //			if (S.previousWom.getElement("Inventory").elements.size() <= S.wom.getElement("Inventory").elements.size()) {
 //				System.out.print("YO");
@@ -518,7 +518,7 @@ public class Utils {
 			System.out.println("Iterating the inventory elements and looking for the weapon with the higher damage..");
 
 		        for(WorldEntity item_ : currentInv.elements.values()) {
-	          		System.out.println(item_.type);
+	          		System.out.println(item_.type + ","+ item_.id);
 	          		if ((item_.type.toLowerCase().contains(bowWeapon.toLowerCase())) || (item_.type.toLowerCase().contains(swordWeapon.toLowerCase()))){      	
 		          		int dmg = item_.getIntProperty("attackDmg");
 		
@@ -711,7 +711,8 @@ public class Utils {
 	                		 )
 	                		  {	// looking for health items 
 	                	 
-	                	 System.out.println("TYPE: "+ i.type);
+	                	 //System.out.println("TYPE: "+ i.type);
+	                	 
 	                     // i is an item
 	                	 
 	                	 int ix = (int) i.position.x; 					// item's x coordinate
@@ -723,21 +724,26 @@ public class Utils {
 	                     int dy = (int) Math.abs(ay-iy) ; // agent-item distance in y axis
 	                     
 	                     
+	                     
+	                     
 	                     if (dx + dy < minDistance) {
 	                    	 
 	                    	 minDistance = dx + dy;
 	                    	 
 	                    	 closestItemId = i.id;
 	                    	 
+	                    	 
+	                    	 System.out.println("Health Item's id: "+i.id);
+	                    	 System.out.println("Health Item's type: "+i.type);
 	                    	 System.out.println("Health Item's position: "+i.position);
 	                    	 
 	                         
-	                         return i.id ;
+	                         //return i.id ;
 	                     }
 	                 }
 	                 
 	             }
-	        	//return closestItemId;
+	        	return closestItemId;
 	        	
 	        }
 	        return null;
@@ -753,40 +759,21 @@ public class Utils {
     public static Tactic abortIfDead() {
         Action abort = new Action.Abort() ;
         
-        //Action abortIfDead =  action("Abort If Dead").do1((MyAgentState S) -> { 
         Action abortIfDead =  abort.on((MyAgentState S) -> { 
-                	
-	        //MyEnv env_ = (MyEnv) S.env() ; 
-	        //WorldModel current = S.wom ;
-        	//String agentId = S.wom.agentId ; 
- 	        //WorldEntity agentCurrentState = current.elements.get(agentId) ;
- 	        //Boolean isAlive = agentCurrentState.getBooleanProperty("isAlive"); //Indicating whether the avatar is alive or not
-	        
-
-			//boolean healthItemCollected = false;
-			
-			
-			// deploy a new goal:
+           
  	        // make the guard enabled when the character is dead:
 			if (!S.isAlive()) {
-				//return ABORT();
 			    return S ;
 			}
-			//S.updateState() ;
-			//return S ;
+
 			return null ;
 	    });
 		return abortIfDead.lift();
 		
-        
-        
     }
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    
-    
-    
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     /**
@@ -854,13 +841,88 @@ public class Utils {
                 ) ;                       
         return g.withTactic(extendedTactic) ; 
     }
-    
+   
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////
+    ////////////////////////
+    
+    public static GoalStructure entityVisited_5_level(TestAgent agent, String entityId, float monsterAvoidDistance) {
+        return  locationVisited_2_5_level(agent,entityId,null,monsterAvoidDistance).lift() ;
+    }
+    
+    
+    public static GoalStructure locationVisited_5_level(TestAgent agent, String entityId, Vec3 destination, float monsterAvoidDistance) {
+        return locationVisited_2_5_level(agent,entityId,destination,monsterAvoidDistance).lift() ;
+    }
+    
+    public static Goal locationVisited_1_5_level(String entityId, Vec3 destination, float monsterAvoidDistance) {
+        
+        String destinationName = entityId == null ? destination.toString() : entityId ;
+        Goal g = goal(destinationName + " is visited") 
+                .toSolve((MyAgentState S) -> {
+                
+                	MyEnv env = (MyEnv) S.env() ;
+                	
+                	WorldModel current = S.wom ;
+                	WorldModel previous = S.previousWom ;
+                	
+        	        String agentId = S.wom.agentId ;
+        	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+        	        WorldEntity agentPreviousState = previous.elements.get(agentId) ;
+
+        	        
+        	        int currentLevel = agentCurrentState.getIntProperty("currentLevel") ;
+        	        int previousLevel = agentPreviousState.getIntProperty("currentLevel");
+                	
+                	
+                    Vec3 destination_ = destination ;
+                    
+//                    System.out.println("current level: ------------" + currentLevel);
+//                    if (currentLevel != previousLevel) {
+//                    	
+//                    	env.nethackUnderTest.getNavigationGraph();
+//                    	
+//                    	
+//                    }
+                    if(entityId != null) {
+                        WorldEntity e = S.wom.getElement(entityId) ;
+                        if(e == null) {
+                            throw new IllegalArgumentException("Entity " + entityId + " does not exists!") ;
+                        }
+                        destination_ = e.position ;
+                    }
+                    return ( (Utils.sameTile(S.wom.position, destination_)) && (currentLevel==5) ) ;
+                })
+                .withTactic(FIRSTof(
+                		      abortIfDead(),
+                			  useHealthToSurvive().lift(),
+                			  equipBestAvailableWeapon().lift(),
+                              bowAttack().lift(),
+                              meleeAttack().lift(),
+                              travelTo(entityId,destination,monsterAvoidDistance).lift(), 
+                              ABORT()));
+        
+        return g ;
+    }
     
     
     
     
     
+    public static Goal locationVisited_2_5_level(TestAgent agent, String entityId, Vec3 destination, float monsterAvoidDistance) {
+        Goal g = locationVisited_1_5_level(entityId,destination,monsterAvoidDistance) ;
+        Tactic baseTactic = g.getTactic() ;
+        Tactic extendedTactic = FIRSTof(
+                collectHealthItemsIfNeeded(agent,monsterAvoidDistance), // won't be enabled if dead
+                baseTactic // will abort if dead
+                ) ;                       
+        return g.withTactic(extendedTactic) ; 
+    }
+    
+    
+    
+    ////////////////////////
+    /////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     

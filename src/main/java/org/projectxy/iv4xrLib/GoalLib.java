@@ -414,7 +414,8 @@ public class GoalLib {
 	        //int oldHealth = agentOldState.getIntProperty("health") ;
 	        //int currentHealth = agentCurrentState.getIntProperty("health") ;
 	       
-	        
+	        System.out.println("old size: "+ oldInvSize);
+	        System.out.println("current size: "+ currentInvSize);
 	        return (currentInvSize > oldInvSize)  ;
 	    }) ;
 	    
@@ -436,13 +437,13 @@ public class GoalLib {
       		
       		WorldEntity inv = current.getElement("Inventory");
       		
-      		int size = inv.elements.size();
+      		//int size = inv.elements.size();
 	        
 	        //WorldEntity inv = current.getElement("Inventory");		for(WorldEntity item_ : inv.elements.values())
 	        
 			boolean itemFoundAndPicked = false;
 			
-			System.out.println("inventory size: " + size );
+			//System.out.println("inventory size: " + size );
 			//System.out.println("itemFoundAndPicked1: " + itemFoundAndPicked );
 
 
@@ -466,8 +467,8 @@ public class GoalLib {
 	       
 	        if(itemFoundAndPicked) {
 	            S.updateState() ;
-	            int size1 = S.wom.getElement("Inventory").elements.size();
-				System.out.println("inventory size1: " + size1 );
+//	            int size1 = S.wom.getElement("Inventory").elements.size();
+//				System.out.println("inventory size1: " + size1 );
 
 	            return S ;
 	            
