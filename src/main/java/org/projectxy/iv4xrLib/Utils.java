@@ -207,6 +207,7 @@ public class Utils {
                     }
                 }
             }
+            ((MyNavGraph) S.simpleWorldNavigation).resetMonstersDangerArea() ;
             return path0 ;
         }) ;
     }
@@ -725,7 +726,6 @@ public class Utils {
 	                     
 	                     
 	                     
-	                     
 	                     if (dx + dy < minDistance) {
 	                    	 
 	                    	 minDistance = dx + dy;
@@ -823,6 +823,7 @@ public class Utils {
                               bowAttack().lift(),
                               meleeAttack().lift(),
                               travelTo(entityId,destination,monsterAvoidDistance).lift(), 
+                              travelTo(entityId,destination,0).lift(), 
                               ABORT()));
         
         return g ;
@@ -953,6 +954,7 @@ public class Utils {
                 		bowAttack().lift(),
                 		meleeAttack().lift(),
                         travelToMonster(monsterId,monsterAvoidDistance).lift(), 
+                        travelToMonster(monsterId,0).lift(), 
                         ABORT()));
         
         return g.lift() ;

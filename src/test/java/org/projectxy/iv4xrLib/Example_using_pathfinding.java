@@ -177,22 +177,23 @@ public class Example_using_pathfinding {
 
 		int turn = 0;
 		while (g.getStatus().inProgress()) {
-			try {agent.update();} catch (Exception e) {
-				for (WorldEntity we : state.wom.elements.values()) {
-					System.out.println(">>> " + we.type + ", id=" + we.id + ", @" + we.position);
-				}
-				g.printGoalStructureStatus();
-				throw e;
-			} 
+		    agent.update() ;
+			//try {agent.update();} catch (Exception e) {
+			//	for (WorldEntity we : state.wom.elements.values()) {
+			//		System.out.println(">>> " + we.type + ", id=" + we.id + ", @" + we.position);
+			//	}
+			//	g.printGoalStructureStatus();
+			//	throw e;
+			//} 
 			turn++;
-			System.out.println("[" + turn + "] agent@" + state.wom.position);
+			System.out.println("[" + turn + "] agent@" + state.wom.position + ", Alive:" + state.isAlive());
 			Thread.sleep(250);
 			if (turn > 500) {
 				// forcing break the agent seems to take forever...
 				break;
 			}
 		}
-
+		
 		//////
 		/*
 		 * GoalStructure g_ = GoalLib.pickUpItem(); agent.setGoal(g_) ;
@@ -207,7 +208,9 @@ public class Example_using_pathfinding {
 		for (WorldEntity e : state.wom.elements.values()) {
 			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
 		}
+		g.printGoalStructureStatus();
 		System.out.println(">>> Goal status:" + g.getStatus());
+		
 	}
 
 	
