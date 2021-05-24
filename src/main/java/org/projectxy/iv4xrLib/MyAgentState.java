@@ -56,10 +56,45 @@ public class MyAgentState extends State {
         return this;
     }
 
+     
+    //@Override
+    public MyAgentState setUpNextLevel(Environment env) {
+        
+    	
+    	currentPathToFollow = null;
+    	previousWom = null;
+    	wom = null; 
+    	simpleWorldNavigation = null;
+    	
+    	
+    	//MyAgentState.super.setEnvironment(MyAgentState.this.env());
+    	
+    	MyEnv env_ = (MyEnv) env;
+        super.setEnvironment(env_);
+
+        //env_.startNewGame();
+
+        env_.navgraph = env_.nethackUnderTest.getNavigationGraph();
+        
+        this.simpleWorldNavigation = env_.navgraph;
+        this.wom = env_.nethackUnderTest.observe();
+    	
+//    	MyAgentState.this.wom = 
+
+        
+        return this;
+
+        
+    }
+    
     /**
      * TODO: you need to do something when we transition to the next level. The nav-graph must
      * be loaded anew, for example.
      */
+    
+    
+    
+    
     @Override
     public void updateState() {
         super.updateState();

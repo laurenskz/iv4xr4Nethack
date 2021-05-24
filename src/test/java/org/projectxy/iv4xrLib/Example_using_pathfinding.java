@@ -235,22 +235,18 @@ public class Example_using_pathfinding {
 
 		// give a goal-structure to the agent:
 		//GoalStructure g = SEQ(Utils.entityVisited("78"), GoalLib.pickUpItem(), Utils.entityVisited("144"));
-		GoalStructure g = SEQ(Utils.entityVisited(agent,"77",3), 
-		                      GoalLib.pickUpItem(), 
+		GoalStructure g = SEQ(//Utils.entityVisited(agent,"77",3), 
+		                      //GoalLib.pickUpItem(), 
 		                      Utils.entityVisited_5_level(agent,"Stairs",3)
 		                      
-		                      //Utils.closeToAMonster(agent, "160", 3),
-		                      //Utils.closeToAMonster(agent, "154", 3),
-		                      //Utils.closeToAMonster(agent, "159", 3)
+		                      
 		                      );
 
 		
-		//GoalStructure g = SEQ( Utils.closeToAMonster("161", 3),Utils.entityVisited("78"));
 
 		agent.setGoal(g);
 
-		// run the agent to control the game:
-
+ 
 		int turn = 0;
 		while (g.getStatus().inProgress()) {
 			agent.update();
@@ -263,17 +259,7 @@ public class Example_using_pathfinding {
 			}
 		}
 
-		//////
-		/*
-		 * GoalStructure g_ = GoalLib.pickUpItem(); agent.setGoal(g_) ;
-		 * 
-		 * int turn1 = 0 ; while(!g_.getStatus().success()) { agent.update(); turn1++ ;
-		 * 
-		 * Thread.sleep(350); if(turn > 100) {
-		 * 
-		 * break ; } }
-		 */
-		///////
+		
 		for (WorldEntity e : state.wom.elements.values()) {
 			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
 		}

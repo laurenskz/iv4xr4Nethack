@@ -848,12 +848,12 @@ public class Utils {
     ////////////////////////
     
     public static GoalStructure entityVisited_5_level(TestAgent agent, String entityId, float monsterAvoidDistance) {
-        return  locationVisited_2_5_level(agent,entityId,null,monsterAvoidDistance).lift() ;
+        return  locationVisited_2_5_level(agent, entityId,null,monsterAvoidDistance).lift() ;
     }
     
     
     public static GoalStructure locationVisited_5_level(TestAgent agent, String entityId, Vec3 destination, float monsterAvoidDistance) {
-        return locationVisited_2_5_level(agent,entityId,destination,monsterAvoidDistance).lift() ;
+        return locationVisited_2_5_level(agent, entityId,destination,monsterAvoidDistance).lift() ;
     }
     
     public static Goal locationVisited_1_5_level(String entityId, Vec3 destination, float monsterAvoidDistance) {
@@ -896,6 +896,7 @@ public class Utils {
                 })
                 .withTactic(FIRSTof(
                 		      abortIfDead(),
+                		      loadNewLevel().lift(),
                 			  useHealthToSurvive().lift(),
                 			  equipBestAvailableWeapon().lift(),
                               bowAttack().lift(),
@@ -989,5 +990,74 @@ public class Utils {
         System.out.println("       duplicates: " + duplicates) ;
         if (duplicates>0) throw new Error("The Pathdfinder produces a path containing duplicate nodes!!") ;
     }
+     
+    
+//////////////////
+	public static Action loadNewLevel() {
+	return action("reload navigation grapgh when moving to a new level").do1((MyAgentState S) -> { 
+		
+	MyEnv env_ = (MyEnv) S.env() ;
+		
+    
+    boolean levelLoaded = false;
+	
+    
+	S.setUpNextLevel(env_);
+	//S.updateState() ;
+	
+    levelLoaded = true;
+
+	
+	for (WorldEntity e : S.wom.elements.values()) {
+		System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
+	}
+	
+	
+
+	
+	   
+    
+    if(levelLoaded) {
+    	
+        S.updateState() ;
+        return S ;
+    }
+    else {
+        return null ;
+    }	
+		
+	
+	
+	
+	})
+	.on((MyAgentState S) -> { 
+	
+	WorldModel current = S.wom ;
+	WorldModel previous = S.previousWom ;
+	
+	//boolean navGraphLoaded = false;
+	
+	String agentId = S.wom.agentId ;
+	WorldEntity agentCurrentState = current.elements.get(agentId) ;
+	WorldEntity agentPreviousState = previous.elements.get(agentId) ;
+		
+	int currentLevel = agentCurrentState.getIntProperty("currentLevel") ;
+    int previousLevel = agentPreviousState.getIntProperty("currentLevel");	
+    
+    
+    if (currentLevel>previousLevel) {
+    	return true;
+    	
+    }
+
+	
+	return null;
+	
+	}) ;
+	
+	}
+
+////////////////////// /////////////////////////////////////////////////////////////////////////////////////////
+
 
 }
