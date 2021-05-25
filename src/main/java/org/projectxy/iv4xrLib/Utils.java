@@ -1006,14 +1006,12 @@ public class Utils {
 	//S.updateState() ;
 	
     levelLoaded = true;
-
-	
+    
+    
 	for (WorldEntity e : S.wom.elements.values()) {
 		System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
 	}
 	
-	
-
 	
 	   
     
@@ -1035,7 +1033,6 @@ public class Utils {
 	WorldModel current = S.wom ;
 	WorldModel previous = S.previousWom ;
 	
-	//boolean navGraphLoaded = false;
 	
 	String agentId = S.wom.agentId ;
 	WorldEntity agentCurrentState = current.elements.get(agentId) ;
@@ -1050,7 +1047,6 @@ public class Utils {
     	
     }
 
-	
 	return null;
 	
 	}) ;

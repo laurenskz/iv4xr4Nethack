@@ -70,7 +70,7 @@ public class MyAgentState extends State {
     	//MyAgentState.super.setEnvironment(MyAgentState.this.env());
     	
     	MyEnv env_ = (MyEnv) env;
-        super.setEnvironment(env_);
+        super.setEnvironment(env);
 
         //env_.startNewGame();
 
@@ -80,7 +80,7 @@ public class MyAgentState extends State {
         this.wom = env_.nethackUnderTest.observe();
     	
 //    	MyAgentState.this.wom = 
-
+ 
         
         return this;
 
