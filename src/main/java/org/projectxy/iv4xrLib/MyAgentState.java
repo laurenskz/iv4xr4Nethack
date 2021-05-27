@@ -70,7 +70,7 @@ public class MyAgentState extends State {
     	//MyAgentState.super.setEnvironment(MyAgentState.this.env());
     	
     	MyEnv env_ = (MyEnv) env;
-        super.setEnvironment(env);
+        //super.setEnvironment(env);
 
         //env_.startNewGame();
 

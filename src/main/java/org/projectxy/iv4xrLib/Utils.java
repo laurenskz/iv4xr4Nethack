@@ -111,7 +111,9 @@ public class Utils {
                 if(entityId != null) {
                     WorldEntity e = S.wom.getElement(entityId) ;
                     if(e == null) {
-                        throw new IllegalArgumentException("Entity " + entityId + " does not exists!") ;
+                        // throw new IllegalArgumentException("Entity " + entityId + " does not exists!") ;
+                        System.out.println(">>> Trying to travel to entity " + entityId + ", but does not exists!") ;
+                        return null ;
                     }
                     destination_ = e.position ;
                 }
@@ -667,9 +669,11 @@ public class Utils {
 			// deploy a new goal:
 			//GoalStructure g2 = SEQ(entityVisited(itemId),GoalLib.pickUpItem());
 			System.out.println(">>> deploying a new goal to get a health-item " + itemId) ;
-			GoalStructure g2 = SEQ(
-			    locationVisited_1(itemId,null,monsterAvoidDistance).lift(),
-			    GoalLib.pickUpItem());
+			GoalStructure g2 = 
+			    FIRSTof(
+			        SEQ(locationVisited_1(itemId,null,monsterAvoidDistance).lift(),
+			            GoalLib.pickUpItem()),
+			        SUCCESS());
 			agent.addBefore(g2) ;
 			return S ;
 	    })
@@ -892,6 +896,8 @@ public class Utils {
                         }
                         destination_ = e.position ;
                     }
+                    System.out.println("### stairs: " + entityId + ", @" + destination_) ;
+                    System.out.println("### curlevel: " + currentLevel) ;
                     return ( (Utils.sameTile(S.wom.position, destination_)) && (currentLevel==5) ) ;
                 })
                 .withTactic(FIRSTof(
@@ -902,6 +908,7 @@ public class Utils {
                               bowAttack().lift(),
                               meleeAttack().lift(),
                               travelTo(entityId,destination,monsterAvoidDistance).lift(), 
+                              travelTo(entityId,destination,0).lift(), 
                               ABORT()));
         
         return g ;
@@ -1007,7 +1014,7 @@ public class Utils {
 	
     levelLoaded = true;
     
-    
+    System.out.println(">>> a new level is loaded.") ;
 	for (WorldEntity e : S.wom.elements.values()) {
 		System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
 	}

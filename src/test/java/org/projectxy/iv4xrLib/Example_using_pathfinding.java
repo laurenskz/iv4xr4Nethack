@@ -249,8 +249,8 @@ public class Example_using_pathfinding {
  
 		int turn = 0;
 		while (g.getStatus().inProgress()) {
-			agent.update();
-			turn++;
+		    agent.update();
+		    turn++;
 			System.out.println("[" + turn + "] agent@" + state.wom.position);
 			Thread.sleep(250);
 			if (turn > 500) {
