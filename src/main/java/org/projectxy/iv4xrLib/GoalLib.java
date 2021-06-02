@@ -414,15 +414,15 @@ public class GoalLib {
 	        //int oldHealth = agentOldState.getIntProperty("health") ;
 	        //int currentHealth = agentCurrentState.getIntProperty("health") ;
 	       
-	        System.out.println("old size: "+ oldInvSize);
-	        System.out.println("current size: "+ currentInvSize);
+	        //System.out.println("old size: "+ oldInvSize);
+	        //System.out.println("current size: "+ currentInvSize);
 	        return (currentInvSize > oldInvSize)  ;
 	    }) ;
 	    
 	    
 	    Action pickUpItem = action("pick up item") ;
 	    
-  		System.out.println("1. HERE in pickUpItem!");
+  		//System.out.println("1. HERE in pickUpItem!");
   		
 
 
@@ -433,7 +433,7 @@ public class GoalLib {
 	        WorldModel current = S.wom ;
 	        
 	        
-      		System.out.println("2. AND HERE in pickUpItem again!");
+      		//System.out.println("2. AND HERE in pickUpItem again!");
       		
       		WorldEntity inv = current.getElement("Inventory");
       		

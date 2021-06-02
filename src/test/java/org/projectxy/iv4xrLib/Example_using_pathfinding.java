@@ -23,6 +23,18 @@ import nl.uu.cs.aplib.mainConcepts.Goal;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import nl.uu.cs.aplib.mainConcepts.Tactic;
 
+
+import static nl.uu.cs.aplib.AplibEDSL.* ;
+
+
+import A.B.Monster;
+import A.B.HealthPotion;
+import A.B.Food;
+import A.B.Water;
+import A.B.Gold;
+
+
+
 public class Example_using_pathfinding {
 
 	@Test
@@ -265,6 +277,185 @@ public class Example_using_pathfinding {
 		}
 		System.out.println(">>> Goal status:" + g.getStatus());
 	}
+	
+	
+//	@Test
+//	public void interact_with_everything_and_reach_the_stairs() throws InterruptedException {
+//		// This goal lets the agent going through levels by reaching the stairs, until it reaches the 5th level (first Boss)
+//		
+//		// launch the game:
+//		NethackWrapper driver = new NethackWrapper();
+//		driver.launchNethack(new NethackConfiguration());
+//
+//		// Create an agent, and attaching to it a clean state and environment:
+//		TestAgent agent = new TestAgent();
+//		MyAgentState state = new MyAgentState();
+//		agent.attachState(state);
+//		MyEnv env = new MyEnv(driver);
+//		agent.attachEnvironment(env);
+//
+//		for (WorldEntity e : state.wom.elements.values()) {
+//			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
+//		}
+//
+//		// give a goal-structure to the agent:
+//		//GoalStructure g = SEQ(Utils.entityVisited("78"), GoalLib.pickUpItem(), Utils.entityVisited("144"));
+//		GoalStructure g = SEQ(//Utils.entityVisited(agent,"77",3), 
+//		                      //GoalLib.pickUpItem(), 
+//		                      Utils.entityVisited_all(agent,"Stairs",3)
+//		                      
+//		                      
+//		                      );
+//
+//		
+//
+//		agent.setGoal(g);
+//
+// 
+//		int turn = 0;
+//		while (g.getStatus().inProgress()) {
+//		    agent.update();
+//		    turn++;
+//			System.out.println("[" + turn + "] agent@" + state.wom.position);
+//			Thread.sleep(250);
+//			if (turn > 500) {
+//				// forcing break the agent seems to take forever...
+//				break;
+//			}
+//		}
+//
+//		
+//		for (WorldEntity e : state.wom.elements.values()) {
+//			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
+//		}
+//		System.out.println(">>> Goal status:" + g.getStatus());
+//	
+//		
+//		//////
+//		/*
+//		 * GoalStructure g_ = GoalLib.pickUpItem(); agent.setGoal(g_) ;
+//		 * 
+//		 * int turn1 = 0 ; while(!g_.getStatus().success()) { agent.update(); turn1++ ;
+//		 * 
+//		 * Thread.sleep(350); if(turn > 100) {
+//		 * 
+//		 * break ; } }
+//		 */
+//		///////
+//		for (WorldEntity e : state.wom.elements.values()) {
+//			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
+//		}
+//		g.printGoalStructureStatus();
+//		System.out.println(">>> Goal status:" + g.getStatus());
+//		
+//	}
+	
+	@Test
+	public void interact_with_everything_and_reach_the_stairs() throws InterruptedException {
+		// This goal lets the agent going through levels by reaching the stairs, until it reaches the 5th level (first Boss)
+		
+		// launch the game:
+		NethackWrapper driver = new NethackWrapper();
+		driver.launchNethack(new NethackConfiguration());
+
+		// Create an agent, and attaching to it a clean state and environment:
+		TestAgent agent = new TestAgent();
+		MyAgentState state = new MyAgentState();
+		agent.attachState(state);
+		MyEnv env = new MyEnv(driver);
+		agent.attachEnvironment(env);
+
+		for (WorldEntity e : state.wom.elements.values()) {
+			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
+		}
+		
+		while (true) {
+			
+			//state.updateState();
+			
+			WorldEntity targetEntity = null;
+			
+			for (WorldEntity e: state.wom.elements.values()) {
+				
+				if(	(e.type.equals(HealthPotion.class.getSimpleName()) ) ||
+	            		 (e.type.equals(Water.class.getSimpleName()) ) ||
+	            		 (e.type.equals(Gold.class.getSimpleName()) ) ||
+	            		 (e.type.equals(Food.class.getSimpleName()) ) ||
+	            		 (e.type.equals(Monster.class.getSimpleName() ) )
+	            		 )
+	            {
+					
+					targetEntity = e ;
+					break ;
+	            }	
+				
+			}
+			
+			if (targetEntity == null) break ;
+			
+			GoalStructure g1;
+			
+			if(targetEntity.type == "Monster") {
+				
+				g1 = FIRSTof(
+						Utils.closeToAMonster(agent, targetEntity.id, 0),
+						SUCCESS() );
+				
+			}
+			else {
+				
+				g1 = FIRSTof(
+						SEQ( Utils.entityVisited(agent, targetEntity.id,3),
+			                 GoalLib.pickUpItem() ),
+						SUCCESS() );
+				
+			}
+			
+			agent.setGoal(g1);
+			
+			int turn = 0;
+			while (g1.getStatus().inProgress()) {
+			    agent.update();
+			    turn++;
+				//System.out.println("[" + turn + "] agent@" + state.wom.position);
+				Thread.sleep(250);
+				if (turn > 500) {
+					// forcing break the agent seems to take forever...
+					break;
+				}
+			}
+			
+			
+		}
+		
+
+		GoalStructure g2 = Utils.entityVisited_all(agent,"Stairs",3);
+
+		agent.setGoal(g2);
+
+ 
+		int turn = 0;
+		while (g2.getStatus().inProgress()) {
+		    agent.update();
+		    turn++;
+			System.out.println("[" + turn + "] agent@" + state.wom.position);
+			Thread.sleep(250);
+			if (turn > 500) {
+				// forcing break the agent seems to take forever...
+				break;
+			}
+		}
+
+		
+//		for (WorldEntity e : state.wom.elements.values()) {
+//			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
+//		}
+		System.out.println(">>> Goal status:" + g2.getStatus());
+	
+		g2.printGoalStructureStatus();
+		
+	}
+	
 	
 	
 }

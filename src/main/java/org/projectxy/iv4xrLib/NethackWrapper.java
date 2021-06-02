@@ -170,11 +170,25 @@ public class NethackWrapper {
         
         // Stairs:
         
-        Tile stairTile = nethack.tiles[nethack.stairX][nethack.stairY];
-        WorldEntity stairs = new WorldEntity("Stairs", "Stairs", false);	// Id maybe should derive from stairTile.ID, but it is null in our case 
-        stairs.position = new Vec3(nethack.stairX, nethack.stairY, 0);
-        wom.elements.put(stairs.id, stairs);
         
+        if (	(nethack.stairX != 0) && (nethack.stairY != 0)	) {
+        	
+        	Tile stairTile = nethack.tiles[nethack.stairX][nethack.stairY];
+            WorldEntity stairs = new WorldEntity("Stairs", "Stairs", false);	// Id maybe should derive from stairTile.ID, but it is null in our case 
+            stairs.position = new Vec3(nethack.stairX, nethack.stairY, 0);
+            wom.elements.put(stairs.id, stairs);
+        	
+        	
+        }
+        else {
+        	System.out.println("den exei stairs edw");
+        }
+        
+//        Tile stairTile = nethack.tiles[nethack.stairX][nethack.stairY];
+//        WorldEntity stairs = new WorldEntity("Stairs", "Stairs", false);	// Id maybe should derive from stairTile.ID, but it is null in our case 
+//        stairs.position = new Vec3(nethack.stairX, nethack.stairY, 0);
+//        wom.elements.put(stairs.id, stairs);
+//        
         // System.out.println("Stairs ID: " + stairs.id); //??
 
 
