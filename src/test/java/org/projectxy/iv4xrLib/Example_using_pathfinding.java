@@ -1,11 +1,6 @@
 package org.projectxy.iv4xrLib;
 
-import static nl.uu.cs.aplib.AplibEDSL.SEQ;
-import static nl.uu.cs.aplib.AplibEDSL.ANYof;
-import static nl.uu.cs.aplib.AplibEDSL.FIRSTof;
-
-import static nl.uu.cs.aplib.AplibEDSL.action;
-import static nl.uu.cs.aplib.AplibEDSL.goal;
+import static nl.uu.cs.aplib.AplibEDSL.*;
 
 import java.util.List;
 import java.util.Scanner;
@@ -374,7 +369,6 @@ public class Example_using_pathfinding {
 			//state.updateState();
 			
 			WorldEntity targetEntity = null;
-			
 			for (WorldEntity e: state.wom.elements.values()) {
 				
 				if(	(e.type.equals(HealthPotion.class.getSimpleName()) ) ||
@@ -394,21 +388,21 @@ public class Example_using_pathfinding {
 			if (targetEntity == null) break ;
 			
 			GoalStructure g1;
+			final String targetId = targetEntity.id ;
 			
 			if(targetEntity.type == "Monster") {
-				
-				g1 = FIRSTof(
-						Utils.closeToAMonster(agent, targetEntity.id, 0),
-						SUCCESS() );
+				System.out.println("######### Testing monster " + targetId) ;
+				g1 = Utils.closeToAMonster(agent, targetEntity.id, 0) ;
 				
 			}
 			else {
-				
-				g1 = FIRSTof(
-						SEQ( Utils.entityVisited(agent, targetEntity.id,3),
-			                 GoalLib.pickUpItem() ),
-						SUCCESS() );
-				
+                System.out.println("######### Testing entity " + targetId) ;    
+                g1 = FIRSTof(
+                        SEQ( Utils.entityVisited(agent, targetEntity.id,3),
+                             IFELSE((MyAgentState S) -> S.wom.elements.get(targetId) != null,
+                                GoalLib.pickUpItem(),
+                                SUCCESS())
+                            ));
 			}
 			
 			agent.setGoal(g1);
@@ -424,11 +418,11 @@ public class Example_using_pathfinding {
 					break;
 				}
 			}
-			
-			
 		}
 		
-
+		
+		System.out.println("######### Going to next the stairs") ;    
+		
 		GoalStructure g2 = Utils.entityVisited_all(agent,"Stairs",3);
 
 		agent.setGoal(g2);

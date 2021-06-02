@@ -777,6 +777,18 @@ public class Utils {
 		
     }
     
+    public static Tactic checkIfEntityNoLongerExists(String entityId) {
+        Action check = action("Checking if entity id " + entityId + " is not on the map anymore.") 
+                .do1((MyAgentState S) -> S) 
+                .on((MyAgentState S) -> {
+                    if(entityId == null) return null ;
+                    if(S.wom.getElement(entityId) == null) return S ;
+                    return null ;
+                }) ;
+        
+        return check.lift() ;
+    }
+    
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -815,7 +827,10 @@ public class Utils {
                     if(entityId != null) {
                         WorldEntity e = S.wom.getElement(entityId) ;
                         if(e == null) {
-                            throw new IllegalArgumentException("Entity " + entityId + " does not exists!") ;
+                            // the case when the target-entity does not exist, we consider
+                            // the goal to be solved:
+                            return true ;
+                            // throw new IllegalArgumentException("Entity " + entityId + " does not exists!") ;
                         }
                         destination_ = e.position ;
                     }
@@ -823,6 +838,7 @@ public class Utils {
                 })
                 .withTactic(FIRSTof(
                 		      abortIfDead(),
+                		      checkIfEntityNoLongerExists(entityId),
                 			  useHealthToSurvive().lift(),
                 			  equipBestAvailableWeapon().lift(),
                               bowAttack().lift(),
@@ -1034,6 +1050,7 @@ public class Utils {
                  })
                 .withTactic(FIRSTof(
                 		abortIfDead(),
+                		checkIfEntityNoLongerExists(monsterId),
                 		collectHealthItemsIfNeeded(agent,monsterAvoidDistance),
                 		useHealthToSurvive().lift(),
                 		equipBestAvailableWeapon().lift(),
