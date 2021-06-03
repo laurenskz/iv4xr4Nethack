@@ -27,6 +27,9 @@ import A.B.HealthPotion;
 import A.B.Food;
 import A.B.Water;
 import A.B.Gold;
+import A.B.Sword;
+import A.B.Bow;
+import A.B.Boss;
 
 
 
@@ -239,6 +242,56 @@ public class Example_using_pathfinding {
 		for (WorldEntity e : state.wom.elements.values()) {
 			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
 		}
+		
+		while (true) {
+					
+					//state.updateState();
+					
+					WorldEntity targetEntity = null;
+					for (WorldEntity e: state.wom.elements.values()) {
+						
+						if	(e.type.equals(Boss.class.getSimpleName()) ) 
+			            {
+							
+							targetEntity = e ;
+							break ;
+			            }	
+						
+					}
+					
+					if (targetEntity == null) { 
+						
+						System.out.println("########  NO BOSS AT THIS LEVEL");
+						
+						break ;
+						
+					}
+					
+					GoalStructure g1;
+					final String targetId = targetEntity.id ;
+					
+					
+					System.out.println("######### Attack to Boss first. ID: " + targetId) ;
+					g1 = Utils.closeToAMonster(agent, targetEntity.id, 0) ;
+						
+				
+					agent.setGoal(g1);
+					
+					int turn = 0;
+					while (g1.getStatus().inProgress()) {
+					    agent.update();
+					    turn++;
+						//System.out.println("[" + turn + "] agent@" + state.wom.position);
+						Thread.sleep(250);
+						if (turn > 500) {
+							// forcing break the agent seems to take forever...
+							break;
+						}
+					}
+				}
+		
+		
+		
 
 		// give a goal-structure to the agent:
 		//GoalStructure g = SEQ(Utils.entityVisited("78"), GoalLib.pickUpItem(), Utils.entityVisited("144"));
@@ -375,6 +428,8 @@ public class Example_using_pathfinding {
 	            		 (e.type.equals(Water.class.getSimpleName()) ) ||
 	            		 (e.type.equals(Gold.class.getSimpleName()) ) ||
 	            		 (e.type.equals(Food.class.getSimpleName()) ) ||
+	            		 (e.type.equals(Sword.class.getSimpleName()) ) ||
+	            		 (e.type.equals(Bow.class.getSimpleName()) ) ||
 	            		 (e.type.equals(Monster.class.getSimpleName() ) )
 	            		 )
 	            {

@@ -106,6 +106,7 @@ public class MyAgentState extends State {
            .removeIf((Obstacle<LineIntersectable> o) -> { 
                MonsterWrapper mw = (MonsterWrapper) o.obstacle ;
                String mw_id = mw.monster.ID ;
+               
                if (! wom.elements.keySet().contains(mw_id)) {
                    // if the monster-id is no longer in the world .. it is dead. Remove it from the nav-graph
                    return true ;

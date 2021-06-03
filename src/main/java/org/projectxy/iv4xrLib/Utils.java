@@ -18,6 +18,7 @@ import org.projectxy.iv4xrLib.NethackWrapper.Movement;
 
 import A.B.Monster;
 import A.B.HealthPotion;
+import A.B.Boss;
 import A.B.Food;
 import A.B.Water;
 import A.B.Tile;
@@ -132,11 +133,24 @@ public class Utils {
                 	  {
                     float dw = Math.max(1, 2*monsterAvoidDistance) ;
                     ((MyNavGraph) S.simpleWorldNavigation).setMonstersDangerArea(dw) ;
+                    
+//                    if (entityId=="Stairs") {
+//                    	
+//                    	((MyNavGraph) S.simpleWorldNavigation).setStairsAvoidArea(0) ;
+//                    	
+//                    }
+//                    else {
+//                    	
+//                    	((MyNavGraph) S.simpleWorldNavigation).setStairsAvoidArea(1) ;
+//                    	
+//                    }
+                    
                     path0 = S.getPath(agentCurrentPosition,destination_) ;
                     //System.out.print(">>> agent @" +  agentCurrentPosition) ;
                     //System.out.print(">>> Planing path to " +  destination_) ;
                     //System.out.println(", #" + path0.size()) ;
                     ((MyNavGraph) S.simpleWorldNavigation).resetMonstersDangerArea() ;
+                    //((MyNavGraph) S.simpleWorldNavigation).resetStairsAvoidArea() ;
                     if(path0 == null) {
                         return null ;
                     }
@@ -193,6 +207,10 @@ public class Utils {
             float dw = Math.max(1, 2*monsterAvoidDistance) ;
             ((MyNavGraph) S.simpleWorldNavigation).setMonstersDangerArea(dw,monsterId) ;
             
+            //((MyNavGraph) S.simpleWorldNavigation).setStairsAvoidArea(1,null) ;
+            	
+            
+            
             // we can't literally move to the monster's tile; so we choose a tile next to it:
             Vec3[] candidates = { 
                       Vec3.add(e.position, new Vec3(1,0,0)), 
@@ -211,6 +229,7 @@ public class Utils {
                 }
             }
             ((MyNavGraph) S.simpleWorldNavigation).resetMonstersDangerArea() ;
+            //((MyNavGraph) S.simpleWorldNavigation).resetStairsAvoidArea() ;
             return path0 ;
         }) ;
     }
@@ -939,6 +958,7 @@ public class Utils {
         Goal g = locationVisited_1_5_level(entityId,destination,monsterAvoidDistance) ;
         Tactic baseTactic = g.getTactic() ;
         Tactic extendedTactic = FIRSTof(
+        		killBossFirst( agent),
                 collectHealthItemsIfNeeded(agent,monsterAvoidDistance), // won't be enabled if dead
                 baseTactic // will abort if dead
                 ) ;                       
@@ -1715,6 +1735,74 @@ return g.withTactic(extendedTactic) ;
 //	    
 //	}
 //	
+
+	public static Tactic killBossFirst(TestAgent agent) {
+	    Action deployNewGoal =  action("kill boss first").do2((MyAgentState S) -> (String targetEntityId) -> { 
+	    	
+			System.out.println("Boss ID: "+ targetEntityId);
+			
+			// deploy a new goal:
+			System.out.println(">>> deploying a new goal to kill the boss " + targetEntityId) ;
+			
+			GoalStructure g2 = closeToAMonster(agent, targetEntityId, 0);
+			            
+			       
+			agent.addBefore(g2) ;
+			return S ;
+	    })
+		.on((MyAgentState S) -> { 
+			
+		    if (!S.isAlive()) return null ;
+			
+			WorldModel current = S.wom ;
+			WorldModel previous = S.previousWom ;
+			
+			String agentId = S.wom.agentId ;
+	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+	        WorldEntity agentPreviousState = previous.elements.get(agentId) ;
+
+	        
+	        int currentLevel = agentCurrentState.getIntProperty("currentLevel") ;
+	        int previousLevel = agentPreviousState.getIntProperty("currentLevel");
+	        
+	        
+	        if (currentLevel>previousLevel) {
+	        	
+	        	WorldEntity targetEntity = null;
+				for (WorldEntity e: current.elements.values()) {
+					
+					if	(e.type.equals(Boss.class.getSimpleName()) ) 
+		            {
+						
+						
+						System.out.println("######### THERE IS A BOSS AT THIS LEVEL!");
+
+						targetEntity = e ;
+						break ;
+		            }	
+					
+				}
+				
+				if (targetEntity == null) { 
+					
+					System.out.println("########  NO BOSS AT THIS LEVEL");
+					
+					return null;
+					
+				}
+				
+				return targetEntity.id;
+				
+	        }
+	        
+	        return null;
+
+
+	     }) ;
+	    
+	    return SEQ(deployNewGoal.lift(), ABORT()) ;
+	    
+	}
 	
 	
 	

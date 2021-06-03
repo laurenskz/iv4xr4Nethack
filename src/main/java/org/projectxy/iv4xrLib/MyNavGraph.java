@@ -57,5 +57,28 @@ public class MyNavGraph extends SimpleNavGraph {
     public void resetMonstersDangerArea() {
         setMonstersDangerArea(1f) ;
     }
+    
+    
+    
+    // Doing something similar to seMonstersDangerArea() but for the Stair Tile
+    public void setStairsAvoidArea(float areaWidth) {
+    	setStairsAvoidArea(areaWidth,null) ;
+    }
+    
+    public void setStairsAvoidArea(float areaWidth, String exceptThisOne) {
+        for(Obstacle<LineIntersectable> o : obstacles) { 						//o for obstacle stair
+            StairsWrapper stair = (StairsWrapper) o.obstacle ; 
+            if(exceptThisOne!=null && stair.stair.ID.equals(exceptThisOne)) continue ;
+            stair.setAvoidanceDistance(areaWidth);
+        }
+    }
+    
+    public void resetStairsAvoidArea() {
+    	setStairsAvoidArea(1f) ;
+    }
+    
+    
+    
+    
 
 }
