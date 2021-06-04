@@ -8,7 +8,6 @@ import eu.iv4xr.framework.spatial.*;
 /**
  * A wrapper over a monster, to have a bounding box of some size, just in case we need
  * to implement path-planing that avoids monsters.
- *
  */
 public class MonsterWrapper implements  LineIntersectable {
     

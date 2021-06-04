@@ -104,6 +104,7 @@ public class MyAgentState extends State {
         // update the monsters in the nav-graph obstacles; we remove killed monsters:
         simpleWorldNavigation.obstacles
            .removeIf((Obstacle<LineIntersectable> o) -> { 
+               if (o.obstacle == null || !(o.obstacle instanceof MonsterWrapper)) return false ;
                MonsterWrapper mw = (MonsterWrapper) o.obstacle ;
                String mw_id = mw.monster.ID ;
                

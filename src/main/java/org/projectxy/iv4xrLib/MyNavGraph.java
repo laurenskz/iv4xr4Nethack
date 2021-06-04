@@ -1,6 +1,7 @@
 package org.projectxy.iv4xrLib;
 
 import eu.iv4xr.framework.extensions.pathfinding.SimpleNavGraph;
+import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.iv4xr.framework.spatial.LineIntersectable;
 import eu.iv4xr.framework.spatial.Obstacle;
 import eu.iv4xr.framework.spatial.Vec3;
@@ -11,6 +12,12 @@ import eu.iv4xr.framework.spatial.Vec3;
  * tile-based worlds where you cannot move diagonally.
  */
 public class MyNavGraph extends SimpleNavGraph {
+    
+    /**
+     * The stairs in the current level. This is to be treated as an obstacle,
+     * unless we specifically want to travel to it.
+     */
+    Obstacle<LineIntersectable> stairs ;
 
     /**
      * The distance between two NEIGHBORING vertices. If the connection is not
@@ -48,6 +55,7 @@ public class MyNavGraph extends SimpleNavGraph {
     
     public void setMonstersDangerArea(float areaWidth, String exceptThisOne) {
         for(Obstacle<LineIntersectable> o : obstacles) {
+            if(! (o.obstacle == null || o.obstacle instanceof MonsterWrapper)) continue ;
             MonsterWrapper monster = (MonsterWrapper) o.obstacle ; 
             if(exceptThisOne!=null && monster.monster.ID.equals(exceptThisOne)) continue ;
             monster.setAvoidanceDistance(areaWidth);
@@ -59,26 +67,28 @@ public class MyNavGraph extends SimpleNavGraph {
     }
     
     
-    
-    // Doing something similar to seMonstersDangerArea() but for the Stair Tile
-    public void setStairsAvoidArea(float areaWidth) {
-    	setStairsAvoidArea(areaWidth,null) ;
-    }
-    
-    public void setStairsAvoidArea(float areaWidth, String exceptThisOne) {
-        for(Obstacle<LineIntersectable> o : obstacles) { 						//o for obstacle stair
-            StairsWrapper stair = (StairsWrapper) o.obstacle ; 
-            if(exceptThisOne!=null && stair.stair.ID.equals(exceptThisOne)) continue ;
-            stair.setAvoidanceDistance(areaWidth);
+    public void setStairsAvoid(WorldEntity stairsx) {
+        if (stairsx==null) {
+            // the level does not have a stairs
+            return ;
         }
+        var position_ =  Utils.toTileCoordinate(stairsx.position) ;
+        if (this.stairs == null) {
+            this.stairs = new Obstacle(new StairWrapper(position_.fst, position_.snd)) ;
+            obstacles.add(this.stairs) ;
+        }
+        else if(! Utils.sameTile(((StairWrapper) this.stairs.obstacle).getPosition(), stairsx.position)) {
+            this.stairs.obstacle = new StairWrapper(position_.fst, position_.snd) ;      
+        }
+        this.stairs.isBlocking = true ;
+        //System.out.println("========= re-inserting stairs-obstacle") ;
+        //System.out.println("========= stairsx @" + stairsx.position) ;
+        //System.out.println("========= obstaclewrapper @" + ((StairWrapper) this.stairs.obstacle).getPosition()) ;
+     }
+    
+    public void resetStairsAvoid() {
+    	this.stairs.isBlocking = false ;
     }
-    
-    public void resetStairsAvoidArea() {
-    	setStairsAvoidArea(1f) ;
-    }
-    
-    
-    
-    
+
 
 }

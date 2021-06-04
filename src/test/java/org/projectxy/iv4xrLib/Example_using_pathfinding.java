@@ -422,6 +422,7 @@ public class Example_using_pathfinding {
 			//state.updateState();
 			
 			WorldEntity targetEntity = null;
+			WorldEntity stairs = state.wom.getElement("Stairs") ;
 			for (WorldEntity e: state.wom.elements.values()) {
 				
 				if(	(e.type.equals(HealthPotion.class.getSimpleName()) ) ||
@@ -433,7 +434,10 @@ public class Example_using_pathfinding {
 	            		 (e.type.equals(Monster.class.getSimpleName() ) )
 	            		 )
 	            {
-					
+				    if(stairs!=null && Utils.sameTile(stairs.position,e.position)) {
+                        // not going to test an entity that is ON stairs
+                        continue ;
+                    }
 					targetEntity = e ;
 					break ;
 	            }	
@@ -451,7 +455,7 @@ public class Example_using_pathfinding {
 				
 			}
 			else {
-                System.out.println("######### Testing entity " + targetId) ;    
+                System.out.println("######### Testing entity " + targetEntity.type + " " +  targetId) ;    
                 g1 = FIRSTof(
                         SEQ( Utils.entityVisited(agent, targetEntity.id,3),
                              IFELSE((MyAgentState S) -> S.wom.elements.get(targetId) != null,
@@ -464,14 +468,19 @@ public class Example_using_pathfinding {
 			
 			int turn = 0;
 			while (g1.getStatus().inProgress()) {
+			    System.out.println("> " + turn + ", Agent @" + state.wom.position + ", alive:" + state.isAlive()) ;
 			    agent.update();
 			    turn++;
 				//System.out.println("[" + turn + "] agent@" + state.wom.position);
-				Thread.sleep(250);
-				if (turn > 500) {
+				Thread.sleep(50);
+				if (!state.isAlive() || turn > 500) {
 					// forcing break the agent seems to take forever...
 					break;
 				}
+			}
+			if(!state.isAlive()) {
+			    // well... the agent is dead...
+			    return ;
 			}
 		}
 		

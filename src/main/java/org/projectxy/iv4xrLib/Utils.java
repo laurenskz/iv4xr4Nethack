@@ -134,23 +134,19 @@ public class Utils {
                     float dw = Math.max(1, 2*monsterAvoidDistance) ;
                     ((MyNavGraph) S.simpleWorldNavigation).setMonstersDangerArea(dw) ;
                     
-//                    if (entityId=="Stairs") {
-//                    	
-//                    	((MyNavGraph) S.simpleWorldNavigation).setStairsAvoidArea(0) ;
-//                    	
-//                    }
-//                    else {
-//                    	
-//                    	((MyNavGraph) S.simpleWorldNavigation).setStairsAvoidArea(1) ;
-//                    	
-//                    }
+                    if(entityId!="Stairs") {
+                        // unless the goal to travel to is the stairs, we will instruct
+                        // the pathfinder to avoid stairs:
+                        WorldEntity theStairs = S.wom.getElement("Stairs") ;                   	
+                    	((MyNavGraph) S.simpleWorldNavigation).setStairsAvoid(theStairs) ;
+                    }
                     
                     path0 = S.getPath(agentCurrentPosition,destination_) ;
                     //System.out.print(">>> agent @" +  agentCurrentPosition) ;
                     //System.out.print(">>> Planing path to " +  destination_) ;
                     //System.out.println(", #" + path0.size()) ;
                     ((MyNavGraph) S.simpleWorldNavigation).resetMonstersDangerArea() ;
-                    //((MyNavGraph) S.simpleWorldNavigation).resetStairsAvoidArea() ;
+                    ((MyNavGraph) S.simpleWorldNavigation).resetStairsAvoid() ;
                     if(path0 == null) {
                         return null ;
                     }
@@ -219,6 +215,9 @@ public class Utils {
                       Vec3.add(e.position, new Vec3(0,-1,0)) 
                    };
             
+            WorldEntity theStairs = S.wom.getElement("Stairs") ;                       
+            ((MyNavGraph) S.simpleWorldNavigation).setStairsAvoid(theStairs) ;
+            
             for(Vec3 targetLocation : candidates) {
                 if (S.simpleWorldNavigation.vertices.contains(targetLocation)) {
                     path0 = S.getPath(agentCurrentPosition,targetLocation) ;
@@ -229,7 +228,7 @@ public class Utils {
                 }
             }
             ((MyNavGraph) S.simpleWorldNavigation).resetMonstersDangerArea() ;
-            //((MyNavGraph) S.simpleWorldNavigation).resetStairsAvoidArea() ;
+            ((MyNavGraph) S.simpleWorldNavigation).resetStairsAvoid() ;
             return path0 ;
         }) ;
     }
@@ -541,7 +540,7 @@ public class Utils {
 			//System.out.println("Iterating the inventory elements and looking for the weapon with the higher damage..");
 
 		        for(WorldEntity item_ : currentInv.elements.values()) {
-	          		System.out.println(item_.type + ","+ item_.id);
+	          		//System.out.println("In inv: " + item_.type + ","+ item_.id);
 	          		if ((item_.type.toLowerCase().contains(bowWeapon.toLowerCase())) || (item_.type.toLowerCase().contains(swordWeapon.toLowerCase()))){      	
 		          		int dmg = item_.getIntProperty("attackDmg");
 		
@@ -621,12 +620,13 @@ public class Utils {
 	        int currentHealth = agentCurrentState.getIntProperty("health") ;
 	        
 	        
-	        if(currentHealth < 3 && currentHealth > 0) {
+	        if(currentHealth <= 3 && currentHealth > 0) {
 	        	System.out.println("Health::::---------------------------- "+ currentHealth);
 	        	
-	        	for(WorldEntity item_ : currentInv.elements.values()) {
-	          		System.out.println("3. Iterating the inventory elements and looking for the needed item!");
+	        	System.out.println("3. Iterating the inventory elements and looking for the needed item! #Inv:" + currentInv.elements.size());
 
+	        	for(WorldEntity item_ : currentInv.elements.values()) {
+	          		
 		          	if( (item_.type.equals("Food") || item_.type.equals("Water") || item_.type.equals("HealthPotion")) ) {
 		          		//System.out.println("AND HERE!");
 		          		String itemId = item_.id;
@@ -711,7 +711,7 @@ public class Utils {
 	        
 	        
 	        int healthItemsCounter = 0;
-	        String closestItemId = "";
+	        String closestItemId = null ;
 	        
 	        for(WorldEntity item_ : inv.elements.values()) {
 
@@ -728,18 +728,20 @@ public class Utils {
 	        	
 	        	// int minDistance = 70; //the maximum distance possible in our tile grid (90x50) /2
 	        	int minDistance = 30; //the maximum distance possible in our tile grid (90x50) /2
-                
+	        	WorldEntity stairs = S.wom.getElement("Stairs") ;
 	        	for(WorldEntity i : S.wom.elements.values()) {
-	                 if(	(i.type.equals(HealthPotion.class.getSimpleName()) ) ||
+	        	     if(	(i.type.equals(HealthPotion.class.getSimpleName()) ) ||
 	                		 (i.type.equals(Water.class.getSimpleName()) ) ||
 	                		 (i.type.equals(Food.class.getSimpleName()) )
 	                		 )
 	                		  {	// looking for health items 
 	                	 
 	                	 //System.out.println("TYPE: "+ i.type);
-	                	 
+
+	        	         // ignore it if it is a health item which happens to be ON the stairs:
+	                      if(stairs!=null && Utils.sameTile(stairs.position, i.position)) continue ;
 	                     // i is an item
-	                	 
+	                         
 	                	 int ix = (int) i.position.x; 					// item's x coordinate
 	                     int iy = (int) i.position.y;					// item's y coordinate
 	                     int ax = (int) current.position.x;				// agent's x coordinate
@@ -767,7 +769,7 @@ public class Utils {
 	                 }
 	                 
 	             }
-	        	return closestItemId;
+	        	if(closestItemId != null) return closestItemId;
 	        	
 	        }
 	        return null;

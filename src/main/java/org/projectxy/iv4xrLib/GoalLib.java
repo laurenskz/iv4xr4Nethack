@@ -160,9 +160,9 @@ public class GoalLib {
 	        
 			boolean healthItemFoundAndUsed = false;
 
+            System.out.println("3. Iterating the inventory elements and looking for the needed item! #Inv:" + inv.elements.size());	        
 	        
-	        for(WorldEntity item_ : inv.elements.values()) {
-          		System.out.println("3. Iterating the inventory elements and looking for the needed item!");
+            for(WorldEntity item_ : inv.elements.values()) {
 
 	          	if( (item_.type.equals("Food") || item_.type.equals("Water") || item_.type.equals("HealthPotion")) ) {
 	          		//System.out.println("AND HERE!");
@@ -252,9 +252,9 @@ public class GoalLib {
 	        
 			boolean SwordFoundAndUsed = false;
 
+            System.out.println("3. Iterating the inventory and looking for the needed SWORD WEAPON! #Inv:" + inv.elements.size());
 	        
 	        for(WorldEntity item_ : inv.elements.values()) {
-          		System.out.println("3. Iterating the inventory and looking for the needed SWORD WEAPON!");
 
 	          	if( item_.type.toLowerCase().contains(weaponNeeded.toLowerCase()) ) {
 	          		//System.out.println("AND HERE!");
@@ -340,9 +340,8 @@ public class GoalLib {
 	        
 			boolean BowFoundAndUsed = false;
 
-	        
+            System.out.println("3. Iterating the inventory and looking for the needed BOW WEAPON! #Inv:" + inv.elements.size());	        
 	        for(WorldEntity item_ : inv.elements.values()) {
-          		System.out.println("3. Iterating the inventory and looking for the needed BOW WEAPON!");
 
 	          	if( item_.type.toLowerCase().contains(weaponNeeded.toLowerCase()) ) {
 
@@ -623,8 +622,9 @@ public class GoalLib {
 			boolean bestWeaponEquipped = false;
 			int bestWeaponDmg = 0;
 	        
+			System.out.println("Iterating the inventory elements and looking for the weapon with the higher damage.. #Inv:" +inv.elements.values().size());
+            
 	        for(WorldEntity item_ : inv.elements.values()) {
-          		System.out.println("Iterating the inventory elements and looking for the weapon with the higher damage..");
           		//System.out.println(item_);
           		if ((item_.type.toLowerCase().contains(bowWeapon.toLowerCase())) || (item_.type.toLowerCase().contains(swordWeapon.toLowerCase()))){
           			
