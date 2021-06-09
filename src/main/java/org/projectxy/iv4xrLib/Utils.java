@@ -17,8 +17,10 @@ import org.projectxy.iv4xrLib.NethackWrapper.Interact;
 import org.projectxy.iv4xrLib.NethackWrapper.Movement;
 
 import A.B.Monster;
+import A.B.Sword;
 import A.B.HealthPotion;
 import A.B.Boss;
+import A.B.Bow;
 import A.B.Food;
 import A.B.Water;
 import A.B.Tile;
@@ -215,8 +217,11 @@ public class Utils {
                       Vec3.add(e.position, new Vec3(0,-1,0)) 
                    };
             
+            
             WorldEntity theStairs = S.wom.getElement("Stairs") ;                       
             ((MyNavGraph) S.simpleWorldNavigation).setStairsAvoid(theStairs) ;
+            
+            
             
             for(Vec3 targetLocation : candidates) {
                 if (S.simpleWorldNavigation.vertices.contains(targetLocation)) {
@@ -404,7 +409,7 @@ public class Utils {
 	                 					 isWall--;
 	                 					 //break;
 	                 				 }	
-	                 				System.out.println("isWall: "+ isWall);
+	                 				//System.out.println("isWall: "+ isWall);
 	                 			 }
 	                 		 }
 	                 		 
@@ -703,74 +708,87 @@ public class Utils {
 			
 			WorldModel current = S.wom ;
 	        WorldEntity inv = current.getElement("Inventory");
-//	        String agentId = S.wom.agentId ; 
-//	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
-//	        Boolean isAlive = agentCurrentState.getBooleanProperty("isAlive"); //Indicating whether the avatar is alive or not
-
-	        
-	        
+	        String agentId = S.wom.agentId ; 
+	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+	        int currentLevel = agentCurrentState.getIntProperty("currentLevel") ;
 	        
 	        int healthItemsCounter = 0;
 	        String closestItemId = null ;
 	        
-	        for(WorldEntity item_ : inv.elements.values()) {
-
-	          	if( (item_.type.equals("Food") || item_.type.equals("Water") || item_.type.equals("HealthPotion")) ) {
-	          		
-	          		healthItemsCounter ++;
-	          		
-	          	}
-	         }
 	        
-	        if (healthItemsCounter < 3) {
-	        	System.out.println("Number of health items in inventory: "+ healthItemsCounter);
+	        
+	        if (currentLevel%5 !=0) {
 	        	
-	        	
-	        	// int minDistance = 70; //the maximum distance possible in our tile grid (90x50) /2
-	        	int minDistance = 30; //the maximum distance possible in our tile grid (90x50) /2
-	        	WorldEntity stairs = S.wom.getElement("Stairs") ;
-	        	for(WorldEntity i : S.wom.elements.values()) {
-	        	     if(	(i.type.equals(HealthPotion.class.getSimpleName()) ) ||
-	                		 (i.type.equals(Water.class.getSimpleName()) ) ||
-	                		 (i.type.equals(Food.class.getSimpleName()) )
-	                		 )
-	                		  {	// looking for health items 
-	                	 
-	                	 //System.out.println("TYPE: "+ i.type);
-
-	        	         // ignore it if it is a health item which happens to be ON the stairs:
-	                      if(stairs!=null && Utils.sameTile(stairs.position, i.position)) continue ;
-	                     // i is an item
-	                         
-	                	 int ix = (int) i.position.x; 					// item's x coordinate
-	                     int iy = (int) i.position.y;					// item's y coordinate
-	                     int ax = (int) current.position.x;				// agent's x coordinate
-	                     int ay = (int) current.position.y;				// agent's y coordinate
-	                     
-	                     int dx = (int) Math.abs(ax-ix) ; // agent-item distance in x axis
-	                     int dy = (int) Math.abs(ay-iy) ; // agent-item distance in y axis
-	                     
-	                     
-	                     
-	                     if (dx + dy < minDistance) {
-	                    	 
-	                    	 minDistance = dx + dy;
-	                    	 
-	                    	 closestItemId = i.id;
-	                    	 
-	                    	 
-	                    	 System.out.println("Health Item's id: "+i.id);
-	                    	 System.out.println("Health Item's type: "+i.type);
-	                    	 System.out.println("Health Item's position: "+i.position);
-	                    	 
-	                         
-	                         //return i.id ;
-	                     }
-	                 }
-	                 
-	             }
-	        	if(closestItemId != null) return closestItemId;
-	        	
+	        	System.out.println("currentLevel%5: "+ currentLevel%5);
+	        
+		        for(WorldEntity item_ : inv.elements.values()) {
+	
+		          	if( (item_.type.equals("Food") || item_.type.equals("Water") || item_.type.equals("HealthPotion")) ) {
+		          		
+		          		healthItemsCounter ++;
+		          		
+		          	}
+		         }
+		        
+		        if (healthItemsCounter < 3) {
+		        	
+	//	        	if (currentLevel %5 == 0 ) {
+	//		        	System.out.println("Null ");
+	//
+	//	        		return null;
+	//	        	}
+		        	
+		        	
+		        	
+		        	System.out.println("Number of health items in inventory: "+ healthItemsCounter);
+		        	
+		        	
+		        	// int minDistance = 70; //the maximum distance possible in our tile grid (90x50) /2
+		        	int minDistance = 30; //the maximum distance possible in our tile grid (90x50) /2
+		        	WorldEntity stairs = S.wom.getElement("Stairs") ;
+		        	for(WorldEntity i : S.wom.elements.values()) {
+		        	     if(	(i.type.equals(HealthPotion.class.getSimpleName()) ) ||
+		                		 (i.type.equals(Water.class.getSimpleName()) ) ||
+		                		 (i.type.equals(Food.class.getSimpleName()) )
+		                		 )
+		                		  {	// looking for health items 
+		                	 
+		                	 //System.out.println("TYPE: "+ i.type);
+	
+		        	         // ignore it if it is a health item which happens to be ON the stairs:
+		                      if(stairs!=null && Utils.sameTile(stairs.position, i.position)) continue ;
+		                     // i is an item
+		                         
+		                	 int ix = (int) i.position.x; 					// item's x coordinate
+		                     int iy = (int) i.position.y;					// item's y coordinate
+		                     int ax = (int) current.position.x;				// agent's x coordinate
+		                     int ay = (int) current.position.y;				// agent's y coordinate
+		                     
+		                     int dx = (int) Math.abs(ax-ix) ; // agent-item distance in x axis
+		                     int dy = (int) Math.abs(ay-iy) ; // agent-item distance in y axis
+		                     
+		                     
+		                     
+		                     if (dx + dy < minDistance) {
+		                    	 
+		                    	 minDistance = dx + dy;
+		                    	 
+		                    	 closestItemId = i.id;
+		                    	 
+		                    	 
+		                    	 System.out.println("Health Item's id: "+i.id);
+		                    	 System.out.println("Health Item's type: "+i.type);
+		                    	 System.out.println("Health Item's position: "+i.position);
+		                    	 
+		                         
+		                         //return i.id ;
+		                     }
+		                 }
+		                 
+		             }
+		        	if(closestItemId != null) return closestItemId;
+		        	
+		        }
 	        }
 	        return null;
 	        
@@ -920,13 +938,7 @@ public class Utils {
                 	
                     Vec3 destination_ = destination ;
                     
-//                    System.out.println("current level: ------------" + currentLevel);
-//                    if (currentLevel != previousLevel) {
-//                    	
-//                    	env.nethackUnderTest.getNavigationGraph();
-//                    	
-//                    	
-//                    }
+
                     if(entityId != null) {
                         WorldEntity e = S.wom.getElement(entityId) ;
                         if(e == null) {
@@ -960,8 +972,8 @@ public class Utils {
         Goal g = locationVisited_1_5_level(entityId,destination,monsterAvoidDistance) ;
         Tactic baseTactic = g.getTactic() ;
         Tactic extendedTactic = FIRSTof(
-        		killBossFirst( agent),
-                collectHealthItemsIfNeeded(agent,monsterAvoidDistance), // won't be enabled if dead
+                collectHealthItemsIfNeeded(agent,monsterAvoidDistance),
+                killBossFirst(agent),// won't be enabled if dead
                 baseTactic // will abort if dead
                 ) ;                       
         return g.withTactic(extendedTactic) ; 
@@ -1073,7 +1085,7 @@ public class Utils {
                 .withTactic(FIRSTof(
                 		abortIfDead(),
                 		checkIfEntityNoLongerExists(monsterId),
-                		collectHealthItemsIfNeeded(agent,monsterAvoidDistance),
+                		//collectHealthItemsIfNeeded(agent,monsterAvoidDistance),
                 		useHealthToSurvive().lift(),
                 		equipBestAvailableWeapon().lift(),
                 		bowAttack().lift(),
@@ -1229,7 +1241,7 @@ public static Goal locationVisited_1_all(String entityId, Vec3 destination, floa
 		}
 		//System.out.println("### stairs: " + entityId + ", @" + destination_) ;
 		//System.out.println("### curlevel: " + currentLevel) ;
-		return ( (Utils.sameTile(S.wom.position, destination_)) && (currentLevel==2) ) ;
+		return ( (Utils.sameTile(S.wom.position, destination_)) && (currentLevel==1) ) ;
 	})
 	.withTactic(FIRSTof(
 				abortIfDead(),
@@ -1255,7 +1267,7 @@ Goal g = locationVisited_1_all(entityId,destination,monsterAvoidDistance) ;
 Tactic baseTactic = g.getTactic() ;
 Tactic extendedTactic = FIRSTof(
 		collectHealthItemsIfNeeded(agent, monsterAvoidDistance),
-		//interactWithEverything(agent,monsterAvoidDistance), // won't be enabled if dead
+		interactWithEverything(agent,monsterAvoidDistance), // won't be enabled if dead
 		baseTactic // will abort if dead
 ) ;                       
 return g.withTactic(extendedTactic) ; 
@@ -1403,133 +1415,149 @@ return g.withTactic(extendedTactic) ;
 	/////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////
 	
-//	public static Tactic interactWithEverything(TestAgent agent, float monsterAvoidDistance) {
-//        Action deployNewGoal =  action("interact with every object on the map").do2((MyAgentState S) -> (String itemId) -> { 
-//        	
-//	        
-//			//System.out.println("Health Item ID: "+ itemId);
-//		
-//	        String monsterType = "Monster";
-//	        
-//			
-//			System.out.println("id: "+ itemId);
-//
-//	        
-//	        for(WorldEntity item : S.wom.elements.values()) {
-//
-//	          	if( item.id == itemId ) {
-//	          		
-//        			System.out.println("TYPE: " + item.type);
-//
-//	          		
-//	          		
-//	          		if (item.type == monsterType) {
-//	        			System.out.println("is a Monster ");
-//
-//	          			
-//	        			System.out.println(">>> deploying a new goal to get close to the monster: " + itemId) ;
-//	        			GoalStructure g2 = 
-//	        			    FIRSTof(
-//	        			        closeToAMonster(agent ,itemId, monsterAvoidDistance),
-//	        			        SUCCESS());
-//	        			agent.addBefore(g2) ;
-//	        			return S ;
-//	          			
-//
-//	          			
-//	          			
-//	          		}
-//	          		else {
-//	        			System.out.println("is NOT a Monster ");
-//	        			
-//	        			System.out.println(">>> deploying a new goal to get a new item: " + itemId) ;
-//	        			GoalStructure g2 = 
-//	        			    FIRSTof(
-//	        			        SEQ(locationVisited_1(itemId,null,monsterAvoidDistance).lift(),
-//	        			            GoalLib.pickUpItem()),
-//	        			        SUCCESS());
-//	        			agent.addBefore(g2) ;
-//	        			return S ;
-//
-//	          		}
-//	          	          		
-//	          	}
-//	          	
-//	          	
-//	         }
-//	        return null;
-//	        
-//	    })
-//		.on((MyAgentState S) -> { 
-//			
-//		    if (!S.isAlive()) return null ;
-//			
-//			WorldModel current = S.wom ;
-//		
-//		    int elementCounter = S.wom.elements.values().size();
-//		    String closestItemId = "";
-//       	    //int minDistance = 70;
-//
-//		    
-//
-//		    System.out.println("Number of Emelents on the map: " + elementCounter);
-//		    	    
-//		    if (elementCounter > 3) {
-//		    	
-//		    	int minDistance = 70; //the maximum distance possible in our tile grid (90x50) /2
-//		        
-//		    	for(WorldEntity i : S.wom.elements.values()) {
-//		             if(	(i.type.equals(HealthPotion.class.getSimpleName()) ) ||
-//		            		 (i.type.equals(Water.class.getSimpleName()) ) ||
-//		            		 (i.type.equals(Gold.class.getSimpleName()) ) ||
-//		            		 (i.type.equals(Food.class.getSimpleName()) ) ||
-//		            		 ( i.type.equals(Monster.class.getSimpleName() ) )
-//		            		 
-//		            		 )
-//		            		  {	
-//		            	 
-//		            	 //return i.id;
-//		            	 
-//        		            	 //int minDistance = 30;
-//        		            	 
-//        		                 // i is an item
-//        		            	 
-//        		            	 int ix = (int) i.position.x; 					// item's x coordinate
-//        		                 int iy = (int) i.position.y;					// item's y coordinate
-//        		                 int ax = (int) current.position.x;				// agent's x coordinate
-//        		                 int ay = (int) current.position.y;				// agent's y coordinate
-//        		                 
-//        		                 int dx = (int) Math.abs(ax-ix) ; // agent-item distance in x axis
-//        		                 int dy = (int) Math.abs(ay-iy) ; // agent-item distance in y axis
-//        		                 
-//        		                 
-//        		                 if (dx + dy < minDistance) {
-//        		                	 
-//        		                	 minDistance = dx + dy;
-//        		                
-//        		                	 closestItemId = i.id;
-//        		                	 
-//        		                	 //return closestItemId;
-//        		                	 
-//        		                 }
-//        		                 
-//        		                 
-//		             }
-////		             
+	public static Tactic interactWithEverything(TestAgent agent, float monsterAvoidDistance) {
+        Action deployNewGoal =  action("interact with every object on the map").do2((MyAgentState S) -> (String itemId) -> { 
+        	
+	        
+			//System.out.println("Health Item ID: "+ itemId);
+		
+	        String monsterType = "Monster";
+	        
+			
+			System.out.println("id: "+ itemId);
+			
+			GoalStructure g2;
+			
+	        for(WorldEntity item : S.wom.elements.values()) {
+
+	          	if( item.id == itemId ) {
+	          		
+        			System.out.println("TYPE: " + item.type);
+
+	          		
+	          		
+	          		if (item.type == monsterType) {
+	        			System.out.println("is a Monster ");
+
+	          			
+	        			System.out.println(">>> deploying a new goal to get close to the monster: " + itemId) ;
+	        			g2 = closeToAMonster(agent, itemId, 0) ;
+	        			agent.addBefore(g2) ;
+	        			return S ;
+	          			
+
+	          			
+	          			
+	          		}
+	          		else {
+	        			System.out.println("is NOT a Monster ");
+	        			
+	        			System.out.println(">>> deploying a new goal to get a new item: " + itemId) ;
+	        			if (S.wom.elements.get(itemId) != null) {
+		        			g2 = FIRSTof(
+		        	                        SEQ( Utils.entityVisited(agent, itemId,0),
+		        	                             //IFELSE((MyAgentState S) -> S.wom.elements.get(itemId) != null,
+		        	                                GoalLib.pickUpItem(),
+		        	                                SUCCESS())
+		        	                             
+		        	                             
+		        	                            );
+		        			agent.addBefore(g2) ;
+		        			return S ;
+	        			}
+
+	          		}
+	          	          		
+	          	}
+	          	
+	          	//agent.addBefore(g2) ;
+	          	
+	          	
+	         }
+	        //agent.addBefore(g2) ;
+	        return null;
+	        
+	    })
+		.on((MyAgentState S) -> { 
+			
+		    if (!S.isAlive()) return null ;
+			
+			WorldModel current = S.wom ;
+		
+		    int elementCounter = S.wom.elements.values().size();
+		    String closestItemId = "";
+       	    //int minDistance = 70;
+		    
+			WorldEntity stairs = S.wom.getElement("Stairs") ;
+
+
+		    
+
+		    System.out.println("Number of Emelents on the map: " + elementCounter);
+		    	    
+		    if (elementCounter > 3) {
+		    	
+		    	int minDistance = 140; //the maximum distance possible in our tile grid (90x50) /2
+		        
+		    	for(WorldEntity i : S.wom.elements.values()) {
+		             if(	(i.type.equals(HealthPotion.class.getSimpleName()) ) ||
+		            		 (i.type.equals(Water.class.getSimpleName()) ) ||
+		            		 (i.type.equals(Gold.class.getSimpleName()) ) ||
+		            		 (i.type.equals(Food.class.getSimpleName()) ) ||
+		            		 (i.type.equals(Sword.class.getSimpleName()) ) ||
+		            		 (i.type.equals(Bow.class.getSimpleName()) ) ||
+		            		 ( i.type.equals(Monster.class.getSimpleName() ) )
+		            		 
+		            		 )
+		            		  {
+		            	 
+			            	 if(stairs!=null && Utils.sameTile(stairs.position,i.position)) {
+			                        // not going to test an entity that is ON stairs
+			                        continue ;
+			                    }
+		            	 
+		            	 //return i.id;
+		            	 
+        		            	 //int minDistance = 30;
+        		            	 
+        		                 // i is an item
+        		            	 
+        		            	 int ix = (int) i.position.x; 					// item's x coordinate
+        		                 int iy = (int) i.position.y;					// item's y coordinate
+        		                 int ax = (int) current.position.x;				// agent's x coordinate
+        		                 int ay = (int) current.position.y;				// agent's y coordinate
+        		                 
+        		                 int dx = (int) Math.abs(ax-ix) ; // agent-item distance in x axis
+        		                 int dy = (int) Math.abs(ay-iy) ; // agent-item distance in y axis
+        		                 
+        		                 
+        		                 if (dx + dy < minDistance) {
+        		                	 
+        		                	 minDistance = dx + dy;
+        		                
+        		                	 closestItemId = i.id;
+        		                	 
+        		                	 //return closestItemId;
+        		                	 
+        		                 }
+        		                 
+        		                 
+		             }
 //		             
-//		    	}
-//		    	return closestItemId;
-//		    	//return null;
-//		   
-//		    }
-//		    
-//		    return null;
-//		 }) ;
-//        
-//        return SEQ(deployNewGoal.lift(), ABORT()) ;
-//        
-//    }
-//    
+		             
+		    	}
+		    	//return closestItemId;
+		    	//return null;
+		   
+		    }
+		    
+		    return null;
+		 }) ;
+        
+        return SEQ(deployNewGoal.lift(), ABORT()) ;
+        
+    }
+    
     ////////////////////// /////////////////////////////////////////////////////////////////////////////////////////
 	
 	
@@ -1750,6 +1778,7 @@ return g.withTactic(extendedTactic) ;
 			            
 			       
 			agent.addBefore(g2) ;
+			//S.updateState();
 			return S ;
 	    })
 		.on((MyAgentState S) -> { 
@@ -1757,31 +1786,42 @@ return g.withTactic(extendedTactic) ;
 		    if (!S.isAlive()) return null ;
 			
 			WorldModel current = S.wom ;
-			WorldModel previous = S.previousWom ;
 			
 			String agentId = S.wom.agentId ;
 	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
-	        WorldEntity agentPreviousState = previous.elements.get(agentId) ;
-
-	        
+	        	        
 	        int currentLevel = agentCurrentState.getIntProperty("currentLevel") ;
-	        int previousLevel = agentPreviousState.getIntProperty("currentLevel");
+	        
+	        int NumberOfMonsters = 0;
+	        
+	        for (WorldEntity e: current.elements.values()) {
+	        	
+				if	( e.type.equals(Monster.class.getSimpleName()) ) 
+	            {
+					NumberOfMonsters++;
+	            }
+				
+			}
 	        
 	        
-	        if (currentLevel>previousLevel) {
+	        if ( ((currentLevel %5) == 0) && (NumberOfMonsters==1) ) {
+	        	
+	        	//System.out.println("currentLevel %5: " + currentLevel %5);
 	        	
 	        	WorldEntity targetEntity = null;
 				for (WorldEntity e: current.elements.values()) {
 					
-					if	(e.type.equals(Boss.class.getSimpleName()) ) 
+					if	(e.type.equals(Monster.class.getSimpleName())  ) 
 		            {
 						
 						
 						System.out.println("######### THERE IS A BOSS AT THIS LEVEL!");
+						System.out.println("At position: "+ e.position);
 
 						targetEntity = e ;
 						break ;
-		            }	
+		            }
+					
 					
 				}
 				
@@ -1806,6 +1846,103 @@ return g.withTactic(extendedTactic) ;
 	    
 	}
 	
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	public static GoalStructure killBoss(TestAgent agent) {
+  		//System.out.println("AND HERE!");
+
+	    Goal g = goal("Kill Boss") ;
+	    
+	    g.toSolve((MyAgentState S) -> {
+	    	WorldModel current = S.wom ;
+			WorldModel previous = S.previousWom ;
+			
+			String agentId = S.wom.agentId ;
+	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+	        WorldEntity agentPreviousState = previous.elements.get(agentId) ;
+
+	        
+	        int currentLevel = agentCurrentState.getIntProperty("currentLevel") ;
+	        int previousLevel = agentPreviousState.getIntProperty("currentLevel");
+	        
+	        boolean bossInLevel = false;
+	        
+	        for (WorldEntity e: current.elements.values()) {
+				
+				if	(e.type.equals(Monster.class.getSimpleName()) ) 
+	            {
+					
+					
+					System.out.println("######### THERE IS A BOSS AT THIS LEVEL!");
+
+					bossInLevel = true;
+	            }	
+				
+			}
+	        
+	        
+	        
+	        
+	        return (	(bossInLevel = false) 		);
+	    }) ;
+	    
+	    
+	    
+	    Action killBoss = action("kill boss") ;
+	    
+  		killBoss.do1((MyAgentState S) -> { 
+	        
+	        WorldModel current = S.wom ;
+	        
+	        boolean bossKilled = false;
+
+			WorldEntity targetEntity = null;
+			for (WorldEntity e: current.elements.values()) {
+				
+				if	(e.type.equals(Boss.class.getSimpleName()) ) 
+	            {
+					
+					
+					System.out.println("######### THERE IS A BOSS AT THIS LEVEL!");
+
+					targetEntity = e ;
+					
+					GoalStructure g2 = closeToAMonster(agent, e.id, 0);
+		            
+				       
+					agent.addBefore(g2) ;
+					return S ;
+					
+					//bossKilled = true;
+					
+					//break ;
+	            }	
+				
+			}
+			
+			return null;
+	       
+//	        if(bossKilled) {
+//	            S.updateState() ;
+//	            return S ;
+//	        }
+//	        else {
+//	            return null ;
+//	        }
+	    }) ;
+	    
+  		
+	    Tactic killBossTactic = killBoss.lift() ;
+	    
+	    g.withTactic(FIRSTof(killBossTactic, ABORT())) ;
+	    
+	    GoalStructure g_ = g.lift() ;
+	    
+	    return g_ ;
+	    
+	}
 	
 	
 

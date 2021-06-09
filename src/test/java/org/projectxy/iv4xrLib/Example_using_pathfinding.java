@@ -12,6 +12,7 @@ import org.projectxy.iv4xrLib.NethackWrapper.Movement;
 
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
+import eu.iv4xr.framework.mainConcepts.WorldModel;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.uu.cs.aplib.mainConcepts.Action;
 import nl.uu.cs.aplib.mainConcepts.Goal;
@@ -30,6 +31,7 @@ import A.B.Gold;
 import A.B.Sword;
 import A.B.Bow;
 import A.B.Boss;
+import A.B.Mob;
 
 
 
@@ -239,65 +241,29 @@ public class Example_using_pathfinding {
 		MyEnv env = new MyEnv(driver);
 		agent.attachEnvironment(env);
 
-		for (WorldEntity e : state.wom.elements.values()) {
-			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
-		}
+//		for (WorldEntity e : state.wom.elements.values()) {
+//			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
+//		}
 		
-		while (true) {
-					
-					//state.updateState();
-					
-					WorldEntity targetEntity = null;
-					for (WorldEntity e: state.wom.elements.values()) {
-						
-						if	(e.type.equals(Boss.class.getSimpleName()) ) 
-			            {
-							
-							targetEntity = e ;
-							break ;
-			            }	
-						
-					}
-					
-					if (targetEntity == null) { 
-						
-						System.out.println("########  NO BOSS AT THIS LEVEL");
-						
-						break ;
-						
-					}
-					
-					GoalStructure g1;
-					final String targetId = targetEntity.id ;
-					
-					
-					System.out.println("######### Attack to Boss first. ID: " + targetId) ;
-					g1 = Utils.closeToAMonster(agent, targetEntity.id, 0) ;
-						
-				
-					agent.setGoal(g1);
-					
-					int turn = 0;
-					while (g1.getStatus().inProgress()) {
-					    agent.update();
-					    turn++;
-						//System.out.println("[" + turn + "] agent@" + state.wom.position);
-						Thread.sleep(250);
-						if (turn > 500) {
-							// forcing break the agent seems to take forever...
-							break;
-						}
-					}
-				}
-		
-		
+		WorldModel current = state.wom ;
+    	    	
+        String agentId = state.wom.agentId ;
+        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+        
+        int currentLevel = agentCurrentState.getIntProperty("currentLevel") ;
 		
 
 		// give a goal-structure to the agent:
 		//GoalStructure g = SEQ(Utils.entityVisited("78"), GoalLib.pickUpItem(), Utils.entityVisited("144"));
-		GoalStructure g = SEQ(//Utils.entityVisited(agent,"77",3), 
+		GoalStructure g = FIRSTof(
+							
+							  
+							  //Utils.entityVisited(agent,"77",3), 
 		                      //GoalLib.pickUpItem(), 
 		                      Utils.entityVisited_5_level(agent,"Stairs",3)
+		                      //Utils.killBoss(agent)
+		                      
+		                      //Utils.entityVisited(agent,"Stairs",0)
 		                      
 		                      
 		                      );
@@ -312,95 +278,131 @@ public class Example_using_pathfinding {
 		    agent.update();
 		    turn++;
 			System.out.println("[" + turn + "] agent@" + state.wom.position);
-			Thread.sleep(250);
+			
+			//g.printGoalStructureStatus();
+
+			Thread.sleep(50);
 			if (turn > 500) {
+				
 				// forcing break the agent seems to take forever...
 				break;
 			}
+			
+			//g.printGoalStructureStatus();
+			g.showGoalStructureStatus();
 		}
+		
+//		if(g.getStatus().success()) {
+//			
+//			state.setUpNextLevel(env);
+//			state.updateState();
+//		}
+		
+//		WorldEntity targetEntity = null;
+		
+		
+		
+		
+		
+		
+//		
+//		while (true) {
+//			
+//			
+//			
+//			
+//			for (WorldEntity e: state.wom.elements.values()) {
+//				
+//				System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
+//				
+//				if	(e.type.equals(Monster.class.getSimpleName()) ) 
+//	            {
+//					System.out.println("######## BOSS !! #########");
+//					targetEntity = e ;
+//					//break ;
+//	            }
+//				else {
+//					
+//					System.out.println("########  NOONONONONONON BOSS AT THIS LEVEL");
+//				}
+//				
+//			}
+//			
+//			
+//			if (targetEntity == null) { 
+//				
+//				System.out.println("########  NO BOSS AT THIS LEVEL");
+//				
+//				break ;
+//				
+//			}
+//			
+//			GoalStructure g1;
+//			final String targetId = targetEntity.id ;
+//			
+//			
+//			System.out.println("######### Attack to Boss first. ID: " + targetId) ;
+//			g1 = Utils.closeToAMonster(agent, targetEntity.id, 0);
+//			
+//				
+//		
+//			agent.setGoal(g1);
+//			
+//			int turn1 = 0;
+//			while (g1.getStatus().inProgress()) {
+//			    agent.update();
+//			    turn1++;
+//				//System.out.println("[" + turn + "] agent@" + state.wom.position);
+//				Thread.sleep(50);
+//				if (turn1 > 500) {
+//					// forcing break the agent seems to take forever...
+//					break;
+//				}
+//			}
+//		}
+//		
+//		
+//		GoalStructure g2 = SEQ(//Utils.entityVisited(agent,"77",3), 
+//                //GoalLib.pickUpItem(), 
+//                //Utils.entityVisited_5_level(agent,"Stairs",3)
+//                
+//                Utils.entityVisited(agent,"Stairs",1)
+//                
+//                
+//                );
+//
+//
+//
+//			agent.setGoal(g2);
+//			
+//			
+//			int turn3 = 0;
+//			while (g.getStatus().inProgress()) {
+//			agent.update();
+//			turn3++;
+//			System.out.println("[" + turn + "] agent@" + state.wom.position);
+//			Thread.sleep(50);
+//			if (turn3 > 500) {
+//				// forcing break the agent seems to take forever...
+//				break;
+//			}
+//			}
+//		
+//		
+//		
+		
+		
 
 		
-		for (WorldEntity e : state.wom.elements.values()) {
-			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
-		}
+//		for (WorldEntity e : state.wom.elements.values()) {
+//			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
+//		}
 		System.out.println(">>> Goal status:" + g.getStatus());
 	}
 	
 	
-//	@Test
-//	public void interact_with_everything_and_reach_the_stairs() throws InterruptedException {
-//		// This goal lets the agent going through levels by reaching the stairs, until it reaches the 5th level (first Boss)
-//		
-//		// launch the game:
-//		NethackWrapper driver = new NethackWrapper();
-//		driver.launchNethack(new NethackConfiguration());
-//
-//		// Create an agent, and attaching to it a clean state and environment:
-//		TestAgent agent = new TestAgent();
-//		MyAgentState state = new MyAgentState();
-//		agent.attachState(state);
-//		MyEnv env = new MyEnv(driver);
-//		agent.attachEnvironment(env);
-//
-//		for (WorldEntity e : state.wom.elements.values()) {
-//			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
-//		}
-//
-//		// give a goal-structure to the agent:
-//		//GoalStructure g = SEQ(Utils.entityVisited("78"), GoalLib.pickUpItem(), Utils.entityVisited("144"));
-//		GoalStructure g = SEQ(//Utils.entityVisited(agent,"77",3), 
-//		                      //GoalLib.pickUpItem(), 
-//		                      Utils.entityVisited_all(agent,"Stairs",3)
-//		                      
-//		                      
-//		                      );
-//
-//		
-//
-//		agent.setGoal(g);
-//
-// 
-//		int turn = 0;
-//		while (g.getStatus().inProgress()) {
-//		    agent.update();
-//		    turn++;
-//			System.out.println("[" + turn + "] agent@" + state.wom.position);
-//			Thread.sleep(250);
-//			if (turn > 500) {
-//				// forcing break the agent seems to take forever...
-//				break;
-//			}
-//		}
-//
-//		
-//		for (WorldEntity e : state.wom.elements.values()) {
-//			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
-//		}
-//		System.out.println(">>> Goal status:" + g.getStatus());
-//	
-//		
-//		//////
-//		/*
-//		 * GoalStructure g_ = GoalLib.pickUpItem(); agent.setGoal(g_) ;
-//		 * 
-//		 * int turn1 = 0 ; while(!g_.getStatus().success()) { agent.update(); turn1++ ;
-//		 * 
-//		 * Thread.sleep(350); if(turn > 100) {
-//		 * 
-//		 * break ; } }
-//		 */
-//		///////
-//		for (WorldEntity e : state.wom.elements.values()) {
-//			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
-//		}
-//		g.printGoalStructureStatus();
-//		System.out.println(">>> Goal status:" + g.getStatus());
-//		
-//	}
-	
 	@Test
 	public void interact_with_everything_and_reach_the_stairs() throws InterruptedException {
-		// This goal lets the agent going through levels by reaching the stairs, until it reaches the 5th level (first Boss)
 		
 		// launch the game:
 		NethackWrapper driver = new NethackWrapper();
@@ -419,11 +421,13 @@ public class Example_using_pathfinding {
 		
 		while (true) {
 			
-			//state.updateState();
+			int minDist = 140; //90+50 max distance
 			
 			WorldEntity targetEntity = null;
 			WorldEntity stairs = state.wom.getElement("Stairs") ;
 			for (WorldEntity e: state.wom.elements.values()) {
+				//int minDist = 140;
+				//System.out.println("closes item is in distance: " + minDist);
 				
 				if(	(e.type.equals(HealthPotion.class.getSimpleName()) ) ||
 	            		 (e.type.equals(Water.class.getSimpleName()) ) ||
@@ -434,13 +438,34 @@ public class Example_using_pathfinding {
 	            		 (e.type.equals(Monster.class.getSimpleName() ) )
 	            		 )
 	            {
+					
+					
+					
 				    if(stairs!=null && Utils.sameTile(stairs.position,e.position)) {
                         // not going to test an entity that is ON stairs
                         continue ;
                     }
-					targetEntity = e ;
-					break ;
-	            }	
+				    
+				    
+//					targetEntity = e ;
+//					break ;
+				     int ix = (int) e.position.x; 					// item's x coordinate
+	                 int iy = (int) e.position.y;					// item's y coordinate
+	                 int ax = (int) state.wom.position.x;				// agent's x coordinate
+	                 int ay = (int) state.wom.position.y;				// agent's y coordinate
+	                 
+	                 int dx = (int) Math.abs(ax-ix) ; // agent-item distance in x axis
+	                 int dy = (int) Math.abs(ay-iy) ; // agent-item distance in y axis
+	                 
+	                 
+	                 if (dx + dy < minDist) {
+	                	 
+	                	 minDist = dx + dy;
+	                
+	                	 targetEntity = e ;
+	                 }
+	            }
+				//minDist=140;
 				
 			}
 			
@@ -449,9 +474,9 @@ public class Example_using_pathfinding {
 			GoalStructure g1;
 			final String targetId = targetEntity.id ;
 			
-			if(targetEntity.type == "Monster") {
+			if(targetEntity.type.equals(Monster.class.getSimpleName() ) ) {
 				System.out.println("######### Testing monster " + targetId) ;
-				g1 = Utils.closeToAMonster(agent, targetEntity.id, 0) ;
+				g1 = Utils.closeToAMonster(agent, targetId, 0) ;
 				
 			}
 			else {
@@ -468,10 +493,10 @@ public class Example_using_pathfinding {
 			
 			int turn = 0;
 			while (g1.getStatus().inProgress()) {
-			    System.out.println("> " + turn + ", Agent @" + state.wom.position + ", alive:" + state.isAlive()) ;
+			    System.out.println(">>> Agent @" + state.wom.position + ", alive:" + state.isAlive()) ;
 			    agent.update();
 			    turn++;
-				//System.out.println("[" + turn + "] agent@" + state.wom.position);
+				
 				Thread.sleep(50);
 				if (!state.isAlive() || turn > 500) {
 					// forcing break the agent seems to take forever...
@@ -491,13 +516,12 @@ public class Example_using_pathfinding {
 
 		agent.setGoal(g2);
 
- 
 		int turn = 0;
 		while (g2.getStatus().inProgress()) {
 		    agent.update();
 		    turn++;
 			System.out.println("[" + turn + "] agent@" + state.wom.position);
-			Thread.sleep(250);
+			Thread.sleep(50);
 			if (turn > 500) {
 				// forcing break the agent seems to take forever...
 				break;
@@ -505,9 +529,6 @@ public class Example_using_pathfinding {
 		}
 
 		
-//		for (WorldEntity e : state.wom.elements.values()) {
-//			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
-//		}
 		System.out.println(">>> Goal status:" + g2.getStatus());
 	
 		g2.printGoalStructureStatus();

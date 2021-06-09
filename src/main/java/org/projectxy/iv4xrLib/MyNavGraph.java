@@ -87,7 +87,14 @@ public class MyNavGraph extends SimpleNavGraph {
      }
     
     public void resetStairsAvoid() {
-    	this.stairs.isBlocking = false ;
+    	if (stairs!=null) {
+    		
+    		this.stairs.isBlocking = false ;
+    		
+    		
+    	}
+    	
+    	
     }
 
 

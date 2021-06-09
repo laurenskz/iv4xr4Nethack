@@ -21,6 +21,8 @@ public class NethackWrapper {
 
     JFrame nethackWindow;
     Screen nethack;
+    Boss boss;
+    Mob mobs;
 
     /**
      * Launch an instance of Nethack and bind it to this wrapper. The game will be
@@ -140,7 +142,7 @@ public class NethackWrapper {
             e.properties.put("waitTurn", monster.waitTurn); // ?? ..
             wom.elements.put(e.id, e);
         }
-
+        
          
         
         // items that are still on the floor:
@@ -171,18 +173,28 @@ public class NethackWrapper {
         // Stairs:
         
         
-        if (	(nethack.stairX != 0) && (nethack.stairY != 0)	) {
+        if (	(nethack.stairX != -1) && (nethack.stairY != 1)	) {
         	
         	Tile stairTile = nethack.tiles[nethack.stairX][nethack.stairY];
-            WorldEntity stairs = new WorldEntity("Stairs", "Stairs", false);	// Id maybe should derive from stairTile.ID, but it is null in our case 
+            WorldEntity stairs = new WorldEntity("Stairs", "Stairs", true);	
             stairs.position = new Vec3(nethack.stairX, nethack.stairY, 0);
             wom.elements.put(stairs.id, stairs);
         	
         	
         }
         else {
-        	System.out.println("den exei stairs edw");
+        	
+        	
+        	
+        	
+        	
+        	WorldEntity stairs = new WorldEntity("Stairs", "", true); 
+            stairs.position = new Vec3(0, 0, 0);
+            wom.elements.put(stairs.id, stairs);
+        	
+        	
         }
+        
         
 //        Tile stairTile = nethack.tiles[nethack.stairX][nethack.stairY];
 //        WorldEntity stairs = new WorldEntity("Stairs", "Stairs", false);	// Id maybe should derive from stairTile.ID, but it is null in our case 
