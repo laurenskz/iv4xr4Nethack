@@ -282,14 +282,13 @@ public class Example_using_pathfinding {
 			//g.printGoalStructureStatus();
 
 			Thread.sleep(50);
-			if (turn > 500) {
+			if (!state.isAlive() || turn > 500) {
 				
 				// forcing break the agent seems to take forever...
 				break;
 			}
 			
 			//g.printGoalStructureStatus();
-			g.showGoalStructureStatus();
 		}
 		
 //		if(g.getStatus().success()) {
@@ -397,7 +396,8 @@ public class Example_using_pathfinding {
 //		for (WorldEntity e : state.wom.elements.values()) {
 //			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
 //		}
-		System.out.println(">>> Goal status:" + g.getStatus());
+		System.out.println(">>> Agent alive:" + state.isAlive());
+        System.out.println(">>> Goal status:" + g.getStatus());
 	}
 	
 	

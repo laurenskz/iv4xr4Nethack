@@ -79,7 +79,7 @@ public class Utils {
             S.setAPathToFollow(path) ;
             MyEnv env = (MyEnv) S.env() ;
             Vec3 agentCurrentPosition = S.wom.position ;
-            
+                        
             //System.out.println(">>> agent @" +  agentCurrentPosition) ;
             //for(Vec3 nd : path) {
             //    System.out.print("-->" + nd) ;
@@ -106,6 +106,7 @@ public class Utils {
                 throw new IllegalArgumentException() ;
             }
             S.updateState() ;
+            
             return S ;
             })
             .on((MyAgentState S) -> { 
@@ -224,8 +225,10 @@ public class Utils {
             
             
             for(Vec3 targetLocation : candidates) {
+                //System.out.println(">>>> candidate " + targetLocation) ;
                 if (S.simpleWorldNavigation.vertices.contains(targetLocation)) {
                     path0 = S.getPath(agentCurrentPosition,targetLocation) ;
+                    //System.out.println(">>>> in navgraph; path: " + path0) ;
                     if (path0 != null) {
                         // found a reachable neighbor-tile
                         break ;
@@ -821,7 +824,9 @@ public class Utils {
                 .do1((MyAgentState S) -> S) 
                 .on((MyAgentState S) -> {
                     if(entityId == null) return null ;
-                    if(S.wom.getElement(entityId) == null) return S ;
+                    if(S.wom.getElement(entityId) == null) {
+                        return S ;
+                    }
                     return null ;
                 }) ;
         
@@ -972,6 +977,7 @@ public class Utils {
         Goal g = locationVisited_1_5_level(entityId,destination,monsterAvoidDistance) ;
         Tactic baseTactic = g.getTactic() ;
         Tactic extendedTactic = FIRSTof(
+                loadNewLevel().lift(), // FIX <---
                 collectHealthItemsIfNeeded(agent,monsterAvoidDistance),
                 killBossFirst(agent),// won't be enabled if dead
                 baseTactic // will abort if dead
@@ -1140,7 +1146,7 @@ public class Utils {
 	
     
 	S.setUpNextLevel(env_);
-	//S.updateState() ;
+	S.updateState() ;
 	
     levelLoaded = true;
     
@@ -1775,10 +1781,7 @@ return g.withTactic(extendedTactic) ;
 			System.out.println(">>> deploying a new goal to kill the boss " + targetEntityId) ;
 			
 			GoalStructure g2 = closeToAMonster(agent, targetEntityId, 0);
-			            
-			       
 			agent.addBefore(g2) ;
-			//S.updateState();
 			return S ;
 	    })
 		.on((MyAgentState S) -> { 
