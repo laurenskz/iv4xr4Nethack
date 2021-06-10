@@ -1099,6 +1099,7 @@ public class Utils {
                 		//interactWithEverything(agent, monsterAvoidDistance),
                         travelToMonster(monsterId,monsterAvoidDistance).lift(), 
                         travelToMonster(monsterId,0).lift(), 
+                        // action("DEBUG").do1(S -> S).on(S -> { System.out.println(">>> debug") ; return null ; }).lift(),
                         ABORT()));
         
         return g.lift() ;
