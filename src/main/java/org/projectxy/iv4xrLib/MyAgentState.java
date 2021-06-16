@@ -5,8 +5,6 @@ import java.util.*;
 import eu.iv4xr.framework.extensions.pathfinding.AStar;
 import eu.iv4xr.framework.extensions.pathfinding.Pathfinder;
 import eu.iv4xr.framework.extensions.pathfinding.SimpleNavGraph;
-import eu.iv4xr.framework.mainConcepts.W3DAgentState;
-import eu.iv4xr.framework.mainConcepts.W3DEnvironment;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.iv4xr.framework.mainConcepts.WorldModel;
 import eu.iv4xr.framework.spatial.LineIntersectable;
@@ -14,7 +12,6 @@ import eu.iv4xr.framework.spatial.Obstacle;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.uu.cs.aplib.agents.State;
 import nl.uu.cs.aplib.mainConcepts.Environment;
-import nl.uu.cs.aplib.mainConcepts.SimpleState;
 
 public class MyAgentState extends State {
 

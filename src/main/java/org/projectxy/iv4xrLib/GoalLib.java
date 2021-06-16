@@ -1,32 +1,19 @@
 package org.projectxy.iv4xrLib;
 
-import static eu.iv4xr.framework.Iv4xrEDSL.*;
+
 import static nl.uu.cs.aplib.AplibEDSL.*;
-
-import java.util.Scanner;
-import java.util.function.Predicate;
-import java.util.*;
-
 import org.projectxy.iv4xrLib.NethackWrapper.Interact;
 
-import A.B.Food;
-import A.B.HealthPotion;
-import A.B.Item;
 import A.B.Screen;
-import A.B.Weapon;
+
 import eu.iv4xr.framework.mainConcepts.TestAgent;
-import eu.iv4xr.framework.mainConcepts.W3DAgentState;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.iv4xr.framework.mainConcepts.WorldModel;
-import eu.iv4xr.framework.mainConcepts.ObservationEvent.VerdictEvent;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.uu.cs.aplib.mainConcepts.Action;
 import nl.uu.cs.aplib.mainConcepts.Goal;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import nl.uu.cs.aplib.mainConcepts.Tactic;
-import nl.uu.cs.aplib.mainConcepts.Environment.EnvOperation;
-
-//import A.B.*;
 
 
 
@@ -70,50 +57,6 @@ import nl.uu.cs.aplib.mainConcepts.Environment.EnvOperation;
 public class GoalLib {
 	Screen nethack; 
 
-	/**
-	 * This method will construct a goal (more precisely: a goal structure) that will drive
-	 * your agent to get close to the given entity (up to some distance specified by
-	 * epsilon).
-	 * 
-	 * The agent will fail the goal if it no longer believes the entity is reachable.
-	 */
-	public static GoalStructure entityInCloseRange(String entityId, float epsilon) {
-
-		//define the goal, namely that the agent position should be close enough to the target entity
-
-		Goal goal = // create a goal, give it some name:
-
-				new Goal("This entity is closeby: " + entityId)
-
-				// the predicate to solve:
-
-				. toSolve((W3DAgentState belief) -> {
-					// get the entity:
-					WorldEntity e = belief.wom.getElement(entityId);
-					if (e == null) return false;
-					// calculate the distance of the agent towards e:
-					float distance = Vec3.dist(belief.wom.position,e.position);
-					// ok if the distance is close enough:
-					return distance <= epsilon; // distance is less than some epsilon
-				})
-
-				// specify the tactic to be used to solve the goal. Below we say: 
-				//   (1) navigate directly to the entity
-				//   (2) but if the entity is not known yet, then explore the world first
-				//   (3) if none of the above is applicable we run out of idea and abort the goal
-
-				. withTactic(
-						FIRSTof(
-								TacticLib.navigateToEntity(entityId),//move to the goal position
-								TacticLib.explore(), //explore if the goal position is unknown
-								ABORT()));
-
-		//the above is a "goal", we need to return a goal-structure. We can just lift it:
-		return goal. lift();
-	}
-
-
- 
 	// the first food that you can find in the inv
 	public static GoalStructure restoreHealthFromInventory() {
   		//System.out.println("AND HERE!");
@@ -173,7 +116,6 @@ public class GoalLib {
 	          		
 	          		env_.interact(current.agentId, itemId, Interact.SelectItemFromInv);
 	       
-	          		// move the part of if(foodFoundAndEaten)... in this if statement, no boolean needed
 	          		
 	          		healthItemFoundAndUsed = true;
 	          		
@@ -181,8 +123,8 @@ public class GoalLib {
 	          	
 	          		// Freeze the Nethack window until Enter key is pressed. 
 	          		// So we can see the progress of the goals in the actual game.
-	          		System.out.println("Hit RETURN to continue.") ;
-	                new Scanner(System.in) . nextLine() ;
+	          		//System.out.println("Hit RETURN to continue.") ;
+	                //new Scanner(System.in) . nextLine() ;
 
 	          		break;
 	          	}
@@ -208,8 +150,7 @@ public class GoalLib {
 	    
 	}
 	
-	  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
-
+	 
 	public static GoalStructure equipSword() {
   		//System.out.println("AND HERE!");
 
@@ -265,15 +206,13 @@ public class GoalLib {
 	          		
 	          		env_.interact(current.agentId, itemId, Interact.SelectItemFromInv);
 	       
-	          		// move the part of if(foodFoundAndEaten)... in this if statement, no boolean needed
-	          		
 	          		SwordFoundAndUsed = true;
 	          		
 	          		
 	          		// Freeze the Nethack window until Enter key is pressed. 
 	          		// So we can see the progress of the goals in the actual game.
-	          		System.out.println("Hit RETURN to continue.") ;
-	                new Scanner(System.in) . nextLine() ;
+	          		//System.out.println("Hit RETURN to continue.") ;
+	                //new Scanner(System.in) . nextLine() ;
 
 	          		break;
 	          	}
@@ -432,42 +371,18 @@ public class GoalLib {
 	        WorldModel current = S.wom ;
 	        
 	        
-      		//System.out.println("2. AND HERE in pickUpItem again!");
       		
-      		WorldEntity inv = current.getElement("Inventory");
-      		
-      		//int size = inv.elements.size();
-	        
-	        //WorldEntity inv = current.getElement("Inventory");		for(WorldEntity item_ : inv.elements.values())
 	        
 			boolean itemFoundAndPicked = false;
 			
-			//System.out.println("inventory size: " + size );
-			//System.out.println("itemFoundAndPicked1: " + itemFoundAndPicked );
-
-
-	        
+			
 	        env_.interact(current.agentId, null, Interact.PickupItem);
-			//System.out.println("itemFoundAndPicked2: " + itemFoundAndPicked );
-
-	       
+			
 	        itemFoundAndPicked = true;
-			//System.out.println("itemFoundAndPicked3: " + itemFoundAndPicked );
-	          	
-	        // Freeze the Nethack window until Enter key is pressed. 
-	        // So we can see the progress of the goals in the actual game.
-//	        System.out.println("Hit RETURN to continue.") ;
-//	        new Scanner(System.in) . nextLine() ;
-
-	        ///break;
-	          	
-	         
-	        
+			
 	       
 	        if(itemFoundAndPicked) {
 	            S.updateState() ;
-//	            int size1 = S.wom.getElement("Inventory").elements.size();
-//				System.out.println("inventory size1: " + size1 );
 
 	            return S ;
 	            
@@ -521,42 +436,31 @@ public class GoalLib {
 	    Action aimWithBow = action("aim-with-bow") ;
 	    
 	    
-  		//System.out.println("1. HERE in equipBow()!");
+  		
 
   		aimWithBow.do1((MyAgentState S) -> { 
 	        MyEnv env_ = (MyEnv) S.env() ;
 	        WorldModel current = S.wom ;
-	        //String weaponNeeded = "Bow";
 	        
       		
 	        
-	        //WorldEntity inv = current.getElement("Inventory");
+	        
 	        
 			boolean aimedWithBow = false;
 
 	        
 	        
-          	//	System.out.println("3. Iterating the inventory and looking for the needed BOW WEAPON!");
+          	
 
 	          	
       		env_.interact(current.agentId, null, Interact.AimWithBow);
 	       
-       		// move the part of if(foodFoundAndEaten)... in this if statement, no boolean needed
+       		
 	          		
       		aimedWithBow = true;
 	          		
 
-	          		// Freeze the Nethack window until Enter key is pressed. 
-	          		// So we can see the progress of the goals in the actual game.
-	          		//System.out.println("Hit RETURN to continue.") ;
-	                //new Scanner(System.in) . nextLine() ;
-
-      		System.out.println("Hit RETURN to continue.") ;
-	        new Scanner(System.in) . nextLine() ;
-	          	
-	         
-	        
-	       
+	          		
 	        if(aimedWithBow) {
 	            S.updateState() ;
 	            return S ;
@@ -595,8 +499,6 @@ public class GoalLib {
 	        String oldWeapon = agentOldState.getStringProperty("equippedWeaponName");
 	        String currentWeapon = agentCurrentState.getStringProperty("equippedWeaponName") ;
 
-
-	        WorldEntity inventory = current.getElement("Inventory"); 
 
 	        int oldWeaponDamage = agentOldState.getIntProperty("equippedWeaponDmg");
 	        int currentWeaponDamage = agentCurrentState.getIntProperty("equippedWeaponDmg");
@@ -666,8 +568,6 @@ public class GoalLib {
 		          	}
           		}
 	         }
-	        System.out.println("Hit RETURN to continue.") ;
-	        new Scanner(System.in) . nextLine() ;
 	       
 	        if(bestWeaponEquipped) {
 	            S.updateState() ;
@@ -727,44 +627,231 @@ public class GoalLib {
 	}
 	*/
 
+	public static GoalStructure closeToAMonster(TestAgent agent, String monsterId, float monsterAvoidDistance) {
+	
+	    Goal g = goal("Close to monster " + monsterId)
+	            .toSolve((MyAgentState S) -> { 
+	            	
+	            	
+	                WorldEntity m = S.wom.getElement(monsterId) ;
+	                
+	                if (m!=null) {
+	                    
+	                    int dx = (int) Math.abs(m.position.x - S.wom.position.x) ;
+	                    int dy = (int) Math.abs(m.position.y - S.wom.position.y) ;
+	                    boolean monsterIsAlive = m.getBooleanProperty("alive");
+	                    
+	                    
+	                    return  (dx + dy == 1) || (!monsterIsAlive) ;
+	                }
+	                else return true;
+	             })
+	            .withTactic(FIRSTof(
+	            		TacticLib.abortIfDead(),
+	            		TacticLib.checkIfEntityNoLongerExists(monsterId),
+	            		//collectHealthItemsIfNeeded(agent,monsterAvoidDistance),
+	            		TacticLib.useHealthToSurvive().lift(),
+	            		TacticLib.equipBestAvailableWeapon().lift(),
+	            		TacticLib.bowAttack().lift(),
+	            		TacticLib.meleeAttack().lift(),
+	            		//interactWithEverything(agent, monsterAvoidDistance),
+	                    TacticLib.travelToMonster(monsterId,monsterAvoidDistance).lift(), 
+	                    TacticLib.travelToMonster(monsterId,0).lift(), 
+	                    // action("DEBUG").do1(S -> S).on(S -> { System.out.println(">>> debug") ; return null ; }).lift(),
+	                    ABORT()));
+	    
+	    return g.lift() ;
+	}
+
 	/**
-	 * Create a test-goal to check the state of an in-game entity, whether it satisfies the given predicate.
+	 * A goal to get an agent to the location of an non-monster entity.
 	 */
-	public static GoalStructure entityInvariantChecked(TestAgent agent, String entityId, Predicate<WorldEntity> predicate){
+	public static GoalStructure entityVisited(TestAgent agent, String entityId, float monsterAvoidDistance) {
+	    return  GoalLib.locationVisited_2(agent,entityId,null,monsterAvoidDistance).lift() ;
+	}
 
-		float epsilon = 1; // specify some distance here, that should be close enough for the agent to observe
-		// the state of an in-SUT entity
+	public static GoalStructure entityVisited_5_level(TestAgent agent, String entityId, float monsterAvoidDistance) {
+	    return  GoalLib.locationVisited_2_5_level(agent, entityId,null,monsterAvoidDistance).lift() ;
+	}
 
-		// we'll specify the checking here:
-		Goal invariantchecking  = 
+	public static GoalStructure entityVisited_all(TestAgent agent, String entityId, float monsterAvoidDistance) {
+		return  GoalLib.locationVisited_2_all(agent, entityId,null,monsterAvoidDistance).lift() ;
+	}
 
-				// create a goal, give it a name etc:
+	public static GoalStructure locationVisited(TestAgent agent, String entityId, Vec3 destination, float monsterAvoidDistance) {
+	    return GoalLib.locationVisited_2(agent,entityId,destination,monsterAvoidDistance).lift() ;
+	}
 
-				testgoal("Invariant check " + entityId, agent)
+	public static GoalStructure locationVisited_5_level(TestAgent agent, String entityId, Vec3 destination, float monsterAvoidDistance) {
+	    return GoalLib.locationVisited_2_5_level(agent, entityId,destination,monsterAvoidDistance).lift() ;
+	}
 
-				// the goal predicate to solve. For this we don't want to solve anything. Instead, we want
-				// to check the SUT current state. So, the goal is just "true":
+	public static GoalStructure locationVisited_all(TestAgent agent, String entityId, Vec3 destination, float monsterAvoidDistance) {
+		return GoalLib.locationVisited_2_all(agent, entityId,destination,monsterAvoidDistance).lift() ;
+	}
 
-				. toSolve((W3DAgentState belief) -> true) // nothing to solve
+	public static Goal locationVisited_1(String entityId, Vec3 destination, float monsterAvoidDistance) {
+	    
+	    String destinationName = entityId == null ? destination.toString() : entityId ;
+	    Goal g = goal(destinationName + " is visited") 
+	            .toSolve((MyAgentState S) -> {
+	            
+	          		//WorldEntity inv = S.wom.getElement("Inventory");
+	            	//int size = inv.elements.size();
+	    			//System.out.println("IInventory size: " + size );
+	            	
+	            	
+	                Vec3 destination_ = destination ;
+	                if(entityId != null) {
+	                    WorldEntity e = S.wom.getElement(entityId) ;
+	                    if(e == null) {
+	                        // the case when the target-entity does not exist, we consider
+	                        // the goal to be solved:
+	                        return true ;
+	                        // throw new IllegalArgumentException("Entity " + entityId + " does not exists!") ;
+	                    }
+	                    destination_ = e.position ;
+	                }
+	                return Utils.sameTile(S.wom.position, destination_) ;
+	            })
+	            .withTactic(FIRSTof(
+	            		      TacticLib.abortIfDead(),
+	            		      TacticLib.checkIfEntityNoLongerExists(entityId),
+	            			  TacticLib.useHealthToSurvive().lift(),
+	            			  TacticLib.equipBestAvailableWeapon().lift(),
+	                          TacticLib.bowAttack().lift(),
+	                          TacticLib.meleeAttack().lift(),
+	                          TacticLib.travelTo(entityId,destination,monsterAvoidDistance).lift(), 
+	                          TacticLib.travelTo(entityId,destination,0).lift(), 
+	                          ABORT()));
+	    
+	    return g ;
+	}
 
-				// implement the check:
-				. invariant(agent,                        // something to check :)
-						(W3DAgentState belief) -> {
-							// get the entity:
-							WorldEntity e = belief.wom.getElement(entityId);
-							if (e != null && predicate.test(e)) 
-								// if the check is passed, return a "pass" verdict:
-								return new VerdictEvent("Object-check " + entityId, "", true);
-							else 
-								// else return a "fail" verdict:
-								return new VerdictEvent("Object-check " + entityId, "", false);
+	public static Goal locationVisited_2(TestAgent agent, String entityId, Vec3 destination, float monsterAvoidDistance) {
+	    Goal g = locationVisited_1(entityId,destination,monsterAvoidDistance) ;
+	    Tactic baseTactic = g.getTactic() ;
+	    Tactic extendedTactic = FIRSTof(
+	            TacticLib.collectHealthItemsIfNeeded(agent,monsterAvoidDistance), // won't be enabled if dead
+	            baseTactic // will abort if dead
+	            ) ;                       
+	    return g.withTactic(extendedTactic) ; 
+	}
 
-						})
-				.withTactic(TacticLib.observe())
-				;
+	public static Goal locationVisited_1_5_level(String entityId, Vec3 destination, float monsterAvoidDistance) {
+	    
+	    String destinationName = entityId == null ? destination.toString() : entityId ;
+	    Goal g = goal(destinationName + " is visited") 
+	            .toSolve((MyAgentState S) -> {
+	            
+	            	WorldModel current = S.wom ;
+	            	
+	    	        String agentId = S.wom.agentId ;
+	    	        WorldEntity agentCurrentState = current.elements.get(agentId) ;
+	    	       
+	
+	    	        
+	    	        int currentLevel = agentCurrentState.getIntProperty("currentLevel") ;
+	    	       
+	            	
+	                Vec3 destination_ = destination ;
+	                
+	
+	                if(entityId != null) {
+	                    WorldEntity e = S.wom.getElement(entityId) ;
+	                    if(e == null) {
+	                        throw new IllegalArgumentException("Entity " + entityId + " does not exists!") ;
+	                    }
+	                    destination_ = e.position ;
+	                }
+	                //System.out.println("### stairs: " + entityId + ", @" + destination_) ;
+	                //System.out.println("### curlevel: " + currentLevel) ;
+	                return ( (Utils.sameTile(S.wom.position, destination_)) && (currentLevel==5) ) ;
+	            })
+	            .withTactic(FIRSTof(
+	            		      TacticLib.abortIfDead(),
+	            		      TacticLib.loadNewLevel().lift(),
+	            			  TacticLib.useHealthToSurvive().lift(),
+	            			  TacticLib.equipBestAvailableWeapon().lift(),
+	                          TacticLib.bowAttack().lift(),
+	                          TacticLib.meleeAttack().lift(),
+	                          TacticLib.travelTo(entityId,destination,monsterAvoidDistance).lift(), 
+	                          TacticLib.travelTo(entityId,destination,0).lift(), 
+	                          ABORT()));
+	    
+	    return g ;
+	}
 
-		// the final goal is a composition of first getting close to the entity, and then checking its state:
-		return SEQ(entityInCloseRange(entityId,epsilon), invariantchecking.lift());
+	public static Goal locationVisited_2_5_level(TestAgent agent, String entityId, Vec3 destination, float monsterAvoidDistance) {
+	    Goal g = locationVisited_1_5_level(entityId,destination,monsterAvoidDistance) ;
+	    Tactic baseTactic = g.getTactic() ;
+	    Tactic extendedTactic = FIRSTof(
+	            TacticLib.loadNewLevel().lift(), // FIX <---
+	            TacticLib.collectHealthItemsIfNeeded(agent,monsterAvoidDistance),
+	            TacticLib.killBossFirst(agent),// won't be enabled if dead
+	            baseTactic // will abort if dead
+	            ) ;                       
+	    return g.withTactic(extendedTactic) ; 
+	}
+
+	public static Goal locationVisited_1_all(String entityId, Vec3 destination, float monsterAvoidDistance) {
+	
+		String destinationName = entityId == null ? destination.toString() : entityId ;
+		Goal g = goal(destinationName + " is visited") 
+		.toSolve((MyAgentState S) -> {
+		
+			WorldModel current = S.wom ;
+			
+			String agentId = S.wom.agentId ;
+			WorldEntity agentCurrentState = current.elements.get(agentId) ;
+			
+			
+			
+			int currentLevel = agentCurrentState.getIntProperty("currentLevel") ;
+			
+			
+			
+			Vec3 destination_ = destination ;
+			
+			
+			if(entityId != null) {
+				WorldEntity e = S.wom.getElement(entityId) ;
+				
+				if(e == null) {
+					throw new IllegalArgumentException("Entity " + entityId + " does not exists!") ;
+				}
+				
+			destination_ = e.position ;
+			
+			}
+			//System.out.println("### stairs: " + entityId + ", @" + destination_) ;
+			//System.out.println("### curlevel: " + currentLevel) ;
+			return ( (Utils.sameTile(S.wom.position, destination_)) && (currentLevel==1) ) ;
+		})
+		.withTactic(FIRSTof(
+					TacticLib.abortIfDead(),
+					TacticLib.loadNewLevel().lift(),
+					TacticLib.useHealthToSurvive().lift(),
+					TacticLib.equipBestAvailableWeapon().lift(),
+					TacticLib.bowAttack().lift(),
+					TacticLib.meleeAttack().lift(),
+					TacticLib.travelTo(entityId,destination,monsterAvoidDistance).lift(), 
+					TacticLib.travelTo(entityId,destination,0).lift(), 
+					ABORT()
+					)	);
+		
+		return g ;
+	}
+
+	public static Goal locationVisited_2_all(TestAgent agent, String entityId, Vec3 destination, float monsterAvoidDistance) {
+	Goal g = locationVisited_1_all(entityId,destination,monsterAvoidDistance) ;
+	Tactic baseTactic = g.getTactic() ;
+	Tactic extendedTactic = FIRSTof(
+			TacticLib.collectHealthItemsIfNeeded(agent, monsterAvoidDistance),
+			//Utils.interactWithEverything(agent,monsterAvoidDistance), // won't be enabled if dead
+			baseTactic // will abort if dead
+	) ;                       
+	return g.withTactic(extendedTactic) ; 
 	}
 
 }

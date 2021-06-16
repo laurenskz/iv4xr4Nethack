@@ -2,26 +2,18 @@ package org.projectxy.iv4xrLib;
 
 import static nl.uu.cs.aplib.AplibEDSL.*;
 
-import java.util.List;
-import java.util.Scanner;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.projectxy.iv4xrLib.NethackWrapper.Movement;
+
 
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.iv4xr.framework.mainConcepts.WorldModel;
 import eu.iv4xr.framework.spatial.Vec3;
-import nl.uu.cs.aplib.mainConcepts.Action;
-import nl.uu.cs.aplib.mainConcepts.Goal;
+
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
-import nl.uu.cs.aplib.mainConcepts.Tactic;
-
-
-import static nl.uu.cs.aplib.AplibEDSL.* ;
-
 
 import A.B.Monster;
 import A.B.HealthPotion;
@@ -30,8 +22,7 @@ import A.B.Water;
 import A.B.Gold;
 import A.B.Sword;
 import A.B.Bow;
-import A.B.Boss;
-import A.B.Mob;
+
 
 
 
@@ -55,7 +46,7 @@ public class Example_using_pathfinding {
 
 		// a goal to guide agent to the given location; with monster-avoindance distance
 		// set to 3:
-		GoalStructure g = Utils.locationVisited(agent,null, destination, 3);
+		GoalStructure g = GoalLib.locationVisited(agent,null, destination, 3);
 		agent.setGoal(SEQ(g)); // have to pack it inside a SEQ for dynamic goal to work
 
 		// run the agent to control the game:
@@ -90,7 +81,7 @@ public class Example_using_pathfinding {
 		agent.attachEnvironment(env);
 
 		// give a goal-structure to the agent:
-		GoalStructure g =  Utils.entityVisited(agent,"17",3);
+		GoalStructure g =  GoalLib.entityVisited(agent,"17",3);
 		//GoalStructure g = SEQ(GoalLib.equipBow(), Utils.entityVisited("85"));
 		agent.setGoal(SEQ(g));
 
@@ -129,7 +120,7 @@ public class Example_using_pathfinding {
 		// give a goal-structure to the agent:
 		//GoalStructure g =  Utils.entityVisited("162");
 		//GoalStructure g = SEQ(GoalLib.equipBestAvailableWeapon(), Utils.closeToAMonster("161", 3));
-		 GoalStructure g = Utils.closeToAMonster(agent,"157",3) ;
+		 GoalStructure g = GoalLib.closeToAMonster(agent,"157",3) ;
 		
 		agent.setGoal(SEQ(g)); // have to pack it inside a SEQ for dynamic goal to work...
 
@@ -174,11 +165,11 @@ public class Example_using_pathfinding {
 
 		// give a goal-structure to the agent:
 		//GoalStructure g = SEQ(Utils.entityVisited("78"), GoalLib.pickUpItem(), Utils.entityVisited("144"));
-		GoalStructure g = SEQ(Utils.entityVisited(agent,"77",3), 
+		GoalStructure g = SEQ(GoalLib.entityVisited(agent,"77",3), 
 		                      GoalLib.pickUpItem(), 
-		                      Utils.closeToAMonster(agent, "160", 3),
-		                      Utils.closeToAMonster(agent, "154", 3),
-		                      Utils.closeToAMonster(agent, "159", 3));
+		                      GoalLib.closeToAMonster(agent, "160", 3),
+		                      GoalLib.closeToAMonster(agent, "154", 3),
+		                      GoalLib.closeToAMonster(agent, "159", 3));
 
 		
 		//GoalStructure g = SEQ( Utils.closeToAMonster("161", 3),Utils.entityVisited("78"));
@@ -241,157 +232,113 @@ public class Example_using_pathfinding {
 		MyEnv env = new MyEnv(driver);
 		agent.attachEnvironment(env);
 
-//		for (WorldEntity e : state.wom.elements.values()) {
-//			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
-//		}
+		for (WorldEntity e : state.wom.elements.values()) {
+			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
+		}
 		
-		WorldModel current = state.wom ;
-    	    	
-        String agentId = state.wom.agentId ;
-        WorldEntity agentCurrentState = current.elements.get(agentId) ;
-        
-        int currentLevel = agentCurrentState.getIntProperty("currentLevel") ;
 		
-
 		// give a goal-structure to the agent:
 		//GoalStructure g = SEQ(Utils.entityVisited("78"), GoalLib.pickUpItem(), Utils.entityVisited("144"));
-		GoalStructure g = FIRSTof(
+		GoalStructure g = SEQ(
 							
+							  // get a bow first
+							  SEQ( 	GoalLib.entityVisited(agent, "47",1), 
+									GoalLib.pickUpItem()),
 							  
-							  //Utils.entityVisited(agent,"77",3), 
-		                      //GoalLib.pickUpItem(), 
-		                      Utils.entityVisited_5_level(agent,"Stairs",3)
-		                      //Utils.killBoss(agent)
-		                      
-		                      //Utils.entityVisited(agent,"Stairs",0)
-		                      
+		                      GoalLib.entityVisited_5_level(agent,"Stairs",3)
 		                      
 		                      );
 
-		
-
 		agent.setGoal(g);
 
- 
 		int turn = 0;
 		while (g.getStatus().inProgress()) {
+			
 		    agent.update();
 		    turn++;
 			System.out.println("[" + turn + "] agent@" + state.wom.position);
 			
-			//g.printGoalStructureStatus();
-
+			
+			
+			System.out.println("----------------------------PLAYER'S ATTACK DAMAGE------------------------------------") ;
+		    
+		    for (WorldEntity e: state.wom.elements.values()) {
+		    	
+		    	if(e.type.equals(Monster.class.getSimpleName()) && state.previousWom != null) {
+                	 
+            		 String monsterId = e.id ;
+            		 
+            		 WorldModel current = state.wom ;
+            		 WorldModel previous = state.previousWom ;
+            		 
+            		 WorldEntity monsterCurrentState = current.elements.get(monsterId) ;
+    	 	         WorldEntity monsterPreviousState = previous.elements.get(monsterId) ;
+    	 	         
+    	 	         
+    	 	         int currentMonsterLife = monsterCurrentState.getIntProperty("health");
+            		 int previousMonsterLife = monsterPreviousState.getIntProperty("health");
+            		 
+            		 
+            		 
+            		 // the player's equipped weapon 
+            		 String agentID = state.wom.agentId ;
+		    		 
+		    		 WorldEntity agentCurrentState = current.elements.get(agentID) ;
+		    		 String equippedWeapon = agentCurrentState.getStringProperty("equippedWeaponName");
+		    		 int equippedWeaponDmg = agentCurrentState.getIntProperty("equippedWeaponDmg");
+            		 
+            		 
+            		 
+            		 int lifeDif = previousMonsterLife - currentMonsterLife;
+            		 System.out.println("Agent at position " + state.wom.position + " attacks with "+ equippedWeapon + " for "+ equippedWeaponDmg + " damage");
+            		 System.out.println();
+            		 
+            		 System.out.println("Attack on: monster with id " + e.id + ", at position " + e.position );
+            		 System.out.println("Monster's current life: "+ currentMonsterLife);
+            		 System.out.println("Monster's previous life: "+ previousMonsterLife);
+            		 System.out.println("Player's attack damage: "+ lifeDif);
+            		 
+            		 
+            		 if (lifeDif!=0) {
+            			 
+            			 if (lifeDif == equippedWeaponDmg || currentMonsterLife == 0) {
+            				 
+            				 System.out.println("The attack damage is equal to the equipped weapon damage, or the monster was killed on this attack");
+            				 System.out.println();
+            				 
+            			 }
+            			 else {
+            				 
+            				 System.out.println("There was damage on the monster, but not the correct amount of it");
+            				 System.out.println();
+            			 }
+            			 
+            		 }
+            		 else {
+            			 
+            			 System.out.println("There was no damage at all on this turn");
+            			 System.out.println();
+            		 }
+            		 
+                		
+                 }
+		    	
+		    	
+		    }
+		    
+		    System.out.println("-------------------------------------------------------------------------------------------") ;
+		    System.out.println("-------------------------------------------------------------------------------------------") ;
+			
+			
+			
+			
 			Thread.sleep(50);
-			if (!state.isAlive() || turn > 500) {
+			if (!state.isAlive() || turn > 1000) {
 				
 				// forcing break the agent seems to take forever...
 				break;
 			}
-			
-			//g.printGoalStructureStatus();
 		}
-		
-//		if(g.getStatus().success()) {
-//			
-//			state.setUpNextLevel(env);
-//			state.updateState();
-//		}
-		
-//		WorldEntity targetEntity = null;
-		
-		
-		
-		
-		
-		
-//		
-//		while (true) {
-//			
-//			
-//			
-//			
-//			for (WorldEntity e: state.wom.elements.values()) {
-//				
-//				System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
-//				
-//				if	(e.type.equals(Monster.class.getSimpleName()) ) 
-//	            {
-//					System.out.println("######## BOSS !! #########");
-//					targetEntity = e ;
-//					//break ;
-//	            }
-//				else {
-//					
-//					System.out.println("########  NOONONONONONON BOSS AT THIS LEVEL");
-//				}
-//				
-//			}
-//			
-//			
-//			if (targetEntity == null) { 
-//				
-//				System.out.println("########  NO BOSS AT THIS LEVEL");
-//				
-//				break ;
-//				
-//			}
-//			
-//			GoalStructure g1;
-//			final String targetId = targetEntity.id ;
-//			
-//			
-//			System.out.println("######### Attack to Boss first. ID: " + targetId) ;
-//			g1 = Utils.closeToAMonster(agent, targetEntity.id, 0);
-//			
-//				
-//		
-//			agent.setGoal(g1);
-//			
-//			int turn1 = 0;
-//			while (g1.getStatus().inProgress()) {
-//			    agent.update();
-//			    turn1++;
-//				//System.out.println("[" + turn + "] agent@" + state.wom.position);
-//				Thread.sleep(50);
-//				if (turn1 > 500) {
-//					// forcing break the agent seems to take forever...
-//					break;
-//				}
-//			}
-//		}
-//		
-//		
-//		GoalStructure g2 = SEQ(//Utils.entityVisited(agent,"77",3), 
-//                //GoalLib.pickUpItem(), 
-//                //Utils.entityVisited_5_level(agent,"Stairs",3)
-//                
-//                Utils.entityVisited(agent,"Stairs",1)
-//                
-//                
-//                );
-//
-//
-//
-//			agent.setGoal(g2);
-//			
-//			
-//			int turn3 = 0;
-//			while (g.getStatus().inProgress()) {
-//			agent.update();
-//			turn3++;
-//			System.out.println("[" + turn + "] agent@" + state.wom.position);
-//			Thread.sleep(50);
-//			if (turn3 > 500) {
-//				// forcing break the agent seems to take forever...
-//				break;
-//			}
-//			}
-//		
-//		
-//		
-		
-		
-
 		
 //		for (WorldEntity e : state.wom.elements.values()) {
 //			System.out.println(">>> " + e.type + ", id=" + e.id + ", @" + e.position);
@@ -399,6 +346,7 @@ public class Example_using_pathfinding {
 		System.out.println(">>> Agent alive:" + state.isAlive());
         System.out.println(">>> Goal status:" + g.getStatus());
 	}
+	
 	
 	
 	@Test
@@ -476,13 +424,13 @@ public class Example_using_pathfinding {
 			
 			if(targetEntity.type.equals(Monster.class.getSimpleName() ) ) {
 				System.out.println("######### Testing monster " + targetId) ;
-				g1 = Utils.closeToAMonster(agent, targetId, 0) ;
+				g1 = GoalLib.closeToAMonster(agent, targetId, 0) ;
 				
 			}
 			else {
                 System.out.println("######### Testing entity " + targetEntity.type + " " +  targetId) ;    
                 g1 = FIRSTof(
-                        SEQ( Utils.entityVisited(agent, targetEntity.id,3),
+                        SEQ( GoalLib.entityVisited(agent, targetEntity.id,3),
                              IFELSE((MyAgentState S) -> S.wom.elements.get(targetId) != null,
                                 GoalLib.pickUpItem(),
                                 SUCCESS())
@@ -494,6 +442,153 @@ public class Example_using_pathfinding {
 			int turn = 0;
 			while (g1.getStatus().inProgress()) {
 			    System.out.println(">>> Agent @" + state.wom.position + ", alive:" + state.isAlive()) ;
+			  
+			    
+			    System.out.println("----------------------------MONSTER'S ATTACK DAMAGE------------------------------------") ;
+			    
+			    //if (state.previousWom != null) {
+			    	
+			    	for (WorldEntity e: state.wom.elements.values()) {
+				    	
+				    	if(e.type.equals(Monster.class.getSimpleName()) && state.previousWom != null) {
+				    		
+				    		int monsterXPos = (int) e.position.x;
+				    		int monsterYPos = (int) e.position.y;
+				    		
+				    		int agentXPos = (int) state.wom.position.x;
+				    		int agentYPos = (int) state.wom.position.y;
+				    		
+				    		
+				    		int dx = (int) Math.abs(agentXPos-monsterXPos) ; // agent-monster distance in x axis
+			                int dy = (int) Math.abs(agentYPos-monsterYPos) ; // agent-monster distance in y axis
+				    		
+			                if (dx+dy <=1) {
+			                	
+			                	
+			                	 String agentId = state.wom.agentId ;
+					    		 String monsterId = e.id ;
+			                	
+			                	 WorldModel current = state.wom ;
+					    		 WorldModel previous = state.previousWom ;
+					    		 
+					    		 WorldEntity agentCurrentState = current.elements.get(agentId) ;
+					 	         WorldEntity agentPreviousState = previous.elements.get(agentId) ;
+			                	
+			                	
+					    		 
+					    		 
+					    		 
+					    		 
+					    		 //get the monster's attack damage
+					    		 WorldEntity monsterCurrentState = current.elements.get(monsterId) ;
+			    	 	         //WorldEntity monsterPreviousState = previous.elements.get(monsterId) ;
+			    	 	         
+					    		 int monsterDmg = monsterCurrentState.getIntProperty("attackDmg");
+					    		 
+					    		 
+					    		 
+					 	         
+					 	         int currentAgentLife = agentCurrentState.getIntProperty("health");
+					    		 int previousAgentLife = agentPreviousState.getIntProperty("health");
+					    		 
+					    		 
+					    		 
+					    		 
+					    		 // every 8 moves, player loses 1 life point
+					    		 int movePoints = 0;
+					    		 int  moves = (int) state.wom.timestamp;
+					    		 if (moves % 8 == 0) {
+					    			 System.out.println("1 life point was lost due to 8 moves player made");
+					    			 System.out.println(">>>>>>>	Moves: "+ moves);
+					    			 System.out.println(">>>>>>>	Turn: "+ turn);
+					    			 System.out.println();
+					    			 movePoints++;
+					    		 }
+					    		 
+					    		 
+					    		 int lifeDif = previousAgentLife - currentAgentLife + movePoints ;
+					    		 
+					    		 System.out.println("Agent current life: "+ currentAgentLife);
+					    		 System.out.println("Agent previous life: "+ previousAgentLife);
+					    		 System.out.println("Monster's attack damage: "+ lifeDif);
+					    		 System.out.println("Actual Monster's attack damage: "+ monsterDmg);
+					    		 System.out.println();
+					    		 
+					    		 
+					    		 
+					    		 //lifeDif = 0;
+			                	
+			                	
+			                	
+			                	
+			                	
+			                	
+			                	
+			                	
+			                	
+			                	
+			                }
+			                
+			                
+			                
+			                
+			                
+			                
+			                
+			                }
+				    	}
+			    	
+			    
+//		    		 String agentID = state.wom.agentId ;
+//		    		 
+//		    		 WorldModel current = state.wom ;
+//		    		 WorldModel previous = state.previousWom ;
+//		    		 
+//		    		 WorldEntity agentCurrentState = current.elements.get(agentID) ;
+//		 	         WorldEntity agentPreviousState = previous.elements.get(agentID) ;
+//		 	         
+//		 	         
+//		 	         int currentAgentLife = agentCurrentState.getIntProperty("health");
+//		    		 int previousAgentLife = agentPreviousState.getIntProperty("health");
+//		    		 
+//		    		 // monster's attack damage
+//		    		 int monsterAttackDmg = 
+//		    		 
+//		    		 
+//		    		
+//		    		 
+//		    		 int lifeDif = previousAgentLife - currentAgentLife;
+//		    		 
+//		    		 
+//		    		 // every 8 moves, player loses 1 life point
+//		    		 long moves = state.wom.timestamp;
+//		    		 if (moves % 8 == 0) {
+//		    			 System.out.println("1 life point was lost due to 8 moves player made");
+//		    			 System.out.println(">>>>>>>	Moves: "+ moves);
+//		    			 System.out.println(">>>>>>>	Turn: "+ turn);
+//		    			 lifeDif++;
+//		    		 }
+//		    		 
+//		    		 
+//		    		 System.out.println("Agent current life: "+ currentAgentLife);
+//		    		 System.out.println("Agent previous life: "+ previousAgentLife);
+//		    		 System.out.println("Monster's attack damage: "+ lifeDif);
+//		    		 
+//		    		 
+//		    		 
+//		    		 lifeDif = 0;
+			    //}
+	            		 
+	                	
+			    
+			    System.out.println("-------------------------------------------------------------------------------------------") ;
+			    System.out.println("-------------------------------------------------------------------------------------------") ;
+			    
+			    
+			    
+			    
+			    
+			    
 			    agent.update();
 			    turn++;
 				
@@ -512,7 +607,7 @@ public class Example_using_pathfinding {
 		
 		System.out.println("######### Going to next the stairs") ;    
 		
-		GoalStructure g2 = Utils.entityVisited_all(agent,"Stairs",3);
+		GoalStructure g2 = GoalLib.entityVisited_all(agent,"Stairs",3);
 
 		agent.setGoal(g2);
 

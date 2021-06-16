@@ -184,10 +184,6 @@ public class NethackWrapper {
         }
         else {
         	
-        	
-        	
-        	
-        	
         	WorldEntity stairs = new WorldEntity("Stairs", "", true); 
             stairs.position = new Vec3(0, 0, 0);
             wom.elements.put(stairs.id, stairs);
