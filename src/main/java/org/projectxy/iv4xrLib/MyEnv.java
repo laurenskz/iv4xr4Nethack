@@ -12,30 +12,13 @@ import A.B.*;
 
 
 
-
-
 /**
- * This class provides the interface between iv4XR test agents and your System Under Test
- * (SUT). This interface provides methods that allow agents to control the SUT
- * and to obtain information about the SUT state. You have to implement at least
- * the methods listed below.
- * 
- * A word of caution first: keep in mind that an iv4XR agent is often used to control an
- * agent that lives in the world of your SUT. We will call the second agent in-SUT agent.
- * Your iv4XR agent X, might instruct an in-SUT agent A to interact with another in-SUT
- * agent B. I hope this is a bit clear :)
- * 
- * (1) The primary method you should implement is the method sendCommand_(cmd). However,
- * your iv4XR agent X will prefer to control the SUT through more abstract methods, rather
- * than by directly invoking sendCommand_(). For this reason below we give some examples
- * of such more-abstract methods such as move() and interact().
- * 
- * (2) The agent's runtime assumes you provide the method observe() ... see below. So,
- * you should have this method.
- * 
+ * This class MyEnv provides the interface between iv4XR test agents and the game Nethack
+ * (more precisely, with a simplified Java-clone of the original Nethack).
+ * We will not interact directly with Nethack, but rather MyEnv interacts with it through
+ * a "wrapper" cally NethackWrapper. The latter provides a set of more convenient methods
+ * for interactions, that also return observations in term of World Models.
  */
-
-
 public class MyEnv extends W3DEnvironment {
 
     /**
