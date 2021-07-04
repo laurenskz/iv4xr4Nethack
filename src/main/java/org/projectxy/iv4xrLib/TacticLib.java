@@ -53,7 +53,6 @@ public class TacticLib {
 		// ok so you have an action; but what you want is a Tactic. We can lift an action to
 		// turn it to a tactic:
 		return observe.lift();
-
 	}
 
 	/**
@@ -116,15 +115,6 @@ public class TacticLib {
 
 	}
 	*/
-
-	/**
-	 * A tactic that would drive the agent to trave to the given entity. The implementation of
-	 * this depends on the SUT, e.g. whether it already has path-finding, or else whether it
-	 * would provide some kind of navigation map, etc.
-	 */
-	public static Tactic navigateToEntity(String entityId) { 
-		throw new UnsupportedOperationException();
-	}
 
 	public static Action bowAttack() {
 	        return action("bow-attack").do2((MyAgentState S) -> (Vec3 monsterLocation) -> {
@@ -398,6 +388,11 @@ public class TacticLib {
 	          }) ;
 	    }
 
+	/**
+	 * When the agent's has less than three health-items, and there is a health-item H close enough
+	 * to the agent, this tactic will deploy a new goal to get H first. The current goal is aborted.
+	 * After H is picked-up (or if H no longer exist), the agent resumes the current goal.
+	 */
 	public static Tactic collectHealthItemsIfNeeded(TestAgent agent, float monsterAvoidDistance) {
 	    Action deployNewGoal =  action("collect health items if not enough").do2((MyAgentState S) -> (String itemId) -> { 
 	    	
@@ -829,6 +824,10 @@ public class TacticLib {
 	        
 	    }
 
+	/**
+	 * A tactic that uses a health-item to increase the agent's health, if the agent's health is too low, 
+	 * and it has a health-item in its inventory.
+	 */
 	public static Action useHealthToSurvive() {
 	    return action("use health item to stay alive").do2((MyAgentState S) -> (String itemId) -> { 
 	        MyEnv env_ = (MyEnv) S.env() ;

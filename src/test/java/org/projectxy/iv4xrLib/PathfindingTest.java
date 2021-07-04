@@ -26,7 +26,8 @@ public class PathfindingTest {
         GoalStructure g = SEQ(
                 GoalLib.entityVisited(agent,"47",0),
                 GoalLib.pickUpItem(),
-                GoalLib.entityVisited(agent,"149",0)) ;  // bow 
+                GoalLib.entityVisited(agent,"149",0)
+                ) ;  // bow 
         agent.setGoal(g) ;
         
         

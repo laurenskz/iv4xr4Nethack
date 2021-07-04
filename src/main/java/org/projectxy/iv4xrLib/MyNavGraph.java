@@ -24,7 +24,7 @@ public class MyNavGraph extends SimpleNavGraph {
      * blocked, it is defined to be their Manhattan distance, and else +inf.
      */
     @Override
-    public float distance(int from, int to) {
+    public float distance(Integer from, Integer to) {
         // use super to check if the taget vertex is blocked:
         float dist0 = super.distance(from, to);
         if (dist0 < Float.POSITIVE_INFINITY) {
