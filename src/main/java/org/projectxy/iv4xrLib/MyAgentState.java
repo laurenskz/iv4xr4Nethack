@@ -15,7 +15,15 @@ import nl.uu.cs.aplib.mainConcepts.Environment;
 
 public class MyAgentState extends State {
 
+    
+    /**
+     * The SUT's previous state.
+     */
     public WorldModel previousWom = null;
+    
+    /**
+     * The SUT's current state.
+     */
     public WorldModel wom;
 
     /**
@@ -53,8 +61,10 @@ public class MyAgentState extends State {
         return this;
     }
 
-     
-    //@Override
+
+    /**
+     * This will re-initialze the agent state. Invoke this when the agent enters a new level.
+     */
     public MyAgentState setUpNextLevel(Environment env) {
         
     	
@@ -84,14 +94,11 @@ public class MyAgentState extends State {
         
     }
     
+    
     /**
-     * TODO: you need to do something when we transition to the next level. The nav-graph must
-     * be loaded anew, for example.
+     * This will inspect the SUT to update the agents' own state. Note that this will also copy the
+     * current wom to the previous-wom.
      */
-    
-    
-    
-    
     @Override
     public void updateState() {
         super.updateState();
@@ -144,6 +151,9 @@ public class MyAgentState extends State {
         return path_ ;
     }
     
+    /**
+     * Check if the player is alive in the current state.
+     */
     public boolean isAlive() {
         WorldEntity playerStatus = wom.getElement(wom.agentId) ;
         return playerStatus.getBooleanProperty("isAlive") ;        
