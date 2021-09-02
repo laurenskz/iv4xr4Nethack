@@ -1,6 +1,5 @@
 package org.projectxy.iv4xrLib.rl
 
-import A.B.Weapon
 import arrow.optics.optics
 import eu.iv4xr.framework.model.ProbabilisticModel
 import eu.iv4xr.framework.model.distribution.Distribution
@@ -10,10 +9,7 @@ import eu.iv4xr.framework.spatial.Vec3
 import nl.uu.cs.aplib.mainConcepts.SimpleState
 import org.projectxy.iv4xrLib.NethackWrapper
 import java.io.Serializable
-import java.lang.IllegalStateException
-import kotlin.properties.ReadWriteProperty
-import kotlin.reflect.KProperty
-import kotlin.reflect.full.memberProperties
+import java.time.temporal.TemporalAmount
 
 
 // Actions
@@ -23,7 +19,7 @@ object Observe : NethackModelAction()
 object StartNewGame : NethackModelAction()
 object RestartGame : NethackModelAction()
 
-data class UseItem(val inventoryID: String) : NethackModelAction()
+data class UseItem(val inventoryIndex: Int) : NethackModelAction()
 
 data class Move(val movement: NethackWrapper.Movement) : NethackModelAction()
 
@@ -46,146 +42,46 @@ data class NethackPlayer(
 }
 
 @optics
-data class NethackModelState(val player: NethackPlayer, val Inventory: Map<String, NethackItem>) {
+data class NethackModelState(
+        val player: NethackPlayer,
+        val Inventory: List<NethackItem>,
+        val items: List<NethackItem>,
+        val position: Vec3,
+        val timestamp: Int,
+        val stairs: Position,
+        val mobs: List<NethackMob>
+) {
     companion object
 }
+
+data class WorldElementProperties(
+        val position: Vec3,
+        val id: String,
+        val type: String
+)
+
+data class NethackMob(
+        val position: Vec3,
+        val health: Int,
+        val attackDmg: Int,
+        val alive: Boolean,
+        val seenPlayer: Boolean,
+        val waitTurn: Boolean
+)
 
 @optics
-sealed class NethackItem(open val amount: Int, open val id: String) {
+sealed class NethackItem(open val position: Vec3) {
     companion object
 }
 
 
-data class Weapon(override val amount: Int, override val id: String, val weaponName: String, val attackDmg: Int) : NethackItem(amount, id)
-data class Restorable(override val amount: Int, override val id: String, val restoreAmount: Int) : NethackItem(amount, id)
+data class Weapon(override val position: Vec3, val type: String, val amount: Int, val weaponName: String, val attackDmg: Int) : NethackItem(position)
+data class Restorable(override val position: Vec3, val amount: Int, val restoreAmount: Int) : NethackItem(position)
+data class ModelGold(override val position: Vec3, val amount: Int) : NethackItem(position)
 
+data class RLWorldEntity(val id: String, val type: String, val position: Position, val elements: Map<String, RLWorldEntity>, val properties: Map<String, Serializable>)
 
-data class RLWorldEntity(val id: String, val type: String, val position: Position, val elements: Map<String, RLWorldEntity>, val properties: Map<String, Serializable>) {
-
-
-    fun updateProperty(name: String, value: Serializable?): RLWorldEntity {
-        if (value == null) return this
-        return copy(properties = properties + mapOf(name to value))
-    }
-
-    fun modifyProperty(name: String, update: (Serializable) -> Serializable): RLWorldEntity {
-        return properties[name]?.let {
-            updateProperty(name, update(it))
-        } ?: this
-    }
-
-    fun modifyElement(name: String, update: (RLWorldEntity) -> RLWorldEntity): RLWorldEntity {
-        val element = elements[name] ?: return this
-        return copy(elements = elements + mapOf(name to update(element)))
-    }
-}
-
-data class RLWorldModel(val agentId: String, val position: Position, val elements: Map<String, RLWorldEntity>) : DataClassHashableState() {
-    fun modifyElement(name: String, update: (RLWorldEntity) -> RLWorldEntity): RLWorldModel {
-        val element = elements[name] ?: return this
-        return copy(elements = elements + mapOf(name to update(element)))
-    }
-}
-
-
-interface Holder<T> {
-    fun accumulate(t: T): T
-}
-
-@Suppress("UNCHECKED_CAST")
-class RLEntityPropertyProp<T : Serializable>(model: RLWorldEntity) : Holder<RLWorldEntity>, DictProp<T>({
-    model.properties[it] as T
-}) {
-
-    override fun accumulate(t: RLWorldEntity): RLWorldEntity {
-        return commit(t) { n, value, v -> v.updateProperty(n, value) }
-    }
-}
-
-class RLEntityProp<T : Holder<RLWorldEntity>>(model: RLWorldEntity, read: (RLWorldEntity) -> T) : Holder<RLWorldEntity>, DictProp<T>({
-    read(model.elements[it] ?: error("Malformed model"))
-
-}) {
-    override fun accumulate(t: RLWorldEntity): RLWorldEntity {
-        return commit(t) { name, childValue, v ->
-            v.modifyElement(name) {
-                childValue.accumulate(t.elements[name] ?: error("Malformed model"))
-            }
-        }
-    }
-}
-
-class RLWorldProp<T : Holder<RLWorldEntity>>(model: RLWorldModel, read: (RLWorldEntity) -> T) : Holder<RLWorldModel>, DictProp<T>({
-    read(model.elements[it] ?: error("Malformed model"))
-
-}) {
-    override fun accumulate(t: RLWorldModel): RLWorldModel {
-        return commit(t) { name, childValue, v ->
-            v.modifyElement(name) {
-                childValue.accumulate(t.elements[name] ?: error("Malformed model"))
-            }
-        }
-    }
-}
-
-open class DictProp<T>(val read: (String) -> T) : ReadWriteProperty<Any, T> {
-
-    var cache: T? = null
-    var name: String? = null
-    var dirty = false
-
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
-        cache = value
-        dirty = true
-    }
-
-    override fun getValue(thisRef: Any, property: KProperty<*>): T {
-        return cache ?: read(property.name)
-    }
-
-    fun <V> commit(v: V, commitment: (String, T, V) -> V): V {
-        return cache?.let { c ->
-            name?.let { n ->
-                commitment(n, c, v)
-            }
-        } ?: v
-    }
-}
-
-@Suppress("UNCHECKED_CAST")
-open class CompositeHolder<T> : Holder<T> {
-    override fun accumulate(t: T): T {
-        return this::class.memberProperties.fold(t) { curr, prop ->
-            if (prop is Holder<*>) {
-                (prop as Holder<T>).accumulate(curr)
-            } else curr
-        }
-    }
-}
-
-open class FinalHolder<T>(val t: T) : CompositeHolder<T>() {
-    fun getValue(): T {
-        return accumulate(t)
-    }
-}
-
-class PlayerStatusModel(entity: RLWorldEntity) : CompositeHolder<RLWorldEntity>() {
-    var equippedWeaponName: String by RLEntityPropertyProp(entity)
-    var equippedWeaponDmg: Int by RLEntityPropertyProp(entity)
-}
-
-interface Usable<T> {
-    fun use(t: T): T
-}
-
-
-//data class Bab(val equippedWeaponName)
-
-class NetHackWorldModel(val model: RLWorldModel) : FinalHolder<RLWorldModel>(model) {
-    val playerStatus by RLWorldProp(model, ::PlayerStatusModel)
-
-
-}
+data class RLWorldModel(val agentId: String, val position: Position, val elements: Map<String, RLWorldEntity>) : DataClassHashableState()
 
 enum class NethackModelTile {
     WALL, WALKABLE
@@ -223,8 +119,9 @@ class NethackModel(private val configuration: NethackModelConfiguration) : Proba
     }
 
     override fun possibleActions(state: RLWorldModel): Sequence<NethackModelAction> {
-        val usages = state.elements["Inventory"]?.elements?.values?.map { UseItem(it.id) } ?: emptyList()
-        return usages.asSequence()
+//        val usages = (0..state) { UseItem(it.id) } ?: emptyList()
+//        return usages.asSequence()
+        return emptySequence()
     }
 
     override fun executeAction(action: NethackModelAction, state: SimpleState): Any {
