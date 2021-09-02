@@ -31,7 +31,7 @@ public class NethackWrapper {
      * Launch an instance of Nethack and bind it to this wrapper. The game will be
      * run on its own thread. This method returns this thread, just in case you need
      * to do something with it.
-     * 
+     *
      * @param conf Some initial configuration information specifying the desired
      *             setup for the instance of Nethack that we want to create. For now
      *             this conf is not used.
@@ -62,7 +62,7 @@ public class NethackWrapper {
      * Return the navigation-graph of the current level.
      */
     public SimpleNavGraph getNavigationGraph() {
-        
+
         // Create a blank navigation-graph. We will use MyNavGraph, which was
         // set to use Mahattan distance rather than geometric distance.
         SimpleNavGraph navgraph = new MyNavGraph();
@@ -107,7 +107,7 @@ public class NethackWrapper {
             // for each monster, we create a line-intersectable wrapper for it,
             // and then we wrap it once more as an obstacle, and add it to the
             // nav-graph:
-            Obstacle<LineIntersectable> monster_ = new Obstacle(new MonsterWrapper(m)); 
+            Obstacle<LineIntersectable> monster_ = new Obstacle(new MonsterWrapper(m));
             monster_.isBlocking = true;
             navgraph.obstacles.add(monster_);
         }
@@ -127,15 +127,15 @@ public class NethackWrapper {
         wom.timestamp = nethack.moves;
 
         // System.out.println("Player pos: " + wom.position);
-        
-        
+
+
         // Equipped Weapon
 //        Weapon weaponOnHands = nethack.ps.weap;
 //        WorldEntity equippedWeapon = new WorldEntity(weaponOnHands.ID, "equippedWeapon", true);
 //        equippedWeapon.properties.put("weaponName", weaponOnHands.name);
 //        equippedWeapon.properties.put("attackDmg", weaponOnHands.attackDmg);
 //        wom.elements.put(equippedWeapon.id, equippedWeapon);
-        
+
 
         // monsters:
         for (Monster monster : nethack.mobs) {
@@ -148,56 +148,53 @@ public class NethackWrapper {
             e.properties.put("waitTurn", monster.waitTurn); // ?? ..
             wom.elements.put(e.id, e);
         }
-        
-         
-        
+
+
         // items that are still on the floor:
         for (ItemTile itemTile : nethack.items) {
             WorldEntity itm = convertItem(itemTile.item);
             itm.position = new Vec3(itemTile.getX(), itemTile.getY(), 0);
             wom.elements.put(itm.id, itm);
         }
-        
-        
+
+
         // Player Status - Health(???)
         PlayerStatus ps = nethack.ps;
         WorldEntity playerStatus = new WorldEntity(wom.agentId, "playerStatus", true);
-        
+
         playerStatus.properties.put("equippedWeaponName", ps.weap.toString());
         playerStatus.properties.put("equippedWeaponDmg", ps.weap.attackDmg);
-        
+
         playerStatus.properties.put("currentLevel", nethack.level);
-        
-        playerStatus.properties.put("health", ps.health );
-        playerStatus.properties.put("maxhealth", ps.maxHealth );	// Maybe no need for this
-        playerStatus.properties.put("isAlive",  ps.alive);			// Boolean
-        playerStatus.properties.put("aimingBow", nethack.aimingBow);	// Boolean - maybe shouldn't be here (?)
+
+        playerStatus.properties.put("health", ps.health);
+        playerStatus.properties.put("maxhealth", ps.maxHealth);    // Maybe no need for this
+        playerStatus.properties.put("isAlive", ps.alive);            // Boolean
+        playerStatus.properties.put("aimingBow", nethack.aimingBow);    // Boolean - maybe shouldn't be here (?)
         wom.elements.put(playerStatus.id, playerStatus);
 
-        
-        
+
         // Stairs:
-        
-        
-        if (	(nethack.stairX != -1) && (nethack.stairY != 1)	) {
-        	
-        	Tile stairTile = nethack.tiles[nethack.stairX][nethack.stairY];
-            WorldEntity stairs = new WorldEntity("Stairs", "Stairs", true);	
+
+
+        if ((nethack.stairX != -1) && (nethack.stairY != 1)) {
+
+            Tile stairTile = nethack.tiles[nethack.stairX][nethack.stairY];
+            WorldEntity stairs = new WorldEntity("Stairs", "Stairs", true);
             stairs.position = new Vec3(nethack.stairX, nethack.stairY, 0);
             wom.elements.put(stairs.id, stairs);
-        	
-        	
-        }
-        else {
-        	
-        	WorldEntity stairs = new WorldEntity("Stairs", "", true); 
+
+
+        } else {
+
+            WorldEntity stairs = new WorldEntity("Stairs", "", true);
             stairs.position = new Vec3(0, 0, 0);
             wom.elements.put(stairs.id, stairs);
-        	
-        	
+
+
         }
-        
-        
+
+
 //        Tile stairTile = nethack.tiles[nethack.stairX][nethack.stairY];
 //        WorldEntity stairs = new WorldEntity("Stairs", "Stairs", false);	// Id maybe should derive from stairTile.ID, but it is null in our case 
 //        stairs.position = new Vec3(nethack.stairX, nethack.stairY, 0);
@@ -206,10 +203,9 @@ public class NethackWrapper {
         // System.out.println("Stairs ID: " + stairs.id); //??
 
 
-        
-        
         // items in the inventory:
         WorldEntity inv = new WorldEntity("Inventory", "Inventory", true);
+        int index = 0;
         for (Item item : nethack.ps.inventory) {
             WorldEntity item_ = convertItem(item);
 
@@ -217,11 +213,12 @@ public class NethackWrapper {
             // by convertItem above
             // inv.properties.put("amount", item.amount) ; // ????
             inv.elements.put(item_.id, item_);
+            index++;
         }
         wom.elements.put(inv.id, inv);
         return wom;
     }
-    
+
 
     /**
      * Construct the WorldEntity-representation of an item.
@@ -313,23 +310,23 @@ public class NethackWrapper {
 
         int key;
         switch (mv) {
-        case UP:
-            key = KeyEvent.VK_UP;
-            break;
-        case DOWN:
-            key = KeyEvent.VK_DOWN;
-            break;
-        case LEFT:
-            key = KeyEvent.VK_LEFT;
-            break;
-        case RIGHT:
-            key = KeyEvent.VK_RIGHT;
-            break;
-        case DONOTHING:
-            key = KeyEvent.VK_W;
-            break;
-        default:
-            throw new IllegalArgumentException();
+            case UP:
+                key = KeyEvent.VK_UP;
+                break;
+            case DOWN:
+                key = KeyEvent.VK_DOWN;
+                break;
+            case LEFT:
+                key = KeyEvent.VK_LEFT;
+                break;
+            case RIGHT:
+                key = KeyEvent.VK_RIGHT;
+                break;
+            case DONOTHING:
+                key = KeyEvent.VK_W;
+                break;
+            default:
+                throw new IllegalArgumentException();
         }
 
         // System.out.println("### up()") ;
@@ -365,15 +362,15 @@ public class NethackWrapper {
         for (int index = 0; index < N; index++) {
             Item item = nethack.ps.inventory.get(index);
             if (item.ID.equals(itemId)) {
-            	// System.out.println("THIS was called by SelectItemFromInv");
+                // System.out.println("THIS was called by SelectItemFromInv");
                 return useItem(index);
-                
-               
+
+
             }
         }
         throw new IllegalArgumentException("Item " + itemId + " is not in the inventory.");
     }
- 
+
     public enum Interact {
         OpenInv, SelectItemFromInv, AimWithBow, PickupItem, NavigateInvUp, NavigateInvDown
     }
@@ -386,19 +383,19 @@ public class NethackWrapper {
         int key = -1;
 
         switch (act) {
-        case OpenInv:
-            key = KeyEvent.VK_I;
-            break;
+            case OpenInv:
+                key = KeyEvent.VK_I;
+                break;
 
-        case SelectItemFromInv:
-        	// System.out.println("THIS is in SelectItemFromInv!");
+            case SelectItemFromInv:
+                // System.out.println("THIS is in SelectItemFromInv!");
 
-            // String foodId = item.ID;
-            useItem(itemId);
-            // System.out.println("Item Id: " + itemId);
-            // System.out.println("int key: " + key);
+                // String foodId = item.ID;
+                useItem(itemId);
+                // System.out.println("Item Id: " + itemId);
+                // System.out.println("int key: " + key);
 
-            break;
+                break;
 
 //            	 for(Item item : nethack.ps.inventory) {
 //                  	if(item instanceof HealthPotion) {
@@ -416,38 +413,38 @@ public class NethackWrapper {
 //                  }
 //            	 
 
-        // key = KeyEvent.VK_ENTER ;
-        // nethack.useItemFromInventory();
-        // break ;
+            // key = KeyEvent.VK_ENTER ;
+            // nethack.useItemFromInventory();
+            // break ;
 
-        case AimWithBow:
-            key = KeyEvent.VK_SHIFT;
-            break;
-
-        case PickupItem:
-            if (!nethack.inventoryScreen) {
-                key = KeyEvent.VK_ENTER;
-
+            case AimWithBow:
+                key = KeyEvent.VK_SHIFT;
                 break;
-            }
 
-        case NavigateInvDown:
-            if (nethack.inventoryScreen) {
-                key = KeyEvent.VK_DOWN;
-                break;
-            }
+            case PickupItem:
+                if (!nethack.inventoryScreen) {
+                    key = KeyEvent.VK_ENTER;
 
-        case NavigateInvUp:
-            if (nethack.inventoryScreen) {
-                key = KeyEvent.VK_UP;
+                    break;
+                }
 
-                // System.out.println("Up!!");
+            case NavigateInvDown:
+                if (nethack.inventoryScreen) {
+                    key = KeyEvent.VK_DOWN;
+                    break;
+                }
 
-                break;
-            }
+            case NavigateInvUp:
+                if (nethack.inventoryScreen) {
+                    key = KeyEvent.VK_UP;
 
-        default:
-            throw new IllegalArgumentException();
+                    // System.out.println("Up!!");
+
+                    break;
+                }
+
+            default:
+                throw new IllegalArgumentException();
         }
 
         KeyEvent e = new KeyEvent(nethackWindow, KeyEvent.KEY_PRESSED, 1, 0, key, KeyEvent.CHAR_UNDEFINED);
@@ -459,9 +456,9 @@ public class NethackWrapper {
     // just for a quick test of this wrapper:
     public static void main(String[] args) throws IOException, AWTException, InterruptedException {
 
-        NethackConfiguration conf = new NethackConfiguration() ;
+        NethackConfiguration conf = new NethackConfiguration();
         NethackWrapper driver = new NethackWrapper();
-        driver.launchNethack(conf) ;
+        driver.launchNethack(conf);
         
         /*
         driver.nethack = new Screen();
@@ -503,11 +500,7 @@ public class NethackWrapper {
         driver.move(Movement.RIGHT);
         Thread.sleep(500);
 
-        
-        
-  		
-        
-        
+
         driver.move(Movement.RIGHT);
         Thread.sleep(500);
 
@@ -562,7 +555,7 @@ public class NethackWrapper {
 
         WorldModel wom = driver.observe();
         System.out.println("Player-position: " + wom.position);
-        
+
         System.out.println("equip Weap: " + driver.nethack.ps.weap.name);
 
         Tile stairTile = driver.nethack.tiles[driver.nethack.stairX][driver.nethack.stairY];
