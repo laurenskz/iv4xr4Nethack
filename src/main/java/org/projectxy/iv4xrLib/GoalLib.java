@@ -93,7 +93,7 @@ public class GoalLib {
   		
 
 	    restoreHealth.do1((MyAgentState S) -> { 
-	        MyEnv env_ = (MyEnv) S.env() ;
+	        MyNethackEnv env_ = (MyNethackEnv) S.env() ;
 	        WorldModel current = S.wom ;
 	        
 	        
@@ -183,7 +183,7 @@ public class GoalLib {
   		System.out.println("1. HERE in equipSword()!");
 
   		equipSword.do1((MyAgentState S) -> { 
-	        MyEnv env_ = (MyEnv) S.env() ;
+	        MyNethackEnv env_ = (MyNethackEnv) S.env() ;
 	        WorldModel current = S.wom ;
 	        String weaponNeeded = "Sword";
 	        
@@ -269,7 +269,7 @@ public class GoalLib {
   		System.out.println("1. HERE in equipBow()!");
 
   		equipBow.do1((MyAgentState S) -> { 
-	        MyEnv env_ = (MyEnv) S.env() ;
+	        MyNethackEnv env_ = (MyNethackEnv) S.env() ;
 	        WorldModel current = S.wom ;
 	        String weaponNeeded = "Bow";
 	        
@@ -367,7 +367,7 @@ public class GoalLib {
   		
   
   		pickUpItem.do1((MyAgentState S) -> { 
-	        MyEnv env_ = (MyEnv) S.env() ;
+	        MyNethackEnv env_ = (MyNethackEnv) S.env() ;
 	        WorldModel current = S.wom ;
 	        
 	        
@@ -439,7 +439,7 @@ public class GoalLib {
   		
 
   		aimWithBow.do1((MyAgentState S) -> { 
-	        MyEnv env_ = (MyEnv) S.env() ;
+	        MyNethackEnv env_ = (MyNethackEnv) S.env() ;
 	        WorldModel current = S.wom ;
 	        
       		
@@ -512,7 +512,7 @@ public class GoalLib {
   		
 
 	    equipBestAvailableWeapon.do1((MyAgentState S) -> { 
-	        MyEnv env_ = (MyEnv) S.env() ;
+	        MyNethackEnv env_ = (MyNethackEnv) S.env() ;
 	        WorldModel current = S.wom ;
 	        
 	        String bowWeapon = "Bow";

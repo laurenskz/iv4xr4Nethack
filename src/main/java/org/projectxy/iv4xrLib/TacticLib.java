@@ -121,7 +121,7 @@ public class TacticLib {
 	        	
 	        	//S.setAPathToFollow(path) ;
 	            
-	            MyEnv env = (MyEnv) S.env() ;
+	            MyNethackEnv env = (MyNethackEnv) S.env() ;
 	            Vec3 agentCurrentPosition = S.wom.position ;
 	            int mx = (int) monsterLocation.x; 					// monster's x coordinate
 	            int my = (int) monsterLocation.y;					// monster's y coordinate
@@ -541,7 +541,7 @@ public class TacticLib {
 	    return action("travel-to").do2((MyAgentState S) -> (List<Vec3> path) -> {
 	        
 	        S.setAPathToFollow(path) ;
-	        MyEnv env = (MyEnv) S.env() ;
+	        MyNethackEnv env = (MyNethackEnv) S.env() ;
 	        Vec3 agentCurrentPosition = S.wom.position ;
 	                    
 	        //System.out.println(">>> agent @" +  agentCurrentPosition) ;
@@ -710,7 +710,7 @@ public class TacticLib {
 	 */
 	public static Action meleeAttack() {
 	    return action("melee-attack").do2((MyAgentState S) -> (Vec3 monsterLocation) -> {
-	        MyEnv env = (MyEnv) S.env() ;
+	        MyNethackEnv env = (MyNethackEnv) S.env() ;
 	        Vec3 agentCurrentPosition = S.wom.position ;
 	        int dx = (int) (monsterLocation.x - agentCurrentPosition.x) ;
 	        int dy = (int) (monsterLocation.y - agentCurrentPosition.y) ;
@@ -760,7 +760,7 @@ public class TacticLib {
 	//////////////////
 	    public static Action equipBestAvailableWeapon() {
 	        return action("equip Best Available Weapon").do2((MyAgentState S) -> (String itemId) -> { 
-		        MyEnv env_ = (MyEnv) S.env() ;
+		        MyNethackEnv env_ = (MyNethackEnv) S.env() ;
 		        WorldModel current = S.wom ;
 		        
 				boolean bestWeaponEquipped = false;
@@ -830,7 +830,7 @@ public class TacticLib {
 	 */
 	public static Action useHealthToSurvive() {
 	    return action("use health item to stay alive").do2((MyAgentState S) -> (String itemId) -> { 
-	        MyEnv env_ = (MyEnv) S.env() ;
+	        MyNethackEnv env_ = (MyNethackEnv) S.env() ;
 	        WorldModel current = S.wom ;
 	        
 	
@@ -921,7 +921,7 @@ public class TacticLib {
 	public static Action loadNewLevel() {
 	return action("reload navigation grapgh when moving to a new level").do1((MyAgentState S) -> { 
 		
-	MyEnv env_ = (MyEnv) S.env() ;
+	MyNethackEnv env_ = (MyNethackEnv) S.env() ;
 		
 	
 	boolean levelLoaded = false;

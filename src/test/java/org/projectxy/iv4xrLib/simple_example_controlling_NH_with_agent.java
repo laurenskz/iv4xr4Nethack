@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.projectxy.iv4xrLib.NethackWrapper.Movement;
 
 import eu.iv4xr.framework.mainConcepts.TestAgent;
-import eu.iv4xr.framework.spatial.Vec3;
 
 public class simple_example_controlling_NH_with_agent { 
     
@@ -25,7 +24,7 @@ public class simple_example_controlling_NH_with_agent {
         Action moveEast  = action("moveEast").do1((MyAgentState S) -> {
             //Vec3 currentPosition = S.wom.position ;
             //Vec3 east = Vec3.add(currentPosition, new Vec3(1,0,0)) ;
-            MyEnv env = (MyEnv) S.env() ;
+            MyNethackEnv env = (MyNethackEnv) S.env() ;
             env.move(Movement.RIGHT) ; 
             return S ;
         }) ;
@@ -42,7 +41,7 @@ public class simple_example_controlling_NH_with_agent {
         TestAgent agent = new TestAgent() ;
         MyAgentState state = new MyAgentState() ;
         agent.attachState(state) ;
-        MyEnv env = new MyEnv(driver) ;
+        MyNethackEnv env = new MyNethackEnv(driver) ;
         agent.attachEnvironment(env) ;
         
         // give the goal-structure to the agent:

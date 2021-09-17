@@ -38,7 +38,7 @@ public class Example_using_pathfinding {
         TestAgent agent = new TestAgent();
         MyAgentState state = new MyAgentState();
         agent.attachState(state);
-        MyEnv env = new MyEnv(driver);
+        MyNethackEnv env = new MyNethackEnv(driver);
         agent.attachEnvironment(env);
 
         // give a goal-structure to the agent:
@@ -77,7 +77,7 @@ public class Example_using_pathfinding {
         TestAgent agent = new TestAgent();
         MyAgentState state = new MyAgentState();
         agent.attachState(state);
-        MyEnv env = new MyEnv(driver);
+        MyNethackEnv env = new MyNethackEnv(driver);
         agent.attachEnvironment(env);
 
         // give a goal-structure to the agent:
@@ -114,7 +114,7 @@ public class Example_using_pathfinding {
         TestAgent agent = new TestAgent();
         MyAgentState state = new MyAgentState();
         agent.attachState(state);
-        MyEnv env = new MyEnv(driver);
+        MyNethackEnv env = new MyNethackEnv(driver);
         agent.attachEnvironment(env);
 
         // give a goal-structure to the agent:
@@ -156,7 +156,7 @@ public class Example_using_pathfinding {
         TestAgent agent = new TestAgent();
         MyAgentState state = new MyAgentState();
         agent.attachState(state);
-        MyEnv env = new MyEnv(driver);
+        MyNethackEnv env = new MyNethackEnv(driver);
         agent.attachEnvironment(env);
 
         for (WorldEntity e : state.wom.elements.values()) {
@@ -229,7 +229,7 @@ public class Example_using_pathfinding {
         TestAgent agent = new TestAgent();
         MyAgentState state = new MyAgentState();
         agent.attachState(state);
-        MyEnv env = new MyEnv(driver);
+        MyNethackEnv env = new MyNethackEnv(driver);
         agent.attachEnvironment(env);
 
         for (WorldEntity e : state.wom.elements.values()) {
@@ -352,7 +352,7 @@ public class Example_using_pathfinding {
         TestAgent agent = new TestAgent();
         MyAgentState state = new MyAgentState();
         agent.attachState(state);
-        MyEnv env = new MyEnv(driver);
+        MyNethackEnv env = new MyNethackEnv(driver);
         agent.attachEnvironment(env);
 
         for (WorldEntity e : state.wom.elements.values()) {

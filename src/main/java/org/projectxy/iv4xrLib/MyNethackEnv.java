@@ -19,16 +19,16 @@ import A.B.*;
  * a "wrapper" cally NethackWrapper. The latter provides a set of more convenient methods
  * for interactions, that also return observations in term of World Models.
  */
-public class MyEnv extends W3DEnvironment {
+public class MyNethackEnv extends W3DEnvironment {
 
     /**
      * The navigation graph of the current level.
      */
     public SimpleNavGraph navgraph ;
     
-	NethackWrapper nethackUnderTest ;
+	public NethackWrapper nethackUnderTest ;
 	
-	public MyEnv(NethackWrapper nhwrapper) {
+	public MyNethackEnv(NethackWrapper nhwrapper) {
 	    super() ;
 	    nethackUnderTest = nhwrapper ;
 	    

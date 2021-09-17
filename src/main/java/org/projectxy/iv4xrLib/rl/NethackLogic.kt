@@ -32,25 +32,27 @@ fun useItem(item: UseItem, model: NethackModelState): Distribution<NethackModelS
 }
 
 
-fun moveInWorld(move: Move, model: NethackModelState): Distribution<NethackModelState> {
+fun moveInWorld(move: Move, model: NethackModelState, configuration: NethackModelConfiguration): Distribution<NethackModelState> {
+    val x = model.position.x.toInt()
+    val y = model.position.y.toInt()
     return when (move.movement) {
-        UP -> TODO()
-        DOWN -> TODO()
-        LEFT -> TODO()
-        RIGHT -> TODO()
-        DONOTHING -> TODO()
+        UP -> moveToSquare(x, y - 1, model, configuration)
+        DOWN -> moveToSquare(x, y + 1, model, configuration)
+        LEFT -> moveToSquare(x - 1, y, model, configuration)
+        RIGHT -> moveToSquare(x + 1, y, model, configuration)
+        DONOTHING -> always(model)
     }
 }
 
-fun moveToSquare(x: Int, y: Int, model: RLWorldModel, configuration: NethackModelConfiguration): Distribution<RLWorldModel> {
-    val px = model.position.position.x.toInt()
-    val py = model.position.position.y.toInt()
-    val tile = configuration.tiles[x][y]
-    val mob = model.elements.values.firstOrNull { it.position.position.x.toInt() == x && it.position.position.y.toInt() == y && it.properties["attackDmg"] != null }
-    if (mob != null) {
-
+fun moveToSquare(x: Int, y: Int, model: NethackModelState, configuration: NethackModelConfiguration): Distribution<NethackModelState> {
+    val mob = model.mobs.indexOfFirst { it.position.x.toInt() == x && it.position.y.toInt() == y }
+    if (mob >= 0) {
+        return attackMob(mob, model)
     }
-    TODO()
+    return when (configuration.tiles[x][y]) {
+        NethackModelTile.WALKABLE -> always(NethackModelState.position.modify(model) { Vec3(x.toFloat(), y.toFloat(), 0.toFloat()) })
+        NethackModelTile.WALL -> always(model)
+    }
 }
 
 fun <T, A> Lens<T, List<A>>.atIndex(index: Int) = this compose Index.list<A>().index(index)
