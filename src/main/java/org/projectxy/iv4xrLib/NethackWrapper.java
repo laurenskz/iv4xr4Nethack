@@ -431,8 +431,8 @@ public class NethackWrapper {
             case NavigateInvDown:
                 if (nethack.inventoryScreen) {
                     key = KeyEvent.VK_DOWN;
-                    break;
                 }
+                break;
 
             case NavigateInvUp:
                 if (nethack.inventoryScreen) {
@@ -440,17 +440,22 @@ public class NethackWrapper {
 
                     // System.out.println("Up!!");
 
-                    break;
                 }
+                break;
 
             default:
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Did not recognize:"+act);
         }
 
         KeyEvent e = new KeyEvent(nethackWindow, KeyEvent.KEY_PRESSED, 1, 0, key, KeyEvent.CHAR_UNDEFINED);
         nethack.keyPressed(e);
 
         return observe();
+    }
+
+
+    public Screen getNethack() {
+        return nethack;
     }
 
     // just for a quick test of this wrapper:

@@ -16,8 +16,12 @@ import java.lang.IllegalStateException
 import kotlin.math.max
 import kotlin.math.min
 
-fun observe(model: RLWorldModel): Distribution<RLWorldModel> {
+fun observe(model: NethackModelState): Distribution<NethackModelState> {
     return always(model)
+}
+
+fun move(move: Move, model: NethackModelState, configuration: NethackModelConfiguration): Distribution<NethackModelState> {
+    return moveInWorld(move, model, configuration)
 }
 
 fun useItem(item: UseItem, model: NethackModelState): Distribution<NethackModelState> {
@@ -46,12 +50,13 @@ fun moveInWorld(move: Move, model: NethackModelState, configuration: NethackMode
 
 fun moveToSquare(x: Int, y: Int, model: NethackModelState, configuration: NethackModelConfiguration): Distribution<NethackModelState> {
     val mob = model.mobs.indexOfFirst { it.position.x.toInt() == x && it.position.y.toInt() == y }
+    val updatedTimeStamp = model.copy(timestamp = model.timestamp + 1)
     if (mob >= 0) {
-        return attackMob(mob, model)
+//        return attackMob(mob, updatedTimeStamp)
     }
     return when (configuration.tiles[x][y]) {
-        NethackModelTile.WALKABLE -> always(NethackModelState.position.modify(model) { Vec3(x.toFloat(), y.toFloat(), 0.toFloat()) })
-        NethackModelTile.WALL -> always(model)
+        NethackModelTile.WALKABLE -> always(NethackModelState.position.modify(updatedTimeStamp) { Vec3(x.toFloat(), y.toFloat(), 0.toFloat()) })
+        NethackModelTile.WALL -> always(updatedTimeStamp)
     }
 }
 
@@ -75,15 +80,19 @@ fun attackMob(mobIndex: Int, model: NethackModelState): Distribution<NethackMode
     return always(newModel)
 }
 
-fun dropLoot(location: Vec3): Distribution<NethackItem> {
-    val gold: Distribution<NethackItem> = uniform(50..500).map { ModelGold(location, it) }
-    val sword: Distribution<NethackItem> = uniform(0..10).map { Weapon(location, "Sword", 1, "", it) }
-    val bow: Distribution<NethackItem> = uniform(4..7).map { Weapon(location, "Bow", 1, "", it) }
-    val x: Distribution<out NethackItem> = flip(0.5).chain { if (it) gold else bow }
+fun generalLogic(nethackModelState: NethackModelState): NethackModelState {
+    val newLives = if (nethackModelState.timestamp % 8 == 0) NethackModelState.player.health.modify(nethackModelState) { max(0, it - 1) } else nethackModelState
+    return NethackModelState.player.isAlive.modify(newLives) { newLives.player.health > 0 }
+}
+
+fun dropLoot(location: Vec3): Distribution<NethackWorldItem> {
+    val gold: Distribution<NethackWorldItem> = uniform(50..500).map { NethackWorldItem(location, ModelGold(it)) }
+    val sword: Distribution<NethackWorldItem> = uniform(0..10).map { NethackWorldItem(location, Weapon(1, "Sword", it)) }
+    val bow: Distribution<NethackWorldItem> = uniform(4..7).map { NethackWorldItem(location, Weapon(1, "", it)) }
     return flip(0.6).chain {
         if (it) {
             uniform(5, 8, 3).map {
-                Restorable(location, 1, it)
+                NethackWorldItem(location, Restorable(1, it))
             }
         } else {
             flip(0.5).chain {
@@ -98,7 +107,7 @@ fun dropLoot(location: Vec3): Distribution<NethackItem> {
     }
 }
 
-fun moveInInventoryScreen(move: Move, model: RLWorldModel): Distribution<RLWorldModel> {
+fun moveInInventoryScreen(move: Move, model: NethackModelState): Distribution<NethackModelState> {
     TODO()
 }
 
