@@ -1,5 +1,6 @@
 package org.projectxy.iv4xrLib;
 
+import A.B.NethackConfiguration;
 import org.junit.jupiter.api.Test;
 
 import A.B.Monster;
@@ -13,7 +14,6 @@ import eu.iv4xr.framework.extensions.pathfinding.SimpleNavGraph;
 import eu.iv4xr.framework.spatial.LineIntersectable;
 import eu.iv4xr.framework.spatial.Obstacle;
 import eu.iv4xr.framework.spatial.Vec3;
-import eu.iv4xr.framework.spatial.meshes.EdgeMap;
 import nl.uu.cs.aplib.utils.Pair;
 
 public class nh_navgraph_Test {

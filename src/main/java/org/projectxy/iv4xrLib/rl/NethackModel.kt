@@ -1,7 +1,6 @@
 package org.projectxy.iv4xrLib.rl
 
-import A.B.Monster
-import A.B.Screen
+import A.B.NethackConfiguration
 import A.B.Wall
 import arrow.optics.optics
 import eu.iv4xr.framework.mainConcepts.WorldEntity
@@ -16,7 +15,6 @@ import eu.iv4xr.framework.model.rl.algorithms.*
 import eu.iv4xr.framework.model.rl.approximation.*
 import eu.iv4xr.framework.model.rl.burlapadaptors.DataClassHashableState
 import eu.iv4xr.framework.model.rl.valuefunctions.DownSampledValueFunction
-import eu.iv4xr.framework.model.rl.valuefunctions.StateValueFunction2
 import eu.iv4xr.framework.model.rl.valuefunctions.ValueTable
 import eu.iv4xr.framework.model.utils.DeterministicRandom
 import eu.iv4xr.framework.spatial.Vec3
@@ -32,7 +30,7 @@ import org.jetbrains.kotlinx.dl.api.core.loss.Losses
 import org.jetbrains.kotlinx.dl.api.core.metric.Metrics
 import org.jetbrains.kotlinx.dl.api.core.optimizer.Adam
 import org.projectxy.iv4xrLib.*
-import org.projectxy.iv4xrLib.NethackWrapper.Interact.*
+import org.projectxy.iv4xrLib.NethackWrapper.Interact.PickupItem
 import java.time.Duration
 import kotlin.random.Random
 import kotlin.reflect.KClass
@@ -104,7 +102,7 @@ data class NethackModelState(
     override fun toString() = position.toString()
 }
 
-data class SmallNethackState(val position: Vec3) : DataClassHashableState()
+data class SmallNethackState(val position: Vec3, val items: Set<NethackItem>, val worldItems: Set<NethackWorldItem>) : DataClassHashableState()
 
 
 @optics
@@ -245,7 +243,7 @@ class NethackModel(private val configuration: NethackModelConfiguration) : Proba
 //            yield(Observe)
 //            yieldAll((state.Inventory.indices).map { UseItem(it) })
             yieldAll(NethackWrapper.Movement.values().map { Move(it) })
-//            yieldAll(listOf(AimWithBow, PickupItem).map { Action(it) })
+//            yieldAll(listOf(PickupItem).map { Action(it) })
         }
     }
 
@@ -279,7 +277,7 @@ class NethackModel(private val configuration: NethackModelConfiguration) : Proba
             RestartGame -> error("Not supported")
             is UseItem -> useItem(action, current)
             is Move -> move(action, current, configuration)
-            is Action -> TODO()
+            is Action -> action(action.interact, current)
         }.map {
             generalLogic(it)
         }
@@ -343,20 +341,22 @@ fun main() {
     println("Target ${state.getConf().initialState.stairs}")
     goal.maxbudget(10.0)
     agent.setGoal(goal)
-    val valuefunction = DownSampledValueFunction(ValueTable(1f)) { it: StateWithGoalProgress<NethackModelState> -> SmallNethackState(it.state.position) }
-    val gamma = 0.9f
+    val valuefunction = DownSampledValueFunction(ValueTable(1f)) { it: StateWithGoalProgress<NethackModelState> ->
+        SmallNethackState(it.state.position, it.state.Inventory.toSet(), it.state.items.toSet())
+    }
+    val gamma = 0.99f
     val experienceGenerator = PolicyBasedExperienceGenerator<StateWithGoalProgress<NethackModelState>, NethackModelAction>(100000, DeterministicRandom(), gamma, Duration.ofSeconds(1)) { RandomPolicy(it) }
-    agent.trainWith(Bab(valuefunction, gamma, Random, 25000))
+    agent.trainWith(PriorityBased(valuefunction, gamma, experienceGenerator, 0.0001, 25))
     while (true) {
         Thread.sleep(1000)
         agent.update()
         val location = agent.transitions.steps.last().s.position
         println(location)
-        println(valuefunction.valuefunction.value(SmallNethackState(location)))
-        println(valuefunction.valuefunction.value(SmallNethackState(add(location, 1, 0))))
-        println(valuefunction.valuefunction.value(SmallNethackState(add(location, -1, 0))))
-        println(valuefunction.valuefunction.value(SmallNethackState(add(location, 0, -1))))
-        println(valuefunction.valuefunction.value(SmallNethackState(add(location, 0, 1))))
+//        println(valuefunction.valuefunction.value(SmallNethackState(location)))
+//        println(valuefunction.valuefunction.value(SmallNethackState(add(location, 1, 0))))
+//        println(valuefunction.valuefunction.value(SmallNethackState(add(location, -1, 0))))
+//        println(valuefunction.valuefunction.value(SmallNethackState(add(location, 0, -1))))
+//        println(valuefunction.valuefunction.value(SmallNethackState(add(location, 0, 1))))
         println(agent.transitions.steps.last().a)
     }
 

@@ -12,6 +12,7 @@ import eu.iv4xr.framework.model.distribution.Distributions.uniform
 import eu.iv4xr.framework.spatial.Vec3
 import org.projectxy.iv4xrLib.NethackWrapper
 import org.projectxy.iv4xrLib.NethackWrapper.Movement.*
+import org.projectxy.iv4xrLib.Utils
 import java.lang.IllegalStateException
 import kotlin.math.max
 import kotlin.math.min
@@ -33,6 +34,20 @@ fun useItem(item: UseItem, model: NethackModelState): Distribution<NethackModelS
                 else -> model
             }
     )
+}
+
+fun action(interact: NethackWrapper.Interact, state: NethackModelState): Distribution<NethackModelState> {
+    return when (interact) {
+        NethackWrapper.Interact.PickupItem -> pickupItem(state)
+        else -> always(state)
+    }
+}
+
+fun pickupItem(state: NethackModelState): Distribution<NethackModelState> {
+    val item = state.items.firstOrNull { Utils.sameTile(it.position, state.position) }
+    val newInv = item?.let { it.item cons state.Inventory } ?: state.Inventory
+    val newFloor = state.items.filter { !Utils.sameTile(it.position, state.position) }
+    return always(state.copy(Inventory = newInv, items = newFloor))
 }
 
 

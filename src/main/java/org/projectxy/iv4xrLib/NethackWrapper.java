@@ -1,7 +1,6 @@
 package org.projectxy.iv4xrLib;
 
 import A.B.*;
-import alice.tuprolog.Int;
 import eu.iv4xr.framework.extensions.pathfinding.SimpleNavGraph;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.iv4xr.framework.mainConcepts.WorldModel;
@@ -39,7 +38,7 @@ public class NethackWrapper {
      */
     public Thread launchNethack(NethackConfiguration conf) {
         // for now we ignore the configuration
-        nethack = new Screen();
+        nethack = new Screen(conf);
         JFrame frame = new JFrame("NetHack Clone");
         nethackWindow = frame;
         frame.add(nethack);

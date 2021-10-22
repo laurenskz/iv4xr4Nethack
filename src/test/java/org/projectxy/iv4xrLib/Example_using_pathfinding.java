@@ -3,6 +3,7 @@ package org.projectxy.iv4xrLib;
 import static nl.uu.cs.aplib.AplibEDSL.*;
 
 
+import A.B.*;
 import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
@@ -15,14 +16,6 @@ import eu.iv4xr.framework.mainConcepts.WorldModel;
 import eu.iv4xr.framework.spatial.Vec3;
 
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
-
-import A.B.Monster;
-import A.B.HealthPotion;
-import A.B.Food;
-import A.B.Water;
-import A.B.Gold;
-import A.B.Sword;
-import A.B.Bow;
 
 
 @Ignore

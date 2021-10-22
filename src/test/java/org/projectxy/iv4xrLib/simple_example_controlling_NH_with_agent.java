@@ -1,5 +1,6 @@
 package org.projectxy.iv4xrLib; 
 
+import A.B.NethackConfiguration;
 import nl.uu.cs.aplib.mainConcepts.*;
 import static nl.uu.cs.aplib.AplibEDSL.* ;
 

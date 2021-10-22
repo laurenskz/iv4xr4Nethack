@@ -2,6 +2,7 @@ package org.projectxy.iv4xrLib;
 
 import static nl.uu.cs.aplib.AplibEDSL.SEQ;
 
+import A.B.NethackConfiguration;
 import org.junit.jupiter.api.Test;
 
 import eu.iv4xr.framework.mainConcepts.TestAgent;
