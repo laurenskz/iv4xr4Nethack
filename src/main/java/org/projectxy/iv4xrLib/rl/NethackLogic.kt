@@ -69,9 +69,9 @@ fun moveToSquare(x: Int, y: Int, model: NethackModelState, configuration: Nethac
     if (mob >= 0) {
 //        return attackMob(mob, updatedTimeStamp)
     }
-    return when (configuration.tiles[x][y]) {
-        NethackModelTile.WALKABLE -> always(NethackModelState.position.modify(updatedTimeStamp) { Vec3(x.toFloat(), y.toFloat(), 0.toFloat()) })
-        NethackModelTile.WALL -> always(updatedTimeStamp)
+    return when (configuration.tiles[x][y].type) {
+        NethackModelTileType.WALKABLE -> always(NethackModelState.position.modify(updatedTimeStamp) { Vec3(x.toFloat(), y.toFloat(), 0.toFloat()) })
+        NethackModelTileType.WALL -> always(updatedTimeStamp)
     }
 }
 

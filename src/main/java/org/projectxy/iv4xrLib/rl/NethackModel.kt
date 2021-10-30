@@ -14,6 +14,9 @@ import eu.iv4xr.framework.model.rl.StateWithGoalProgress
 import eu.iv4xr.framework.model.rl.algorithms.*
 import eu.iv4xr.framework.model.rl.approximation.*
 import eu.iv4xr.framework.model.rl.burlapadaptors.DataClassHashableState
+import eu.iv4xr.framework.model.rl.policies.LinearStateValueFunction
+import eu.iv4xr.framework.model.rl.policies.SoftmaxPolicy
+import eu.iv4xr.framework.model.rl.policies.TFPolicy
 import eu.iv4xr.framework.model.rl.valuefunctions.DownSampledValueFunction
 import eu.iv4xr.framework.model.rl.valuefunctions.ValueTable
 import eu.iv4xr.framework.model.utils.DeterministicRandom
@@ -35,6 +38,7 @@ import java.time.Duration
 import kotlin.random.Random
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
+import kotlin.system.exitProcess
 
 
 // Actions
@@ -52,6 +56,10 @@ data class Action(val interact: NethackWrapper.Interact) : NethackModelAction()
 
 data class Position(val position: Vec3, val extent: Vec3, val velocity: Vec3)
 
+val nethackActionFactory = OneHot<NethackModelAction>(sequence {
+    yieldAll(NethackWrapper.Movement.values().map { Move(it) })
+//    yieldAll(NethackWrapper.Interact.values().map { Action(it) }
+}.toList())
 
 @optics
 data class NethackPlayer(
@@ -97,6 +105,17 @@ data class NethackModelState(
                 RepeatedFeature(20, NethackWorldItem.factory).from { it.items },
                 RepeatedFeature(20, NethackItem.factory).from { it.Inventory },
         ))
+
+        fun factoryFrom(configuration: NethackModelConfiguration) = CompositeFeature<NethackModelState>(listOf(
+                OneHot(configuration.walkableTiles()).from { NethackModelTile(it.position.x.toInt(), it.position.y.toInt(), NethackModelTileType.WALKABLE) },
+//                NethackPlayer.factory.from { it.player },
+//                IntFeature.from { it.timestamp },
+//                Vec3Feature.from { it.position },
+//                Vec3Feature.from { it.stairs },
+//                RepeatedFeature(10, NethackMob.factory).from { it.mobs },
+//                RepeatedFeature(20, NethackWorldItem.factory).from { it.items },
+//                RepeatedFeature(20, NethackItem.factory).from { it.Inventory },
+        ))
     }
 
     override fun toString() = position.toString()
@@ -116,6 +135,16 @@ data class NethackMob(
 ) {
     companion object {
         val factory = CompositeFeature<NethackMob>(listOf(
+                Vec3Feature.from { it.position },
+                IntFeature.from { it.health },
+                IntFeature.from { it.attackDmg },
+                BoolFeature.from { it.alive },
+                BoolFeature.from { it.seenPlayer },
+                BoolFeature.from { it.waitTurn }
+        ))
+
+        fun factoryFrom(configuration: NethackModelConfiguration) = CompositeFeature<NethackMob>(listOf(
+
                 Vec3Feature.from { it.position },
                 IntFeature.from { it.health },
                 IntFeature.from { it.attackDmg },
@@ -163,7 +192,9 @@ data class Weapon(val amount: Int, val weaponName: String, val attackDmg: Int) :
 data class Restorable(val amount: Int, val restoreAmount: Int) : NethackItem()
 
 data class ModelGold(val amount: Int) : NethackItem()
-enum class NethackModelTile {
+
+data class NethackModelTile(val x: Int, val y: Int, val type: NethackModelTileType)
+enum class NethackModelTileType {
     WALL, WALKABLE
 }
 
@@ -187,6 +218,14 @@ data class NethackModelConfiguration(val rows: Int, val columns: Int, val tiles:
         result = 31 * result + tiles.contentDeepHashCode()
         return result
     }
+
+    fun walkableTiles() = tiles
+            .flatMapIndexed { x, tiles ->
+                tiles.mapIndexedNotNull { y, tile ->
+                    if (tile.type == NethackModelTileType.WALKABLE) tile
+                    else null
+                }
+            }
 }
 
 private fun parseItem(entity: WorldEntity): NethackItem? {
@@ -303,7 +342,7 @@ class NethackModel(private val configuration: NethackModelConfiguration) : Proba
 
 fun MyAgentState.getConf(): NethackModelConfiguration {
     val nh = this.env().nethackUnderTest.nethack
-    val tiles = nh.tiles.map { it.map { if (it is Wall) NethackModelTile.WALL else NethackModelTile.WALKABLE }.toTypedArray() }.toTypedArray()
+    val tiles = nh.tiles.map { it.map { if (it is Wall) NethackModelTile(it.x, it.y, NethackModelTileType.WALL) else NethackModelTile(it.x, it.y, NethackModelTileType.WALKABLE) }.toTypedArray() }.toTypedArray()
     return NethackModelConfiguration(nh.rows, nh.cols, tiles, 20, this.wom.toNethackState())
 }
 
@@ -341,12 +380,10 @@ fun main() {
     println("Target ${state.getConf().initialState.stairs}")
     goal.maxbudget(10.0)
     agent.setGoal(goal)
-    val valuefunction = DownSampledValueFunction(ValueTable(1f)) { it: StateWithGoalProgress<NethackModelState> ->
-        SmallNethackState(it.state.position, it.state.Inventory.toSet(), it.state.items.toSet())
-    }
-    val gamma = 0.99f
-    val experienceGenerator = PolicyBasedExperienceGenerator<StateWithGoalProgress<NethackModelState>, NethackModelAction>(100000, DeterministicRandom(), gamma, Duration.ofSeconds(1)) { RandomPolicy(it) }
-    agent.trainWith(PriorityBased(valuefunction, gamma, experienceGenerator, 0.0001, 25))
+    val policy = TFPolicy(stateWithGoalProgressFactory(NethackModelState.factoryFrom(state.getConf()), 1), agent.mdp, 0.1f)
+    val value = LinearStateValueFunction(stateWithGoalProgressFactory(NethackModelState.factoryFrom(state.getConf()), 1), 0.01)
+    val critic = ActorCritic(policy, value, Random, 0.99, 10000)
+    agent.trainWith(critic)
     while (true) {
         Thread.sleep(1000)
         agent.update()
