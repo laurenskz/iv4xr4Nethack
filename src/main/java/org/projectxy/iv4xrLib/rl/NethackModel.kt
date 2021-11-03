@@ -10,35 +10,17 @@ import eu.iv4xr.framework.model.distribution.Distribution
 import eu.iv4xr.framework.model.distribution.always
 import eu.iv4xr.framework.model.rl.Identifiable
 import eu.iv4xr.framework.model.rl.RLAgent
-import eu.iv4xr.framework.model.rl.StateWithGoalProgress
 import eu.iv4xr.framework.model.rl.algorithms.*
 import eu.iv4xr.framework.model.rl.approximation.*
 import eu.iv4xr.framework.model.rl.burlapadaptors.DataClassHashableState
-import eu.iv4xr.framework.model.rl.policies.LinearStateValueFunction
-import eu.iv4xr.framework.model.rl.policies.SoftmaxPolicy
-import eu.iv4xr.framework.model.rl.policies.TFPolicy
-import eu.iv4xr.framework.model.rl.valuefunctions.DownSampledValueFunction
-import eu.iv4xr.framework.model.rl.valuefunctions.ValueTable
-import eu.iv4xr.framework.model.utils.DeterministicRandom
+import eu.iv4xr.framework.model.rl.policies.*
 import eu.iv4xr.framework.spatial.Vec3
 import nl.uu.cs.aplib.AplibEDSL
 import nl.uu.cs.aplib.mainConcepts.SimpleState
-import org.jetbrains.kotlinx.dl.api.core.GraphTrainableModel
-import org.jetbrains.kotlinx.dl.api.core.Sequential
-import org.jetbrains.kotlinx.dl.api.core.activation.Activations
-import org.jetbrains.kotlinx.dl.api.core.initializer.HeNormal
-import org.jetbrains.kotlinx.dl.api.core.layer.core.Dense
-import org.jetbrains.kotlinx.dl.api.core.layer.core.Input
-import org.jetbrains.kotlinx.dl.api.core.loss.Losses
-import org.jetbrains.kotlinx.dl.api.core.metric.Metrics
-import org.jetbrains.kotlinx.dl.api.core.optimizer.Adam
 import org.projectxy.iv4xrLib.*
-import org.projectxy.iv4xrLib.NethackWrapper.Interact.PickupItem
-import java.time.Duration
 import kotlin.random.Random
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
-import kotlin.system.exitProcess
 
 
 // Actions
@@ -328,10 +310,10 @@ class NethackModel(private val configuration: NethackModelConfiguration) : Proba
 
     override fun possibleActions(): Sequence<NethackModelAction> {
         return sequence {
-            yield(Observe)
-            yieldAll((0..configuration.inventorySize).map { UseItem(it) })
+//            yield(Observe)
+//            yieldAll((0..configuration.inventorySize).map { UseItem(it) })
             yieldAll(NethackWrapper.Movement.values().map { Move(it) })
-            yieldAll(NethackWrapper.Interact.values().map { Action(it) })
+//            yieldAll(NethackWrapper.Interact.values().map { Action(it) })
         }
     }
 
@@ -347,22 +329,22 @@ fun MyAgentState.getConf(): NethackModelConfiguration {
 }
 
 
-class DeepQTestModel : ModelDescription {
-    override fun create(inputSize: Int, outputSize: Int): GraphTrainableModel {
-        val model = Sequential.of(
-                Input(inputSize.toLong()),
-                Dense(12, activation = Activations.Relu,
-                        kernelInitializer = HeNormal()),
-                Dense(
-                        outputSize,
-                        activation = Activations.Linear,
-                        kernelInitializer = HeNormal()
-                ))
-        model.compile(Adam(learningRate = 0.01f), Losses.HUBER, Metrics.MAE)
-        model.init()
-        return model
-    }
-}
+//class DeepQTestModel : ModelDescription {
+//    override fun create(inputSize: Int, outputSize: Int): GraphTrainableModel {
+//        val model = Sequential.of(
+//                Input(inputSize.toLong()),
+//                Dense(12, activation = Activations.Relu,
+//                        kernelInitializer = HeNormal()),
+//                Dense(
+//                        outputSize,
+//                        activation = Activations.Linear,
+//                        kernelInitializer = HeNormal()
+//                ))
+//        model.compile(Adam(learningRate = 0.01f), Losses.HUBER, Metrics.MAE)
+//        model.init()
+//        return model
+//    }
+//}
 
 fun main() {
     val wrapper = NethackWrapper()
@@ -380,10 +362,21 @@ fun main() {
     println("Target ${state.getConf().initialState.stairs}")
     goal.maxbudget(10.0)
     agent.setGoal(goal)
-    val policy = TFPolicy(stateWithGoalProgressFactory(NethackModelState.factoryFrom(state.getConf()), 1), agent.mdp, 0.1f)
-    val value = LinearStateValueFunction(stateWithGoalProgressFactory(NethackModelState.factoryFrom(state.getConf()), 1), 0.01)
-    val critic = ActorCritic(policy, value, Random, 0.99, 10000)
-    agent.trainWith(critic)
+    val batchSize = 64
+    val factory = stateWithGoalProgressFactory(NethackModelState.factoryFrom(state.getConf()), 1)
+    val policy = TFPolicy(factory, agent.mdp, 0.1f, logDir = "summarieszz", batchSize = batchSize)
+    val value = LinearStateValueFunction(factory, 0.01)
+    val logger = TFRewardLogger(policy.sessioned)
+    val model = ICMModel(0.2, 0.1, factory.count(), nethackActionFactory.count(),
+            Sequential(),
+            Sequential(dense(factory.count().toLong())),
+            Sequential(dense(nethackActionFactory.count().toLong()))
+    )
+    val icm = ICMModuleImpl(model, factory, nethackActionFactory)
+    val curiosityDriven = CuriosityDriven(policy, value, icm, 0.5, Random, 0.99, 10000, logger, batchSize = batchSize)
+    val actor = ActorCritic(policy, value, Random, 0.99, 10000, batchSize = batchSize, rewardLogger = logger)
+    agent.trainWith(curiosityDriven)
+
     while (true) {
         Thread.sleep(1000)
         agent.update()
