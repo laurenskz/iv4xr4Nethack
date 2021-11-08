@@ -10,6 +10,7 @@ import eu.iv4xr.framework.model.distribution.Distribution
 import eu.iv4xr.framework.model.distribution.always
 import eu.iv4xr.framework.model.rl.Identifiable
 import eu.iv4xr.framework.model.rl.RLAgent
+import eu.iv4xr.framework.model.rl.StateWithGoalProgress
 import eu.iv4xr.framework.model.rl.algorithms.*
 import eu.iv4xr.framework.model.rl.approximation.*
 import eu.iv4xr.framework.model.rl.burlapadaptors.DataClassHashableState
@@ -263,7 +264,10 @@ class NethackModel(private val configuration: NethackModelConfiguration) : Proba
         return sequence {
 //            yield(Observe)
 //            yieldAll((state.Inventory.indices).map { UseItem(it) })
-            yieldAll(NethackWrapper.Movement.values().map { Move(it) })
+            yield(Move(NethackWrapper.Movement.LEFT))
+            yield(Move(NethackWrapper.Movement.UP))
+            yield(Move(NethackWrapper.Movement.DOWN))
+            yield(Move(NethackWrapper.Movement.RIGHT))
 //            yieldAll(listOf(PickupItem).map { Action(it) })
         }
     }
@@ -312,7 +316,10 @@ class NethackModel(private val configuration: NethackModelConfiguration) : Proba
         return sequence {
 //            yield(Observe)
 //            yieldAll((0..configuration.inventorySize).map { UseItem(it) })
-            yieldAll(NethackWrapper.Movement.values().map { Move(it) })
+            yield(Move(NethackWrapper.Movement.LEFT))
+            yield(Move(NethackWrapper.Movement.UP))
+            yield(Move(NethackWrapper.Movement.DOWN))
+            yield(Move(NethackWrapper.Movement.RIGHT))
 //            yieldAll(NethackWrapper.Interact.values().map { Action(it) })
         }
     }
@@ -360,28 +367,29 @@ fun main() {
             Utils.sameTile((st as WorldModel).position, st.getElement("Stairs").position)
     }.lift()
     println("Target ${state.getConf().initialState.stairs}")
-    goal.maxbudget(10.0)
+    goal.maxbudget(100.0)
     agent.setGoal(goal)
-    val batchSize = 64
+    val batchSize = 128
     val factory = stateWithGoalProgressFactory(NethackModelState.factoryFrom(state.getConf()), 1)
     val policy = TFPolicy(factory, agent.mdp, 0.1f, logDir = "summarieszz", batchSize = batchSize)
-    val value = LinearStateValueFunction(factory, 0.01)
+    val value = LinearStateValueFunction(factory, 0.1)
     val logger = TFRewardLogger(policy.sessioned)
-    val model = ICMModel(0.2, 0.1, factory.count(), nethackActionFactory.count(),
+    val model = ICMModel(0.3, 0.04, factory.count(), nethackActionFactory.count(),
             Sequential(),
             Sequential(dense(factory.count().toLong())),
             Sequential(dense(nethackActionFactory.count().toLong()))
     )
     val icm = ICMModuleImpl(model, factory, nethackActionFactory)
-    val curiosityDriven = CuriosityDriven(policy, value, icm, 0.5, Random, 0.99, 10000, logger, batchSize = batchSize)
-    val actor = ActorCritic(policy, value, Random, 0.99, 10000, batchSize = batchSize, rewardLogger = logger)
+    val curiosityDriven = CuriosityDriven(policy, value, icm, Random, 1.0, 4000, logger, batchSize = batchSize, eta = 0.1)
+    val actor = ActorCritic(policy, value, Random, 0.7, 10000, batchSize = batchSize, rewardLogger = logger)
     agent.trainWith(curiosityDriven)
 
-    while (true) {
+    while (agent.goal.status.inProgress()) {
         Thread.sleep(1000)
         agent.update()
         val location = agent.transitions.steps.last().s.position
         println(location)
+        println(value.value(StateWithGoalProgress(listOf(false), agent.transitions.steps.last().s)))
 //        println(valuefunction.valuefunction.value(SmallNethackState(location)))
 //        println(valuefunction.valuefunction.value(SmallNethackState(add(location, 1, 0))))
 //        println(valuefunction.valuefunction.value(SmallNethackState(add(location, -1, 0))))
@@ -389,6 +397,7 @@ fun main() {
 //        println(valuefunction.valuefunction.value(SmallNethackState(add(location, 0, 1))))
         println(agent.transitions.steps.last().a)
     }
+    wrapper.closeNethack()
 
 }
 
