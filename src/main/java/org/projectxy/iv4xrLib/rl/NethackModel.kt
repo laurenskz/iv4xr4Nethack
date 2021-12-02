@@ -8,9 +8,7 @@ import eu.iv4xr.framework.mainConcepts.WorldModel
 import eu.iv4xr.framework.model.ProbabilisticModel
 import eu.iv4xr.framework.model.distribution.Distribution
 import eu.iv4xr.framework.model.distribution.always
-import eu.iv4xr.framework.model.rl.Identifiable
-import eu.iv4xr.framework.model.rl.RLAgent
-import eu.iv4xr.framework.model.rl.StateWithGoalProgress
+import eu.iv4xr.framework.model.rl.*
 import eu.iv4xr.framework.model.rl.algorithms.*
 import eu.iv4xr.framework.model.rl.approximation.*
 import eu.iv4xr.framework.model.rl.burlapadaptors.DataClassHashableState
@@ -22,6 +20,7 @@ import org.projectxy.iv4xrLib.*
 import kotlin.random.Random
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
+import kotlin.system.exitProcess
 
 
 // Actions
@@ -43,6 +42,33 @@ val nethackActionFactory = OneHot<NethackModelAction>(sequence {
     yieldAll(NethackWrapper.Movement.values().map { Move(it) })
 //    yieldAll(NethackWrapper.Interact.values().map { Action(it) }
 }.toList())
+
+data class NethackSolveInput(
+        val name: String,
+        val seed: Long,
+        val nethackConfiguration: NethackConfiguration,
+        val enabledActions: List<NethackModelAction>
+)
+
+data class NethackSolveConfiguration(
+        val nethackConfiguration: NethackConfiguration,
+        val random: Random,
+        val mdp: MDP<StateWithGoalProgress<NethackModelState>, NethackModelAction>,
+        val state: MyAgentState,
+        val agent: RLAgent<NethackModelState, NethackModelAction>
+)
+
+data class NethackSolveOutput(
+        val name: String,
+        val episodes: Int,
+        val gamma: Float,
+        val epsilon: Double?,
+        val n: Int?
+)
+
+interface NethackSolver {
+    fun train(configuration: NethackSolveConfiguration): NethackSolveOutput
+}
 
 @optics
 data class NethackPlayer(
@@ -91,6 +117,7 @@ data class NethackModelState(
 
         fun factoryFrom(configuration: NethackModelConfiguration) = CompositeFeature<NethackModelState>(listOf(
                 OneHot(configuration.walkableTiles()).from { NethackModelTile(it.position.x.toInt(), it.position.y.toInt(), NethackModelTileType.WALKABLE) },
+//                DoubleFeature.from { it.timestamp / 100.0 }
 //                NethackPlayer.factory.from { it.player },
 //                IntFeature.from { it.timestamp },
 //                Vec3Feature.from { it.position },
@@ -101,10 +128,8 @@ data class NethackModelState(
         ))
     }
 
-    override fun toString() = position.toString()
+    override fun toString() = position.toString() + ",steps:$timestamp"
 }
-
-data class SmallNethackState(val position: Vec3, val items: Set<NethackItem>, val worldItems: Set<NethackWorldItem>) : DataClassHashableState()
 
 
 @optics
@@ -333,72 +358,6 @@ fun MyAgentState.getConf(): NethackModelConfiguration {
     val nh = this.env().nethackUnderTest.nethack
     val tiles = nh.tiles.map { it.map { if (it is Wall) NethackModelTile(it.x, it.y, NethackModelTileType.WALL) else NethackModelTile(it.x, it.y, NethackModelTileType.WALKABLE) }.toTypedArray() }.toTypedArray()
     return NethackModelConfiguration(nh.rows, nh.cols, tiles, 20, this.wom.toNethackState())
-}
-
-
-//class DeepQTestModel : ModelDescription {
-//    override fun create(inputSize: Int, outputSize: Int): GraphTrainableModel {
-//        val model = Sequential.of(
-//                Input(inputSize.toLong()),
-//                Dense(12, activation = Activations.Relu,
-//                        kernelInitializer = HeNormal()),
-//                Dense(
-//                        outputSize,
-//                        activation = Activations.Linear,
-//                        kernelInitializer = HeNormal()
-//                ))
-//        model.compile(Adam(learningRate = 0.01f), Losses.HUBER, Metrics.MAE)
-//        model.init()
-//        return model
-//    }
-//}
-
-fun main() {
-    val wrapper = NethackWrapper()
-    val conf = NethackConfiguration()
-    wrapper.launchNethack(conf)
-    val state = MyAgentState().setEnvironment(MyNethackEnv(wrapper))
-    val agent = RLAgent(NethackModel(state.getConf()), Random)
-    agent.attachState(state)
-    val goal = AplibEDSL.goal("goal").toSolve { st: Any ->
-        if (st is NethackModelState)
-            Utils.sameTile(st.position, st.stairs)
-        else
-            Utils.sameTile((st as WorldModel).position, st.getElement("Stairs").position)
-    }.lift()
-    println("Target ${state.getConf().initialState.stairs}")
-    goal.maxbudget(100.0)
-    agent.setGoal(goal)
-    val batchSize = 128
-    val factory = stateWithGoalProgressFactory(NethackModelState.factoryFrom(state.getConf()), 1)
-    val policy = TFPolicy(factory, agent.mdp, 0.1f, logDir = "summarieszz", batchSize = batchSize)
-    val value = LinearStateValueFunction(factory, 0.1)
-    val logger = TFRewardLogger(policy.sessioned)
-    val model = ICMModel(0.3, 0.04, factory.count(), nethackActionFactory.count(),
-            Sequential(),
-            Sequential(dense(factory.count().toLong())),
-            Sequential(dense(nethackActionFactory.count().toLong()))
-    )
-    val icm = ICMModuleImpl(model, factory, nethackActionFactory)
-    val curiosityDriven = CuriosityDriven(policy, value, icm, Random, 1.0, 4000, logger, batchSize = batchSize, eta = 0.1)
-    val actor = ActorCritic(policy, value, Random, 0.7, 10000, batchSize = batchSize, rewardLogger = logger)
-    agent.trainWith(curiosityDriven)
-
-    while (agent.goal.status.inProgress()) {
-        Thread.sleep(1000)
-        agent.update()
-        val location = agent.transitions.steps.last().s.position
-        println(location)
-        println(value.value(StateWithGoalProgress(listOf(false), agent.transitions.steps.last().s)))
-//        println(valuefunction.valuefunction.value(SmallNethackState(location)))
-//        println(valuefunction.valuefunction.value(SmallNethackState(add(location, 1, 0))))
-//        println(valuefunction.valuefunction.value(SmallNethackState(add(location, -1, 0))))
-//        println(valuefunction.valuefunction.value(SmallNethackState(add(location, 0, -1))))
-//        println(valuefunction.valuefunction.value(SmallNethackState(add(location, 0, 1))))
-        println(agent.transitions.steps.last().a)
-    }
-    wrapper.closeNethack()
-
 }
 
 fun add(vec3: Vec3, x: Int, y: Int) = Vec3(vec3.x.toInt().plus(x).toFloat(), vec3.y.toInt().plus(y).toFloat(), vec3.z)
