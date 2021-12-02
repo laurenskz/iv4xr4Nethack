@@ -9,18 +9,14 @@ import eu.iv4xr.framework.model.ProbabilisticModel
 import eu.iv4xr.framework.model.distribution.Distribution
 import eu.iv4xr.framework.model.distribution.always
 import eu.iv4xr.framework.model.rl.*
-import eu.iv4xr.framework.model.rl.algorithms.*
 import eu.iv4xr.framework.model.rl.approximation.*
-import eu.iv4xr.framework.model.rl.burlapadaptors.DataClassHashableState
-import eu.iv4xr.framework.model.rl.policies.*
 import eu.iv4xr.framework.spatial.Vec3
-import nl.uu.cs.aplib.AplibEDSL
 import nl.uu.cs.aplib.mainConcepts.SimpleState
 import org.projectxy.iv4xrLib.*
+import org.projectxy.iv4xrLib.rl.NethackModelTileType.*
 import kotlin.random.Random
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
-import kotlin.system.exitProcess
 
 
 // Actions
@@ -115,8 +111,24 @@ data class NethackModelState(
                 RepeatedFeature(20, NethackItem.factory).from { it.Inventory },
         ))
 
+        fun tensorFactory(configuration: NethackModelConfiguration) = GridEncoder<NethackModelState> {
+            sequence {
+                yield(longArrayOf(0, it.position.x.toLong(), it.position.y.toLong()))
+                for (x in 0 until configuration.columns) {
+                    for (y in 0 until configuration.rows) {
+                        val tile = configuration.tiles[x][y]
+                        when (tile.type) {
+                            WALL -> yield(longArrayOf(1, tile.x.toLong(), tile.y.toLong()))
+                            WALKABLE -> yield(longArrayOf(2, tile.x.toLong(), tile.y.toLong()))
+                        }
+                    }
+                }
+            }
+        }
+
+
         fun factoryFrom(configuration: NethackModelConfiguration) = CompositeFeature<NethackModelState>(listOf(
-                OneHot(configuration.walkableTiles()).from { NethackModelTile(it.position.x.toInt(), it.position.y.toInt(), NethackModelTileType.WALKABLE) },
+                OneHot(configuration.walkableTiles()).from { NethackModelTile(it.position.x.toInt(), it.position.y.toInt(), WALKABLE) },
 //                DoubleFeature.from { it.timestamp / 100.0 }
 //                NethackPlayer.factory.from { it.player },
 //                IntFeature.from { it.timestamp },
@@ -230,7 +242,7 @@ data class NethackModelConfiguration(val rows: Int, val columns: Int, val tiles:
     fun walkableTiles() = tiles
             .flatMapIndexed { x, tiles ->
                 tiles.mapIndexedNotNull { y, tile ->
-                    if (tile.type == NethackModelTileType.WALKABLE) tile
+                    if (tile.type == WALKABLE) tile
                     else null
                 }
             }
@@ -356,7 +368,7 @@ class NethackModel(private val configuration: NethackModelConfiguration) : Proba
 
 fun MyAgentState.getConf(): NethackModelConfiguration {
     val nh = this.env().nethackUnderTest.nethack
-    val tiles = nh.tiles.map { it.map { if (it is Wall) NethackModelTile(it.x, it.y, NethackModelTileType.WALL) else NethackModelTile(it.x, it.y, NethackModelTileType.WALKABLE) }.toTypedArray() }.toTypedArray()
+    val tiles = nh.tiles.map { it.map { if (it is Wall) NethackModelTile(it.x, it.y, WALL) else NethackModelTile(it.x, it.y, WALKABLE) }.toTypedArray() }.toTypedArray()
     return NethackModelConfiguration(nh.rows, nh.cols, tiles, 20, this.wom.toNethackState())
 }
 

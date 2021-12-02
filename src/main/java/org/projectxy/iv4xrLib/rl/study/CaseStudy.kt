@@ -28,10 +28,10 @@ val confs = listOf(
                 "Simple",
                 16,
                 NethackConfiguration().also {
-                    it.rows = 25
-                    it.columns = 25
-                    it.roomCount = 7
-                    it.seed = 16
+                        it.rows = 25
+                        it.columns = 25
+                        it.roomCount = 7
+                        it.seed = 16
                 },
                 movementActions
         ),
