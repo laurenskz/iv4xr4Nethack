@@ -70,16 +70,17 @@ fun CaseStudyRow.header() = mapOf(
         "Configuration" to input.name,
         "Success" to success.toString(),
         "Algorithm" to this.output.name,
+        "Gamma" to this.output.gamma.toString(),
         "Duration" to duration.toString(TimeUnit.MILLISECONDS)
 )
 
 val solvers = listOf(
-        CountBasedICMSolver(10, 1f, ICMQConf.NEGATIVE_REWARDS, 10000, 0.0),
-//        CountBasedICMSolver(10, 0.8f, ICMQConf.NEGATIVE_REWARDS),
-//        CountBasedICMSolver(10, 0.999f, ICMQConf.POSITIVE_REWARDS),
-//        CountBasedICMSolver(10, 0.8f, ICMQConf.POSITIVE_REWARDS),
-//        CountBasedICMSolver(10, 0.999f, ICMQConf.POSITIVE_REWARDS_OPTIMISTIC),
-//        CountBasedICMSolver(10, 0.8f, ICMQConf.POSITIVE_REWARDS_OPTIMISTIC),
+        CountBasedICMSolver(10, 0.999f, ICMQConf.NEGATIVE_REWARDS, 10000, 0.0),
+//        CountBasedICMSolver(10, 0.8f, ICMQConf.NEGATIVE_REWARDS, 10000, 0.0),
+//        CountBasedICMSolver(10, 0.999f, ICMQConf.POSITIVE_REWARDS, 10000, 0.2),
+//        CountBasedICMSolver(10, 0.8f, ICMQConf.POSITIVE_REWARDS, 10000, 0.2),
+//        CountBasedICMSolver(10, 0.999f, ICMQConf.POSITIVE_REWARDS_OPTIMISTIC, 10000, 0.2),
+//        CountBasedICMSolver(10, 0.8f, ICMQConf.POSITIVE_REWARDS_OPTIMISTIC, 10000, 0.2),
 //        HeuristicSolver(1000, 0.999f, "SARSA", 0.2, 4),
 //        HeuristicSolver(1000, 0.999f, "Q-learning")
 )
@@ -105,7 +106,7 @@ fun <T> toTable(t: List<T>, extractor: (T) -> Map<String, String>): String {
         toRow(strings)
     }
     val body = (header cons ("\\hline" cons rows)).joinToString("\n")
-    return "\\begin{tabular}{|${keys.map { "c" }.joinToString("|")}|}\n\\hline\n" + body + "\n\\\\hline\\end{tabular}"
+    return "\\begin{tabular}{|${keys.map { "c" }.joinToString("|")}|}\n\\hline\n" + body + "\n\\hline\n\\end{tabular}"
 }
 
 fun <T> toTable(t: List<T>, extractor: (T) -> Map<String, String>, fileName: String) {
@@ -121,7 +122,7 @@ fun main() {
     toTable(confs, NethackSolveInput::header, "casestudy2confs.tex")
     val results = confs.flatMap { conf ->
         solvers.map { solver ->
-            evaluateSolver(conf, solver, 0)
+            evaluateSolver(conf, solver, 30)
         }
     }
     toTable(results, CaseStudyRow::header, "casestudy2results.tex")

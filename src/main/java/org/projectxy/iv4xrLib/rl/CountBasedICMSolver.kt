@@ -24,7 +24,7 @@ class CountBasedICMSolver(private val episodes: Int = 10, private val gamma: Flo
         val qFunction = QFromMerged(actionRepeatingFactory, 1.0)
         val exploreFun = QFromMerged(actionRepeatingFactory, 1.0, conf.initialQ)
         val alg = ExploreAndConnect(icm, configuration.random,
-                qFunction, exploreFun, gamma, 0.999f, 2, episodes,
+                qFunction, exploreFun, gamma, 0.999f, 10, episodes,
                 MCSampleGreedyPolicy(qFunction, configuration.mdp, episodes, gamma, episodes, configuration.random), maxSteps, epsilon
         )
         configuration.agent.trainWith(alg)
