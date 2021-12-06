@@ -14,6 +14,7 @@ import eu.iv4xr.framework.spatial.Vec3
 import nl.uu.cs.aplib.mainConcepts.SimpleState
 import org.projectxy.iv4xrLib.*
 import org.projectxy.iv4xrLib.rl.NethackModelTileType.*
+import org.tensorflow.ndarray.Shape
 import kotlin.random.Random
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
@@ -111,9 +112,9 @@ data class NethackModelState(
                 RepeatedFeature(20, NethackItem.factory).from { it.Inventory },
         ))
 
-        fun tensorFactory(configuration: NethackModelConfiguration) = GridEncoder<NethackModelState> {
+        fun tensorFactory(configuration: NethackModelConfiguration) = GridEncoder<NethackModelState>(Shape.of(configuration.columns.toLong(), configuration.rows.toLong(), 3)) {
             sequence {
-                yield(longArrayOf(0, it.position.x.toLong(), it.position.y.toLong()))
+                yield(longArrayOf(it.position.x.toLong(), it.position.y.toLong(), 0))
                 for (x in 0 until configuration.columns) {
                     for (y in 0 until configuration.rows) {
                         val tile = configuration.tiles[x][y]

@@ -25,7 +25,7 @@ class HeuristicSolver(val episodes: Int, val gamma: Float, val algName: String, 
         val qFunction = QFromMerged(actionRepeatingFactory, 0.1)
         val name = "Heuristic - $algName"
         if (algName == "Q-learning") {
-            val alg = OffPolicyQLearning(qFunction, 0.9f, configuration.mdp, configuration.random)
+            val alg = OffPolicyQLearning(qFunction, gamma, configuration.mdp, configuration.random)
             alg.trainEPolicy(episodes)
             configuration.agent.policy = GreedyPolicy(qFunction, configuration.mdp)
             return NethackSolveOutput(name, episodes, gamma, epsilon, n)

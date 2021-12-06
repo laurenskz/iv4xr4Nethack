@@ -82,7 +82,7 @@ val solvers = listOf(
 //        CountBasedICMSolver(10, 0.999f, ICMQConf.POSITIVE_REWARDS_OPTIMISTIC, 10000, 0.2),
 //        CountBasedICMSolver(10, 0.8f, ICMQConf.POSITIVE_REWARDS_OPTIMISTIC, 10000, 0.2),
 //        HeuristicSolver(1000, 0.999f, "SARSA", 0.2, 4),
-//        HeuristicSolver(1000, 0.999f, "Q-learning")
+        HeuristicSolver(1000, 0.999f, "Q-learning")
 )
 
 
