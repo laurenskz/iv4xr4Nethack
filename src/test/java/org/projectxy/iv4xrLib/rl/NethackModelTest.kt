@@ -34,9 +34,8 @@ internal class NethackModelTest {
         agent.setGoal(AplibEDSL.goal("bab").lift())
         val init = agent.mdp.initialState().sample(Random)
         val of = Shape.of(3, 25, 25)
-        val ndArray = NdArrays.ofFloats(of)
-        factory.setFrom(init.state, NDArrayBuffer(ndArray, longArrayOf()), longArrayOf())
-        println(ndArray.prettyString())
+        val vector = factory.createFrom(listOf(init.state))
+        println(vector.shape())
         Thread.sleep(100000)
         wrapper.closeNethack()
     }

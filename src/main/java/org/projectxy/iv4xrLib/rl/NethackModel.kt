@@ -15,6 +15,7 @@ import nl.uu.cs.aplib.mainConcepts.SimpleState
 import org.projectxy.iv4xrLib.*
 import org.projectxy.iv4xrLib.rl.NethackModelTileType.*
 import org.tensorflow.ndarray.Shape
+import org.tensorflow.ndarray.Shape.UNKNOWN_SIZE
 import kotlin.random.Random
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
@@ -112,15 +113,15 @@ data class NethackModelState(
                 RepeatedFeature(20, NethackItem.factory).from { it.Inventory },
         ))
 
-        fun tensorFactory(configuration: NethackModelConfiguration) = GridEncoder<NethackModelState>(Shape.of(configuration.columns.toLong(), configuration.rows.toLong(), 3)) {
+        fun tensorFactory(configuration: NethackModelConfiguration) = GridEncoder<NethackModelState>(Shape.of(UNKNOWN_SIZE, configuration.columns.toLong(), configuration.rows.toLong(), 3)) {
             sequence {
                 yield(longArrayOf(it.position.x.toLong(), it.position.y.toLong(), 0))
                 for (x in 0 until configuration.columns) {
                     for (y in 0 until configuration.rows) {
                         val tile = configuration.tiles[x][y]
                         when (tile.type) {
-                            WALL -> yield(longArrayOf(1, tile.x.toLong(), tile.y.toLong()))
-                            WALKABLE -> yield(longArrayOf(2, tile.x.toLong(), tile.y.toLong()))
+                            WALL -> yield(longArrayOf(tile.x.toLong(), tile.y.toLong(), 1))
+                            WALKABLE -> yield(longArrayOf(tile.x.toLong(), tile.y.toLong(), 2))
                         }
                     }
                 }

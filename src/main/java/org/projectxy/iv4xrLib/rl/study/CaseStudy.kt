@@ -28,10 +28,10 @@ val confs = listOf(
                 "Simple",
                 16,
                 NethackConfiguration().also {
-                        it.rows = 25
-                        it.columns = 25
-                        it.roomCount = 7
-                        it.seed = 16
+                    it.rows = 25
+                    it.columns = 25
+                    it.roomCount = 7
+                    it.seed = 16
                 },
                 movementActions
         ),
@@ -75,14 +75,16 @@ fun CaseStudyRow.header() = mapOf(
 )
 
 val solvers = listOf(
-        CountBasedICMSolver(10, 0.999f, ICMQConf.NEGATIVE_REWARDS, 10000, 0.0),
+        RandomStartICMSolver(10, 0.8f, ICMQConf.POSITIVE_REWARDS, epsilon = 0.2)
+//        ConvSolver(0.9f, 80000)
+//        CountBasedICMSolver(10, 0.999f, ICMQConf.NEGATIVE_REWARDS, 10000, 0.0),
 //        CountBasedICMSolver(10, 0.8f, ICMQConf.NEGATIVE_REWARDS, 10000, 0.0),
 //        CountBasedICMSolver(10, 0.999f, ICMQConf.POSITIVE_REWARDS, 10000, 0.2),
 //        CountBasedICMSolver(10, 0.8f, ICMQConf.POSITIVE_REWARDS, 10000, 0.2),
 //        CountBasedICMSolver(10, 0.999f, ICMQConf.POSITIVE_REWARDS_OPTIMISTIC, 10000, 0.2),
 //        CountBasedICMSolver(10, 0.8f, ICMQConf.POSITIVE_REWARDS_OPTIMISTIC, 10000, 0.2),
 //        HeuristicSolver(1000, 0.999f, "SARSA", 0.2, 4),
-        HeuristicSolver(1000, 0.999f, "Q-learning")
+//        HeuristicSolver(1000, 0.999f, "Q-learning")
 )
 
 
@@ -149,7 +151,7 @@ fun evaluateSolver(input: NethackSolveInput, solver: NethackSolver, sleepInterva
     }
     var step = 0
 
-    while (agent.goal.status.inProgress() && step++ < 10000) {
+    while (agent.goal.status.inProgress() && step++ < 1000) {
         Thread.sleep(sleepInterval)
         agent.update()
     }
