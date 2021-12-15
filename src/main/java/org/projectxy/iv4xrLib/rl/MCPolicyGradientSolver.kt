@@ -15,9 +15,9 @@ class MCPolicyGradientSolver(private val episodes: Int = 10, private val gamma: 
 
         val actionRepeatingFactory = ActionRepeatingFactory(factory, configuration.mdp.allPossibleActions().toList())
         val icm = QCountBasedICMModule<StateWithGoalProgress<NethackModelState>, NethackModelAction>(QFromMerged(actionRepeatingFactory, 1.0), conf.countFun)
-        val policy = SoftmaxPolicy(actionRepeatingFactory, configuration.mdp, 0.003)
+        val policy = SoftmaxPolicy(actionRepeatingFactory, configuration.mdp, 0.002)
 
-        val alg = MCPolicyGradient(policy, episodes, gamma.toDouble(), configuration.random)
+        val alg = MCPolicyGradient(policy, icm, 0.1, episodes, gamma.toDouble(), configuration.random)
         configuration.agent.trainWith(alg)
         return NethackSolveOutput(
                 "Policy gradient MC - ${conf.toString().replace("_", " ").toLowerCase()}",
