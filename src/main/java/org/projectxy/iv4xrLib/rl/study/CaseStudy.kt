@@ -3,6 +3,8 @@ package org.projectxy.iv4xrLib.rl.study
 import A.B.NethackConfiguration
 import eu.iv4xr.framework.mainConcepts.WorldModel
 import eu.iv4xr.framework.model.rl.RLAgent
+import eu.iv4xr.framework.model.rl.valuefunctions.Valuefunction
+import eu.iv4xr.framework.spatial.Vec3
 import eu.iv4xr.framework.utils.cons
 import nl.uu.cs.aplib.AplibEDSL
 import org.projectxy.iv4xrLib.MyAgentState
@@ -35,19 +37,19 @@ val confs = listOf(
                 },
                 movementActions
         ),
-//        NethackSolveInput(
-//                "Large",
-//                16,
-//                NethackConfiguration().also {
-//                    it.seed = 3;
-//                    it.rows = 50;
-//                    it.columns = 90;
-//                    it.roomCount = 15;
-//                    it.minMobs = 0;
-//                    it.maxMobs = 1;
-//                },
-//                movementActions
-//        )
+        NethackSolveInput(
+                "Large",
+                16,
+                NethackConfiguration().also {
+                    it.seed = 3;
+                    it.rows = 50;
+                    it.columns = 90;
+                    it.roomCount = 15;
+                    it.minMobs = 0;
+                    it.maxMobs = 1;
+                },
+                movementActions
+        )
 )
 
 fun NethackConfiguration.header() = mapOf(
@@ -74,9 +76,10 @@ fun CaseStudyRow.header() = mapOf(
         "Duration" to duration.toString(TimeUnit.MILLISECONDS)
 )
 
+
 val solvers = listOf(
 //        RandomStartICMSolver(10, 0.8f, ICMQConf.POSITIVE_REWARDS, epsilon = 0.2)
-        MCPolicyGradientSolver(1000, 0.999f, ICMQConf.POSITIVE_REWARDS)
+        MCPolicyGradientSolver(100000, 0.999f, ICMQConf.POSITIVE_REWARDS)
 //        ConvSolver(0.9f, 80000)
 //        CountBasedICMSolver(10, 0.999f, ICMQConf.NEGATIVE_REWARDS, 10000, 0.0),
 //        CountBasedICMSolver(10, 0.8f, ICMQConf.NEGATIVE_REWARDS, 10000, 0.0),
@@ -125,7 +128,7 @@ fun main() {
     toTable(confs, NethackSolveInput::header, "casestudy2confs.tex")
     val results = confs.flatMap { conf ->
         solvers.map { solver ->
-            evaluateSolver(conf, solver, 300)
+            evaluateSolver(conf, solver, 30)
         }
     }
     toTable(results, CaseStudyRow::header, "casestudy2results.tex")
@@ -139,14 +142,20 @@ fun evaluateSolver(input: NethackSolveInput, solver: NethackSolver, sleepInterva
     val state = MyAgentState().setEnvironment(MyNethackEnv(wrapper))
     val agent = RLAgent(NethackModel(state.getConf()), random)
     agent.attachState(state)
+
     val goal = AplibEDSL.goal("goal").toSolve { st: Any ->
         if (st is NethackModelState)
             Utils.sameTile(st.position, st.stairs)
         else
             Utils.sameTile((st as WorldModel).position, st.getElement("Stairs").position)
     }.lift()
-    goal.maxbudget(100.0)
+    goal.maxbudget(1.0)
     agent.setGoal(goal)
+    NethackVisualizer(state.getConf()).visualize(agent.mdp.initialState().sample(Random).state, object : Valuefunction<NethackModelState> {
+        override fun value(state: NethackModelState): Float {
+            return Vec3.dist(state.position, state.stairs)
+        }
+    })
     val out = measureTimedValue {
         solver.train(NethackSolveConfiguration(input.nethackConfiguration, random, agent.mdp, state, agent))
     }

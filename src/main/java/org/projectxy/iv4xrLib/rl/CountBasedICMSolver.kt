@@ -7,9 +7,10 @@ import eu.iv4xr.framework.model.rl.approximation.stateWithGoalProgressFactory
 import eu.iv4xr.framework.model.rl.policies.MCSampleGreedyPolicy
 import eu.iv4xr.framework.model.rl.policies.QCountBasedICMModule
 import eu.iv4xr.framework.model.rl.policies.QFromMerged
+import kotlin.math.pow
 
 enum class ICMQConf(val initialQ: Double, val countFun: (Double) -> Double) {
-    POSITIVE_REWARDS(0.0, { 1.0 / (it + 1) }),
+    POSITIVE_REWARDS(0.0, { 1.0 / (it + 1).pow(1) }),
     POSITIVE_REWARDS_OPTIMISTIC(1.0, { 1.0 / (it + 1) }),
     NEGATIVE_REWARDS(0.0, { 1.0 / (it + 1) - 1.0 })
 }

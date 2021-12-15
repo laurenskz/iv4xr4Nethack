@@ -1,7 +1,6 @@
 package org.projectxy.iv4xrLib.rl
 
-import A.B.NethackConfiguration
-import A.B.Wall
+import A.B.*
 import arrow.optics.optics
 import eu.iv4xr.framework.mainConcepts.WorldEntity
 import eu.iv4xr.framework.mainConcepts.WorldModel
@@ -10,12 +9,15 @@ import eu.iv4xr.framework.model.distribution.Distribution
 import eu.iv4xr.framework.model.distribution.always
 import eu.iv4xr.framework.model.rl.*
 import eu.iv4xr.framework.model.rl.approximation.*
+import eu.iv4xr.framework.model.rl.valuefunctions.Valuefunction
 import eu.iv4xr.framework.spatial.Vec3
 import nl.uu.cs.aplib.mainConcepts.SimpleState
 import org.projectxy.iv4xrLib.*
 import org.projectxy.iv4xrLib.rl.NethackModelTileType.*
 import org.tensorflow.ndarray.Shape
 import org.tensorflow.ndarray.Shape.UNKNOWN_SIZE
+import java.awt.Color
+import javax.swing.JFrame
 import kotlin.random.Random
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
@@ -68,6 +70,12 @@ interface NethackSolver {
     fun train(configuration: NethackSolveConfiguration): NethackSolveOutput
 }
 
+interface NethackSolveConf {
+    fun initialize(configuration: NethackSolveConfiguration)
+    fun train(episodes: Int)
+}
+
+
 @optics
 data class NethackPlayer(
         val equippedWeaponName: String,
@@ -88,6 +96,56 @@ data class NethackPlayer(
                 BoolFeature.from { it.isAlive },
                 BoolFeature.from { it.aimingBow },
         ))
+    }
+}
+
+class NethackVisualizer(val configuration: NethackModelConfiguration) {
+    fun visualize(state: NethackModelState, valueFunction: Valuefunction<NethackModelState>) {
+        val tiles = configuration.tiles.map {
+            it.map {
+                when (it.type) {
+                    WALL -> Wall(it.x, it.y)
+                    WALKABLE -> FloorTile(it.x, it.y)
+                }
+            }.toMutableList()
+        }
+        val values = configuration.tiles.flatMap {
+            it.map {
+                valueFunction.value(state.copy(position = Vec3(it.x.toFloat(), it.y.toFloat(), 0f)))
+            }
+        }
+        val min = values.minOf { it }
+        val max = values.maxOf { it }
+        for (item in state.items) {
+            val x = item.position.x.toInt()
+            val y = item.position.y.toInt()
+            tiles[x][y] = ItemTile(
+                    when (item.item) {
+                        is ModelGold -> Gold(1)
+                        is Weapon -> Sword("", 0)
+                        is Restorable -> Food()
+                    },
+                    x,
+                    y,
+            )
+        }
+        for (mob in state.mobs) {
+            val x = mob.position.x.toInt()
+            val y = mob.position.y.toInt()
+            tiles[x][y] = Monster(x, y)
+        }
+        tiles[state.stairs.x.toInt()][state.stairs.y.toInt()] = StairTile(state.stairs.x.toInt(), state.stairs.y.toInt())
+        tiles[state.position.x.toInt()][state.position.y.toInt()] = Player(state.position.x.toInt(), state.position.y.toInt())
+        val x = JFrame("Bab!")
+        x.add(NethackVisualization(tiles, InterpolatingColorer(
+                min, max,
+                Color.RED, Color.GREEN
+        ) { x, y ->
+            valueFunction.value(state.copy(position = Vec3(x.toFloat(), y.toFloat(), 0f)))
+        }))
+        x.pack()
+        x.isVisible = true
+        Thread.sleep(10000)
     }
 }
 
@@ -112,6 +170,10 @@ data class NethackModelState(
                 RepeatedFeature(20, NethackWorldItem.factory).from { it.items },
                 RepeatedFeature(20, NethackItem.factory).from { it.Inventory },
         ))
+
+        fun visualizer(configuration: NethackModelConfiguration) {
+
+        }
 
         fun tensorFactory(configuration: NethackModelConfiguration) = GridEncoder<NethackModelState>(Shape.of(UNKNOWN_SIZE, configuration.columns.toLong(), configuration.rows.toLong(), 3)) {
             sequence {
