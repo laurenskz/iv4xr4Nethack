@@ -7,6 +7,7 @@ import eu.iv4xr.framework.model.rl.approximation.stateWithGoalProgressFactory
 import eu.iv4xr.framework.model.rl.policies.MCSampleGreedyPolicy
 import eu.iv4xr.framework.model.rl.policies.QCountBasedICMModule
 import eu.iv4xr.framework.model.rl.policies.QFromMerged
+import eu.iv4xr.framework.model.rl.valuefunctions.Valuefunction
 import kotlin.math.pow
 
 enum class ICMQConf(val initialQ: Double, val countFun: (Double) -> Double) {
@@ -17,9 +18,10 @@ enum class ICMQConf(val initialQ: Double, val countFun: (Double) -> Double) {
 
 class CountBasedICMSolver(private val episodes: Int = 10, private val gamma: Float = 0.9f, private val conf: ICMQConf, val maxSteps: Int = 10000, val epsilon: Double) : NethackSolver {
 
+    override val name: String = "Count based ICM - ${conf.toString().replace("_", " ").toLowerCase()}"
+
     override fun train(configuration: NethackSolveConfiguration): NethackSolveOutput {
         val factory = stateWithGoalProgressFactory(NethackModelState.factoryFrom(configuration.state.getConf()), 1)
-
         val actionRepeatingFactory = ActionRepeatingFactory(factory, configuration.mdp.allPossibleActions().toList())
         val icm = QCountBasedICMModule<StateWithGoalProgress<NethackModelState>, NethackModelAction>(QFromMerged(actionRepeatingFactory, 1.0), conf.countFun)
         val qFunction = QFromMerged(actionRepeatingFactory, 1.0)
@@ -30,10 +32,14 @@ class CountBasedICMSolver(private val episodes: Int = 10, private val gamma: Flo
         )
         configuration.agent.trainWith(alg)
         return NethackSolveOutput(
-                "Count based ICM - ${conf.toString().replace("_", " ").toLowerCase()}",
+                name,
                 episodes,
                 gamma,
                 null, null
         )
+    }
+
+    override fun train(configuration: NethackSolveConfiguration, episodes: List<Int>, callback: (NethackSolverCallback) -> Unit): NethackSolveOutput {
+        return train(configuration)
     }
 }

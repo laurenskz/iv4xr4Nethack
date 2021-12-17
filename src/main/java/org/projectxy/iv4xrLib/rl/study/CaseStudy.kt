@@ -25,6 +25,7 @@ val movementActions = listOf(Move(DOWN), Move(UP), Move(LEFT), Move(RIGHT))
 val actionMap = mapOf(
         "Movements" to movementActions
 )
+
 val confs = listOf(
         NethackSolveInput(
                 "Simple",
@@ -35,8 +36,21 @@ val confs = listOf(
                     it.roomCount = 7
                     it.seed = 16
                 },
-                movementActions
+                movementActions,
+                PerformanceMode
         ),
+//        NethackSolveInput(
+//                "Simple",
+//                16,
+//                NethackConfiguration().also {
+//                    it.rows = 25
+//                    it.columns = 25
+//                    it.roomCount = 7
+//                    it.seed = 16
+//                },
+//                movementActions,
+//                ValuedMode(listOf(10, 1000, 1000))
+//        ),
         NethackSolveInput(
                 "Large",
                 16,
@@ -48,7 +62,38 @@ val confs = listOf(
                     it.minMobs = 0;
                     it.maxMobs = 1;
                 },
-                movementActions
+                movementActions,
+                PerformanceMode
+        ),
+        NethackSolveInput(
+                "Large-15hp",
+                16,
+                NethackConfiguration().also {
+                    it.seed = 3;
+                    it.rows = 50;
+                    it.columns = 90;
+                    it.roomCount = 15;
+                    it.minMobs = 0;
+                    it.maxMobs = 1;
+                    it.initialHealth = 15;
+                },
+                movementActions,
+                ValuedMode(listOf(1000, 1000, 1000, 1000, 1000))
+        ),
+        NethackSolveInput(
+                "Large-10hp",
+                16,
+                NethackConfiguration().also {
+                    it.seed = 3;
+                    it.rows = 50;
+                    it.columns = 90;
+                    it.roomCount = 15;
+                    it.minMobs = 0;
+                    it.maxMobs = 1;
+                    it.initialHealth = 10;
+                },
+                movementActions,
+                ValuedMode(listOf(1000, 1000, 1000, 1000, 1000))
         )
 )
 
@@ -125,8 +170,14 @@ fun <T> toTable(t: List<T>, extractor: (T) -> Map<String, String>, fileName: Str
 
 @ExperimentalTime
 fun main() {
+    confs.filter { it.mode is ValuedMode }.forEach { input ->
+        solvers.forEach { solver ->
+            evaluateEpisodeSolver(input, solver)
+        }
+    }
+
     toTable(confs, NethackSolveInput::header, "casestudy2confs.tex")
-    val results = confs.flatMap { conf ->
+    val results = confs.filter { it.mode == PerformanceMode }.flatMap { conf ->
         solvers.map { solver ->
             evaluateSolver(conf, solver, 30)
         }
@@ -134,9 +185,38 @@ fun main() {
     toTable(results, CaseStudyRow::header, "casestudy2results.tex")
 }
 
+fun evaluateEpisodeSolver(input: NethackSolveInput, solver: NethackSolver) {
+    if (input.mode !is ValuedMode) return
+    val wrapper = NethackWrapper()
+    val configuration = createConfiguration(input, wrapper)
+    val valueVisualizer = NethackVisualizer(configuration.state.getConf(), configuration.agent.mdp.initialState().sample(Random).state, Functions.linear)
+    val visitVisualizer = NethackVisualizer(configuration.state.getConf(), configuration.agent.mdp.initialState().sample(Random).state, Functions.onOff)
+    solver.train(configuration, input.mode.episodes) {
+        input.name
+        visitVisualizer.visualize(it.visitFunction).writeTo("${input.name}/${solver.name}-visited-${it.episodes}.png")
+        valueVisualizer.visualize(it.valueFunction).writeTo("${input.name}/${solver.name}-values-${it.episodes}.png")
+    }
+}
+
 @ExperimentalTime
 fun evaluateSolver(input: NethackSolveInput, solver: NethackSolver, sleepInterval: Long): CaseStudyRow {
     val wrapper = NethackWrapper()
+    val configuration = createConfiguration(input, wrapper)
+    val out = measureTimedValue {
+        solver.train(configuration)
+    }
+    var step = 0
+    while (configuration.agent.goal.status.inProgress() && step++ < 1000) {
+        Thread.sleep(sleepInterval)
+        configuration.agent.update()
+    }
+    val resultState = configuration.agent.currentState()
+    val succes = configuration.agent.goal.status.success()
+    wrapper.closeNethack()
+    return CaseStudyRow(input, out.value, resultState, succes, out.duration)
+}
+
+private fun createConfiguration(input: NethackSolveInput, wrapper: NethackWrapper): NethackSolveConfiguration {
     val random = Random(input.seed)
     wrapper.launchNethack(input.nethackConfiguration)
     val state = MyAgentState().setEnvironment(MyNethackEnv(wrapper))
@@ -149,24 +229,8 @@ fun evaluateSolver(input: NethackSolveInput, solver: NethackSolver, sleepInterva
         else
             Utils.sameTile((st as WorldModel).position, st.getElement("Stairs").position)
     }.lift()
-    goal.maxbudget(1.0)
+    goal.maxbudget(5.0)
     agent.setGoal(goal)
-    NethackVisualizer(state.getConf()).visualize(agent.mdp.initialState().sample(Random).state, object : Valuefunction<NethackModelState> {
-        override fun value(state: NethackModelState): Float {
-            return Vec3.dist(state.position, state.stairs)
-        }
-    })
-    val out = measureTimedValue {
-        solver.train(NethackSolveConfiguration(input.nethackConfiguration, random, agent.mdp, state, agent))
-    }
-    var step = 0
-
-    while (agent.goal.status.inProgress() && step++ < 1000) {
-        Thread.sleep(sleepInterval)
-        agent.update()
-    }
-    val resultState = agent.currentState()
-    val succes = agent.goal.status.success()
-    wrapper.closeNethack()
-    return CaseStudyRow(input, out.value, resultState, succes, out.duration)
+    val configuration = NethackSolveConfiguration(input.nethackConfiguration, random, agent.mdp, state, agent)
+    return configuration
 }

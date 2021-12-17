@@ -9,6 +9,8 @@ import eu.iv4xr.framework.model.distribution.Distribution
 import eu.iv4xr.framework.model.distribution.always
 import eu.iv4xr.framework.model.rl.*
 import eu.iv4xr.framework.model.rl.approximation.*
+import eu.iv4xr.framework.model.rl.components.Image
+import eu.iv4xr.framework.model.rl.components.Visualizer
 import eu.iv4xr.framework.model.rl.valuefunctions.Valuefunction
 import eu.iv4xr.framework.spatial.Vec3
 import nl.uu.cs.aplib.mainConcepts.SimpleState
@@ -21,6 +23,7 @@ import javax.swing.JFrame
 import kotlin.random.Random
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
+import kotlin.system.exitProcess
 
 
 // Actions
@@ -43,11 +46,17 @@ val nethackActionFactory = OneHot<NethackModelAction>(sequence {
 //    yieldAll(NethackWrapper.Interact.values().map { Action(it) }
 }.toList())
 
+
+sealed class Mode
+class ValuedMode(val episodes: List<Int>) : Mode()
+object PerformanceMode : Mode()
+
 data class NethackSolveInput(
         val name: String,
         val seed: Long,
         val nethackConfiguration: NethackConfiguration,
-        val enabledActions: List<NethackModelAction>
+        val enabledActions: List<NethackModelAction>,
+        val mode: Mode
 )
 
 data class NethackSolveConfiguration(
@@ -66,15 +75,17 @@ data class NethackSolveOutput(
         val n: Int?
 )
 
+data class NethackSolverCallback(
+        val valueFunction: Valuefunction<NethackModelState>,
+        val visitFunction: Valuefunction<NethackModelState>,
+        val episodes: Int
+)
+
 interface NethackSolver {
+    val name: String
+    fun train(configuration: NethackSolveConfiguration, episodes: List<Int>, callback: (NethackSolverCallback) -> Unit): NethackSolveOutput
     fun train(configuration: NethackSolveConfiguration): NethackSolveOutput
 }
-
-interface NethackSolveConf {
-    fun initialize(configuration: NethackSolveConfiguration)
-    fun train(episodes: Int)
-}
-
 
 @optics
 data class NethackPlayer(
@@ -99,8 +110,8 @@ data class NethackPlayer(
     }
 }
 
-class NethackVisualizer(val configuration: NethackModelConfiguration) {
-    fun visualize(state: NethackModelState, valueFunction: Valuefunction<NethackModelState>) {
+class NethackVisualizer(val configuration: NethackModelConfiguration, val state: NethackModelState, val interpolator: (Float) -> Float) : Visualizer<NethackModelState> {
+    override fun visualize(valueFunction: Valuefunction<NethackModelState>): Image {
         val tiles = configuration.tiles.map {
             it.map {
                 when (it.type) {
@@ -136,16 +147,12 @@ class NethackVisualizer(val configuration: NethackModelConfiguration) {
         }
         tiles[state.stairs.x.toInt()][state.stairs.y.toInt()] = StairTile(state.stairs.x.toInt(), state.stairs.y.toInt())
         tiles[state.position.x.toInt()][state.position.y.toInt()] = Player(state.position.x.toInt(), state.position.y.toInt())
-        val x = JFrame("Bab!")
-        x.add(NethackVisualization(tiles, InterpolatingColorer(
-                min, max,
+        return NethackVisualization(tiles, InterpolatingColorer(
+                interpolator, min, max,
                 Color.RED, Color.GREEN
         ) { x, y ->
             valueFunction.value(state.copy(position = Vec3(x.toFloat(), y.toFloat(), 0f)))
-        }))
-        x.pack()
-        x.isVisible = true
-        Thread.sleep(10000)
+        })
     }
 }
 

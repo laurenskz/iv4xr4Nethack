@@ -7,6 +7,7 @@ import eu.iv4xr.framework.model.rl.approximation.ActionRepeatingFactory
 import eu.iv4xr.framework.model.rl.approximation.stateWithGoalProgressFactory
 import eu.iv4xr.framework.model.rl.policies.GreedyPolicy
 import eu.iv4xr.framework.model.rl.policies.QFromMerged
+import eu.iv4xr.framework.model.rl.valuefunctions.Valuefunction
 import eu.iv4xr.framework.spatial.Vec3
 import kotlin.random.Random
 
@@ -23,7 +24,6 @@ class HeuristicSolver(val episodes: Int, val gamma: Float, val algName: String, 
         val factory = stateWithGoalProgressFactory(NethackModelState.factoryFrom(configuration.state.getConf()), 1)
         val actionRepeatingFactory = ActionRepeatingFactory(factory, configuration.mdp.allPossibleActions().toList())
         val qFunction = QFromMerged(actionRepeatingFactory, 0.1)
-        val name = "Heuristic - $algName"
         if (algName == "Q-learning") {
             val alg = OffPolicyQLearning(qFunction, gamma, configuration.mdp, configuration.random)
             alg.trainEPolicy(episodes)
@@ -36,5 +36,11 @@ class HeuristicSolver(val episodes: Int, val gamma: Float, val algName: String, 
             configuration.agent.trainWith(alg)
             return NethackSolveOutput(name, episodes, gamma, epsilon, n)
         }
+    }
+
+    override val name = "Heuristic - $algName"
+
+    override fun train(configuration: NethackSolveConfiguration, episodes: List<Int>, callback: (NethackSolverCallback) -> Unit): NethackSolveOutput {
+        return train(configuration)
     }
 }

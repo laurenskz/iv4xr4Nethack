@@ -9,6 +9,13 @@ import eu.iv4xr.framework.model.rl.policies.QFromMerged
 import eu.iv4xr.framework.model.rl.policies.SoftmaxPolicy
 
 class PolicyGradientSolver(private val episodes: Int = 10, private val gamma: Float = 0.9f, private val conf: ICMQConf) : NethackSolver {
+    override val name: String
+        get() = "Policy gradient ICM - ${conf.toString().replace("_", " ").toLowerCase()}"
+
+    override fun train(configuration: NethackSolveConfiguration, episodes: List<Int>, callback: (NethackSolverCallback) -> Unit): NethackSolveOutput {
+        return train(configuration)
+    }
+
     override fun train(configuration: NethackSolveConfiguration): NethackSolveOutput {
         val factory = stateWithGoalProgressFactory(NethackModelState.factoryFrom(configuration.state.getConf()), 1)
 
@@ -19,7 +26,7 @@ class PolicyGradientSolver(private val episodes: Int = 10, private val gamma: Fl
         val alg = QActorCritic(policy, qFunction, icm, configuration.random, gamma.toDouble(), episodes, 1.0)
         configuration.agent.trainWith(alg)
         return NethackSolveOutput(
-                "Policy gradient ICM - ${conf.toString().replace("_", " ").toLowerCase()}",
+                name,
                 episodes,
                 gamma,
                 null, null
