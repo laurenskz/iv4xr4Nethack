@@ -10,6 +10,8 @@ import nl.uu.cs.aplib.AplibEDSL
 import org.projectxy.iv4xrLib.MyAgentState
 import org.projectxy.iv4xrLib.MyNethackEnv
 import org.projectxy.iv4xrLib.NethackWrapper
+import org.projectxy.iv4xrLib.NethackWrapper.Interact.AimWithBow
+import org.projectxy.iv4xrLib.NethackWrapper.Interact.PickupItem
 import org.projectxy.iv4xrLib.NethackWrapper.Movement.*
 import org.projectxy.iv4xrLib.Utils
 import org.projectxy.iv4xrLib.rl.*
@@ -21,12 +23,18 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
 val movementActions = listOf(Move(DOWN), Move(UP), Move(LEFT), Move(RIGHT))
+val itemActions = listOf(
+        Move(DOWN), Move(UP), Move(LEFT), Move(RIGHT), Move(DONOTHING),
+        Action(PickupItem),
+        UseItem(0), UseItem(1), UseItem(2),
 
+        )
 val actionMap = mapOf(
-        "Movements" to movementActions
+        "Movements" to movementActions,
+        "Movements and items" to itemActions
 )
 
-val confs = listOf(
+private val confs = listOf(
         NethackSolveInput(
                 "Simple",
                 16,
@@ -170,6 +178,11 @@ fun <T> toTable(t: List<T>, extractor: (T) -> Map<String, String>, fileName: Str
 
 @ExperimentalTime
 fun main() {
+    runExperiment(solvers, confs,30)
+}
+
+@ExperimentalTime
+fun runExperiment(solvers: Iterable<NethackSolver>, confs: List<NethackSolveInput>, pause: Long) {
     confs.filter { it.mode is ValuedMode }.forEach { input ->
         solvers.forEach { solver ->
             evaluateEpisodeSolver(input, solver)
@@ -179,7 +192,7 @@ fun main() {
     toTable(confs, NethackSolveInput::header, "casestudy2confs.tex")
     val results = confs.filter { it.mode == PerformanceMode }.flatMap { conf ->
         solvers.map { solver ->
-            evaluateSolver(conf, solver, 30)
+            evaluateSolver(conf, solver, pause)
         }
     }
     toTable(results, CaseStudyRow::header, "casestudy2results.tex")

@@ -289,7 +289,7 @@ enum class NethackModelTileType {
     WALL, WALKABLE
 }
 
-data class NethackModelConfiguration(val rows: Int, val columns: Int, val tiles: Array<Array<NethackModelTile>>, val inventorySize: Int, val initialState: NethackModelState) {
+data class NethackModelConfiguration(val rows: Int, val columns: Int, val tiles: Array<Array<NethackModelTile>>, val inventorySize: Int, val initialState: NethackModelState, val rooms: List<Room>) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -440,7 +440,7 @@ class NethackModel(private val configuration: NethackModelConfiguration) : Proba
 fun MyAgentState.getConf(): NethackModelConfiguration {
     val nh = this.env().nethackUnderTest.nethack
     val tiles = nh.tiles.map { it.map { if (it is Wall) NethackModelTile(it.x, it.y, WALL) else NethackModelTile(it.x, it.y, WALKABLE) }.toTypedArray() }.toTypedArray()
-    return NethackModelConfiguration(nh.rows, nh.cols, tiles, 20, this.wom.toNethackState())
+    return NethackModelConfiguration(nh.rows, nh.cols, tiles, 20, this.wom.toNethackState(), nh.roomArr)
 }
 
 fun add(vec3: Vec3, x: Int, y: Int) = Vec3(vec3.x.toInt().plus(x).toFloat(), vec3.y.toInt().plus(y).toFloat(), vec3.z)
