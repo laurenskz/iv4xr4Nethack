@@ -109,8 +109,14 @@ fun reduceHealth(nethackModelState: NethackModelState, reduction: Int): NethackM
             }
 }
 
-fun moveMobs(nethackModelState: NethackModelState) {
-
+fun moveMobs(nethackModelState: NethackModelState, configuration: NethackModelConfiguration): Distribution<NethackModelState> {
+    var current: Distribution<NethackModelState> = always(nethackModelState)
+    for (mob in nethackModelState.mobs) {
+        current = current.chain {
+            mobAction(it, mob, configuration)
+        }
+    }
+    return current
 }
 
 fun sameRoom(mobPos: Vec3, playerPos: Vec3, rooms: List<Room>): Boolean {
@@ -122,9 +128,9 @@ fun sameRoom(mobPos: Vec3, playerPos: Vec3, rooms: List<Room>): Boolean {
 fun roomIndex(xy: Pair<Int, Int>, rooms: List<Room>): Int? {
     val (x, y) = xy
     return rooms.indexOfFirst {
-        x > it.x &&
+        x >= it.x &&
                 x < it.x + it.sizeX &&
-                y > it.y &&
+                y >= it.y &&
                 y < it.y + it.sizeY
 
     }.takeIf { it >= 0 }
@@ -150,7 +156,7 @@ fun shouldMove(mob: NethackMob, nethackModelState: NethackModelState, configurat
     val (px, py) = nethackModelState.position.xy()
     val nx = x + dx
     val ny = y + dy
-    if (nethackModelState.mobs.any { it.position.x.toInt() == nx || it.position.y.toInt() == ny }) return false
+    if (nethackModelState.mobs.any { it.position.x.toInt() == nx && it.position.y.toInt() == ny }) return false
     if (configuration.tiles[nx][ny].type != WALKABLE) return false
     return isCloser(x, px, dx) || isCloser(y, py, dy)
 }
@@ -158,9 +164,8 @@ fun shouldMove(mob: NethackMob, nethackModelState: NethackModelState, configurat
 fun move(priorities: List<Pair<Int, Int>>, mob: NethackMob, nethackModelState: NethackModelState, configuration: NethackModelConfiguration): NethackModelState {
     val move = priorities.firstOrNull { shouldMove(mob, nethackModelState, configuration, it.first, it.second) }
             ?: return nethackModelState
-    val newMob = NethackMob.position.modify(mob) { Vec3((it.x.toInt() + move.first).toFloat(), (it.y.toInt() + move.second).toFloat(), 0f) }
-    return NethackModelState.mobs.modify(nethackModelState) {
-        newMob cons it.filter { it != mob }
+    return updateMob(mob, nethackModelState) {
+        NethackMob.position.modify(it) { Vec3((it.x.toInt() + move.first).toFloat(), (it.y.toInt() + move.second).toFloat(), 0f) }
     }
 }
 
@@ -184,12 +189,13 @@ fun searchPlayer(mob: NethackMob, nethackModelState: NethackModelState, configur
             length.map { it to 0 },
             length.map { -it to 0 },
     )
-    val isPlayer = { (dx, dy): Pair<Int, Int> -> (px == (mx + dx)) || py == (my + dy) }
+    val isPlayer = { (dx, dy): Pair<Int, Int> -> (px == (mx + dx)) && py == (my + dy) }
     val seenPlayer = ranges.any { range ->
-        val hasLine = range
-                .takeWhile { !isPlayer(it) }
-                .all { (dx, dy) -> configuration.tiles[mx + dx][my + dy].type == WALKABLE }
-        range.any { isPlayer(it) } && hasLine
+        for ((x, y) in range) {
+            if (isPlayer(x to y)) return@any true
+            if (configuration.tiles[mx + x][my + y].type != WALKABLE) break
+        }
+        return@any false
     }
     return updateMob(mob, nethackModelState) { NethackMob.seenPlayer.modify(it) { it || seenPlayer } }
 
